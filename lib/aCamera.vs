@@ -1604,7 +1604,11 @@
 			if (!this.following?.id) {
 				console.error('aCamera Module [detach]: Nothing to %cdeatach', 'font-weight: bold', 'from. Attachment failed');
 			}
-			this.setPos(this.following.xPos, (this.following.yPos) - (this.zPos + this.following.iCenter.z), this.following.mapName);
+
+			this.reset('spectate');
+			this.following = VS.Client.mob;
+			this.setSettings();
+			this.setPos(this.following.xPos, (this.following.yPos) - (this.following.iCenter?.z ? this.following.iCenter.z : 0), this.following.mapName);
 			VS.Client.setViewEye(this.following);
 			this.attached = false;
 			this.setLoc();
@@ -1620,7 +1624,7 @@
 			this.oldPos.x = this.following.xPos;
 			this.oldPos.y = this.following.yPos;
 			this.oldPos.z = 0; // might be an issue, but update loop should fix it in a frame, should grab the followers zPos
-			this.setPos(this.following.xPos, (this.following.yPos) - (this.zPos + this.following.iCenter.z), this.following.mapName);
+			this.setPos(this.following.xPos, (this.following.yPos) - (this.zPos + (this.following.iCenter?.z ? this.following.iCenter.z : 0)), this.following.mapName);
 			VS.Client.setViewEye(this);
 			this.attached = true;
 		}
@@ -1789,6 +1793,7 @@
 		}
 
 		assignCamera(aCamera);
+		aCamera.toggleDebug();
 	}
 }
 )();
