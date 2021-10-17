@@ -627,6 +627,10 @@
 				VS.Client.mapView.scale.y += stepSizeY;
 			}
 
+			if (VS.Client.___EVITCA_aInventory) {
+				VS.Client.aInventory.outlineFilter.thickness = VS.Client.aInventory.outlineDefaultThickness * mainM.mapScaleWidth;
+			}
+
 			VS.Client.setMapView(VS.Client.mapView);
 
 			if (this.settings.zoom.time.x >= this.settings.zoom.duration.x) {
@@ -1609,24 +1613,25 @@
 			this.following = VS.Client.mob;
 			this.setSettings();
 			this.setPos(this.following.xPos, (this.following.yPos) - (this.following.iCenter?.z ? this.following.iCenter.z : 0), this.following.mapName);
-			VS.Client.setViewEye(this.following);
 			this.attached = false;
 			this.setLoc();
+			VS.Client.setViewEye(this.following);
 		}
 
 		aCamera.attach = function() {
 			if (this.attached) {
 				console.error('aCamera Module [attach]: aCamera is already %cattached!', 'font-weight: bold');
 			}
-			if (!this.following?.id && !this.following?.mapName) {
-				console.error('aCamera Module [attach]: Nothing to %cattach', 'font-weight: bold', 'to. Attachment failed');
-			}
+			// if (!this.following?.id && !this.following?.mapName) {
+			// 	console.error('aCamera Module [attach]: Nothing to %cattach', 'font-weight: bold', 'to. Attachment failed');
+			// }
+			this.following = VS.Client.mob;
 			this.oldPos.x = this.following.xPos;
 			this.oldPos.y = this.following.yPos;
 			this.oldPos.z = 0; // might be an issue, but update loop should fix it in a frame, should grab the followers zPos
 			this.setPos(this.following.xPos, (this.following.yPos) - (this.zPos + (this.following.iCenter?.z ? this.following.iCenter.z : 0)), this.following.mapName);
-			VS.Client.setViewEye(this);
 			this.attached = true;
+			VS.Client.setViewEye(this);
 		}
 
 		aCamera.shake = function(pIntensity, pDuration, pRotational=false, pCallback) {
