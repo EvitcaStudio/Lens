@@ -10,6 +10,7 @@
 			buildCamera();
 		}
 	});
+	
 	const MAX_PLANE = 999999;
 
 	let validEase = [ 
@@ -43,6 +44,12 @@
 		// whether the camera is attached to something and will follow it
 		aCamera.attached = false;
 		aCamera.updateLoop();
+		aCamera.isMoving = false;
+		aCamera.isZooming = false;
+		aCamera.isSpectating = false;
+		aCamera.isShaking = false;
+		aCamera.isScrolling = false;
+		aCamera.isPanning = false;
 		
 		VS.Client.attachCamera = function(pSettings) {
 			// if no iCenter, give a initial default value
@@ -482,6 +489,7 @@
 					this.settings.zoom.duration.x = this.settings.zoom.duration.y = null;	
 					this.settings.zoom.ease.x = this.settings.zoom.ease.y = null;
 					this.settings.zooming = false;
+					this.isZooming = false;
 					break;
 
 				case 'panX':
@@ -517,6 +525,7 @@
 					this.settings.pan.duration.x = this.settings.pan.duration.y = this.settings.pan.duration.z = null;
 					this.settings.pan.destination.x = this.settings.pan.destination.y = this.settings.pan.destination.z = null;
 					this.settings.panning = false;
+					this.isPanning = false;
 					break;
 
 				case 'standardX':
@@ -544,6 +553,7 @@
 					this.settings.standard.initialPos.x = this.xPos;
 					this.settings.standard.initialPos.y = this.yPos;
 					this.settings.standard.initialPos.z = this.zPos;
+					this.isMoving = false;
 					break;
 
 				case 'customX':
@@ -571,6 +581,7 @@
 					this.settings.custom.initialPos.x = this.xPos;
 					this.settings.custom.initialPos.y = this.yPos;
 					this.settings.custom.initialPos.z = this.zPos;
+					this.isMoving = false;
 					break;
 
 				case 'scroll':
@@ -601,6 +612,7 @@
 					VS.Client.setViewEyeOffsets(0, 0)
 					VS.Client.mapView.angle = 0;
 					VS.Client.setMapView(VS.Client.mapView);
+					this.isShaking = false;
 					break;
 
 				case 'spectate':
@@ -608,6 +620,7 @@
 					this.settings.spectate.forcePos = false;
 					this.settings.spectate.preventMovement = false;
 					this.settings.spectating = false;
+					this.isSpectating = false;
 					break;
 			}
 		}
@@ -956,6 +969,7 @@
 				console.error('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings', 'font-weight: bold', 'parameter. Pan failed');
 			}
 			this.settings.panning = true;
+			this.isPanning = true;
 		}
 
 		aCamera.onPanned = function() {
@@ -1193,6 +1207,7 @@
 				if (!this.settings.scrolling && !this.settings.panning && this.following) {
 					if (this.oldFollowingPos) {
 						if (this.following.isMoving || this.oldFollowingPos.x !== this.following.xPos || this.oldFollowingPos.y !== this.following.yPos || this.oldFollowingPos.z !== this.following.zPos) {
+							this.isMoving = true;
 							if (this.custom) {
 								this.settings.custom.time.x = 0;
 								this.settings.custom.active.x = (this.xPos !== this.following.xPos ? true : false);
@@ -1410,6 +1425,7 @@
 				}
 			}
 			this.settings.zooming = true;
+			this.isZooming = true;
 		}
 
 		aCamera.onZoomEnd = function() {
@@ -1588,6 +1604,7 @@
 				return
 			}
 			this.settings.spectating = true;
+			this.isSpectating = true;
 		}
 
 		aCamera.cancelSpectate = function() {
@@ -1774,6 +1791,7 @@
 				this.settings.shake.duration.y = durationValue.y;
 				this.settings.shake.active.y = true;
 			}
+			this.isShaking = true;
 		}
 
 		aCamera.onShakeEnd = function() {
@@ -1798,7 +1816,6 @@
 		}
 
 		assignCamera(aCamera);
-		aCamera.toggleDebug();
 	}
 }
 )();
