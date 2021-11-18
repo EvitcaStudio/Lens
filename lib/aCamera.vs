@@ -38,7 +38,7 @@
 		VS.Client.___EVITCA_aCamera = true;
 		VS.World.global.aCamera = aCamera;
 		// the version of the camera
-		aCamera.version = 'v1.1.0';
+		aCamera.version = 'v1.6.0';
 		// whether the camera has been created and is ready for use or not
 		aCamera.init = true;
 		// whether the camera is attached to something and will follow it
@@ -54,49 +54,39 @@
 		VS.Client.attachCamera = function(pSettings) {
 			// if no iCenter, give a initial default value
 			if (!this.mob.iCenter) {
-				this.mob.iCenter = { 'x': 16, 'y': 16, 'z': 0 };
-			}
-			// if no zPos, give a initial value
-			if (!this.mob.zPos) {
-				this.mob.zPos = 0;
-				this.aCamera.zPos = 0;
+				this.mob.iCenter = { 'x': 16, 'y': 16 };
 			}
 			this.aCamera.settings.zoom.currentLevel.x = this.mapView.scale.x;
 			this.aCamera.settings.zoom.currentLevel.y = this.mapView.scale.y;
 			this.aCamera.following = this.mob;
-			this.aCamera.setPos(this.mob.xPos, (this.mob.yPos) - (this.aCamera.zPos + this.mob.iCenter.z), this.mob.mapName);
+			this.aCamera.setPos(this.mob.xPos + this.mob.xIconOffset, this.mob.yPos + this.mob.yIconOffset, this.mob.mapName);
 			this.aCamera.oldPos.x = this.aCamera.xPos;
 			this.aCamera.oldPos.y = this.aCamera.yPos;
-			this.aCamera.oldPos.z = this.aCamera.zPos;
 			this.aCamera.attached = true;
 
 			if (pSettings) {
 				if (typeof(pSettings) === 'object' && !Array.isArray(pSettings)) {
 					if (pSettings.duration) {
 						if (typeof(pSettings.duration) === 'object' && !Array.isArray(pSettings.duration)) {
-							if (!pSettings.duration.z) {
-								pSettings.duration.z = 1000;
-							}
-							if (typeof(pSettings.duration?.x) === 'number' && typeof(pSettings.duration?.y) === 'number' && typeof(pSettings.duration?.z) === 'number') {
+							if (typeof(pSettings.duration?.x) === 'number' && typeof(pSettings.duration?.y) === 'number') {
 								this.aCamera.settings.custom.duration.x = pSettings.duration.x;
 								this.aCamera.settings.custom.duration.y = pSettings.duration.y;
-								this.aCamera.settings.custom.duration.z = pSettings.duration.z;
 							} else {
-								this.aCamera.settings.custom.duration.x = this.aCamera.settings.custom.duration.y = this.aCamera.settings.custom.duration.z = 1000;
+								this.aCamera.settings.custom.duration.x = this.aCamera.settings.custom.duration.y = 1000;
 								if (this.debugging) {
-									console.warn('aCamera Module: Invalid variable type passed for the %cpSettings.duration.x || pSettings.duration.y || *pSettings.duration.z', 'font-weight: bold', 'property. Reverted to default');
+									console.warn('aCamera Module: Invalid variable type passed for the %cpSettings.duration.x || pSettings.duration.y', 'font-weight: bold', 'property. Reverted to default');
 								}
 							}
 						} else if (typeof(pSettings.duration === 'number')) {
-							this.aCamera.settings.custom.duration.x = this.aCamera.settings.custom.duration.y = this.aCamera.settings.custom.duration.z = pSettings.duration;
+							this.aCamera.settings.custom.duration.x = this.aCamera.settings.custom.duration.y = pSettings.duration;
 						} else {
-							this.aCamera.settings.custom.duration.x = this.aCamera.settings.custom.duration.y = this.aCamera.settings.custom.duration.z = 1000;
+							this.aCamera.settings.custom.duration.x = this.aCamera.settings.custom.duration.y = 1000;
 							if (this.debugging) {
 								console.warn('aCamera Module: Invalid variable type passed for the %cpSettings.duration', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					} else {
-						this.aCamera.settings.custom.duration.x = this.aCamera.settings.custom.duration.y = this.aCamera.settings.custom.duration.z = 1000;
+						this.aCamera.settings.custom.duration.x = this.aCamera.settings.custom.duration.y = 1000;
 						if (this.debugging) {
 							console.warn('aCamera Module: No %cpSettings.duration', 'font-weight: bold', 'parameter passed. Reverted to default');
 						}
@@ -104,43 +94,39 @@
 
 					if (pSettings.ease) {
 						if (typeof(pSettings.ease) === 'object' && !Array.isArray(pSettings.ease)) {
-							if (!pSettings.ease.z) {
-								pSettings.ease.z = 'easeOutCubic';
-							}
-							if (typeof(pSettings.ease?.x) === 'string' && typeof(pSettings.ease?.y) === 'string' && typeof(pSettings.ease?.z) === 'string') {
-								if (validEase.includes(pSettings.ease?.x) && validEase.includes(pSettings.ease?.y) && validEase.includes(pSettings.ease?.z)) {
+							if (typeof(pSettings.ease?.x) === 'string' && typeof(pSettings.ease?.y) === 'string') {
+								if (validEase.includes(pSettings.ease?.x) && validEase.includes(pSettings.ease?.y)) {
 									this.aCamera.settings.custom.ease.x = pSettings.ease.x;
 									this.aCamera.settings.custom.ease.y = pSettings.ease.y;
-									this.aCamera.settings.custom.ease.z = pSettings.ease.z;
 								} else {
-									this.aCamera.settings.custom.ease.x = this.aCamera.settings.custom.ease.y = this.aCamera.settings.custom.ease.z = 'easeOutCubic';
+									this.aCamera.settings.custom.ease.x = this.aCamera.settings.custom.ease.y = 'easeOutCubic';
 									if (this.debugging) {
-										console.warn('aCamera Module: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease.x || pSettings.ease.y || *pSettings.ease.z. Reverted to default');
+										console.warn('aCamera Module: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease.x || pSettings.ease.y. Reverted to default');
 									}
 								}
 							} else {
-								this.aCamera.settings.custom.ease.x = this.aCamera.settings.custom.ease.y = this.aCamera.settings.custom.ease.z = 'easeOutCubic';
+								this.aCamera.settings.custom.ease.x = this.aCamera.settings.custom.ease.y = 'easeOutCubic';
 								if (this.debugging) {
-									console.warn('aCamera Module: Invalid variable type passed for the %cpSettings.ease.x || pSettings.ease.y || *pSettings.ease.z', 'font-weight: bold', 'property. Reverted to default');
+									console.warn('aCamera Module: Invalid variable type passed for the %cpSettings.ease.x || pSettings.ease.y', 'font-weight: bold', 'property. Reverted to default');
 								}
 							}
 						} else if (typeof(pSettings.ease === 'string')) {
 							if (validEase.includes(pSettings.ease)) {
-								this.aCamera.settings.custom.ease.x = this.aCamera.settings.custom.ease.y = this.aCamera.settings.custom.ease.z = pSettings.ease;
+								this.aCamera.settings.custom.ease.x = this.aCamera.settings.custom.ease.y = pSettings.ease;
 							} else {
-								this.aCamera.settings.custom.ease.x = this.aCamera.settings.custom.ease.y = this.aCamera.settings.custom.ease.z = 'easeOutCubic';
+								this.aCamera.settings.custom.ease.x = this.aCamera.settings.custom.ease.y = 'easeOutCubic';
 								if (this.debugging) {
 									console.warn('aCamera Module: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease. Reverted to default');
 								}
 							}
 						} else {
-							this.aCamera.settings.custom.ease.x = this.aCamera.settings.custom.ease.y = this.aCamera.settings.custom.ease.z = 'easeOutCubic';
+							this.aCamera.settings.custom.ease.x = this.aCamera.settings.custom.ease.y = 'easeOutCubic';
 							if (this.debugging) {
 								console.warn('aCamera Module: Invalid variable type passed for the %cpSettings.ease', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					} else {
-						this.aCamera.settings.custom.ease.x = this.aCamera.settings.custom.ease.y = this.aCamera.settings.custom.ease.z = 'easeOutCubic';
+						this.aCamera.settings.custom.ease.x = this.aCamera.settings.custom.ease.y = 'easeOutCubic';
 						if (this.debugging) {
 							console.warn('aCamera Module: No %cpSettings.ease', 'font-weight: bold', 'parameter passed. Reverted to default');
 						}		
@@ -151,14 +137,12 @@
 					this.following = this.mob;
 					this.aCamera.settings.custom.initialPos.x = this.aCamera.xPos;
 					this.aCamera.settings.custom.initialPos.y = this.aCamera.yPos;
-					this.aCamera.settings.custom.initialPos.z = this.aCamera.zPos;
 				} else {
 					this.aCamera.reset('custom');
 					this.aCamera.custom = false;
 					this.aCamera.following = this.mob;
 					this.aCamera.settings.standard.initialPos.x = this.aCamera.xPos;
 					this.aCamera.settings.standard.initialPos.y = this.aCamera.yPos;
-					this.aCamera.settings.standard.initialPos.z = this.aCamera.zPos;
 					if (this.debugging) {
 						console.warn('aCamera Module: Invalid variable type passed for the %cpSettings', 'font-weight: bold', 'parameter. Reverted to default');
 					}
@@ -169,10 +153,9 @@
 				this.aCamera.following = this.mob;
 				this.aCamera.settings.standard.initialPos.x = this.aCamera.xPos;
 				this.aCamera.settings.standard.initialPos.y = this.aCamera.yPos;
-				this.aCamera.settings.standard.initialPos.z = this.aCamera.zPos;
 			}
 			
-			this.aCamera.oldFollowingPos = { 'x': this.aCamera.following.xPos, 'y': this.aCamera.following.yPos, 'z': this.aCamera.following.zPos }
+			this.aCamera.oldFollowingPos = { 'x': this.aCamera.following.xPos + this.aCamera.following.xIconOffset, 'y': this.aCamera.following.yPos + this.aCamera.following.yIconOffset }
 			this.setViewEye(this.aCamera);
 		}
 	}
@@ -373,8 +356,8 @@
 		aCamera.FOUR = 4;
 		aCamera.FIVE = 5;
 		aCamera.SIX = 6;
-		aCamera.oldPos = { 'x': 0, 'y': 0, 'y': 0 };
-		aCamera.oldFollowingPos = { 'x': 0, 'y': 0, 'z': 0 };
+		aCamera.oldPos = { 'x': 0, 'y': 0 };
+		aCamera.oldFollowingPos = { 'x': 0, 'y': 0 };
 		aCamera.settings = {
 			'zoom': { // allows separate dimension zooming
 				'active': { 'x': false, 'y': false },
@@ -399,20 +382,20 @@
 			},
 
 			'pan': { // allows separate dimension moving // when the camera moves from one object to another and then back to the starting object
-				'active': { 'x': false, 'y': false, 'z': false }, // if the camera is active or not
+				'active': { 'x': false, 'y': false }, // if the camera is active or not
 				'time': { 'x': 0, 'y': 0, 'z': 0, 'y': null }, // the current time in the ease
-				'destination': { 'x': null, 'y': null, 'z': null }, // the end position the camera will go to
-				'ease': { 'x': 'easeOutCubic', 'y': 'easeOutCubic', 'z': 'easeOutCubic' }, // the ease in each axis the camera will use
-				'duration': { 'x': 1000, 'y': 1000, 'z': 1000 }, // how long in each axis the ease will take
+				'destination': { 'x': null, 'y': null }, // the end position the camera will go to
+				'ease': { 'x': 'easeOutCubic', 'y': 'easeOutCubic' }, // the ease in each axis the camera will use
+				'duration': { 'x': 1000, 'y': 1000 }, // how long in each axis the ease will take
 				'target': null, // the panTo diob
 				'storedDir': null, // the direction that is stored so it can be given back to the diob when the pan is over
 				'returning': null, // if the pan is on the `returning` stage
 				'forceDirChange': true, // if the panning forces the person the camera is attached to to change direction in the direction of the pan. This also disables movement.
 				'pauseDuration': 0, // how long to stay at the object you've panned to before continuing to pan back
 				'attach': false, // if when panning to the object, the object now becomes the target that the camera is following
-				'initialPos': { 'x': null, 'y': null, 'z': null }, // the initial position of the camera
-				'finalDuration': { 'x': 1000, 'y': 1000, 'z': 1000 }, // when the camera is panning back to whatever it panned from
-				'finalEase': { 'x': 'easeOutCubic', 'y': 'easeOutCubic', 'z': 'easeOutCubic' }, // the ease used to pan back
+				'initialPos': { 'x': null, 'y': null }, // the initial position of the camera
+				'finalDuration': { 'x': 1000, 'y': 1000 }, // when the camera is panning back to whatever it panned from
+				'finalEase': { 'x': 'easeOutCubic', 'y': 'easeOutCubic' }, // the ease used to pan back
 				'pannedCallback': null, // when you reach the object, this callback is called.
 				'finalCallback': null // when the camera pans back to the initiator, this callback is called.
 			},
@@ -425,21 +408,21 @@
 			},
 
 			'standard': { // default camera movement settings, // allows separate dimension moving
-				'active': { 'x': false, 'y': false, 'z': false },
-				'time': { 'x': 0, 'y': 0, 'z': 0 },
-				'duration': { 'x': 1000, 'y': 1000, 'z': 1000 },
-				'destination': { 'x': null, 'y': null, 'z': null },
-				'initialPos': { 'x': null, 'y': null, 'z': null },
-				'ease': { 'x': 'easeOutCubic', 'y': 'easeOutCubic', 'z': 'easeOutCubic' }
+				'active': { 'x': false, 'y': false },
+				'time': { 'x': 0, 'y': 0 },
+				'duration': { 'x': 1000, 'y': 1000 },
+				'destination': { 'x': null, 'y': null },
+				'initialPos': { 'x': null, 'y': null },
+				'ease': { 'x': 'easeOutCubic', 'y': 'easeOutCubic' }
 			},
 
 			'custom': { // custom applied camera movement settings, // allows separate dimension moving
-				'active': { 'x': false, 'y': false, 'z': false },
-				'time': { 'x': 0, 'y': 0, 'z': 0 },
-				'duration': { 'x': 1000, 'y': 1000, 'z': 1000 },
-				'destination': { 'x': null, 'y': null, 'z': null },
-				'initialPos': { 'x': null, 'y': null, 'z': null },
-				'ease': { 'x': 'easeOutCubic', 'y': 'easeOutCubic', 'z': 'easeOutCubic' }
+				'active': { 'x': false, 'y': false },
+				'time': { 'x': 0, 'y': 0 },
+				'duration': { 'x': 1000, 'y': 1000 },
+				'destination': { 'x': null, 'y': null },
+				'initialPos': { 'x': null, 'y': null },
+				'ease': { 'x': 'easeOutCubic', 'y': 'easeOutCubic' }
 			},
 
 			'spectate': {
@@ -502,11 +485,6 @@
 					this.settings.pan.time.y = 0;
 					break;
 
-				case 'panZ':
-					this.settings.pan.active.z = false;
-					this.settings.pan.time.z = 0;
-					break;
-
 				case 'pan':
 					this.settings.pan.returning = false;
 					this.settings.pan.attach = false;
@@ -516,14 +494,14 @@
 					this.settings.pan.pannedCallback = null;
 					this.settings.pan.finalCallback = null;
 					this.settings.pan.pauseDuration = 0;
-					this.settings.pan.time.x = this.settings.pan.time.y = this.settings.pan.time.z = 0;
-					this.settings.pan.initialPos.x = this.settings.pan.initialPos.y = this.settings.pan.initialPos.z = null;
-					this.settings.pan.finalDuration.x = this.settings.pan.finalDuration.y = this.settings.pan.finalDuration.z = null;
-					this.settings.pan.ease.x = this.settings.pan.ease.y = this.settings.pan.ease.z = null;
-					this.settings.pan.finalEase.x = this.settings.pan.finalEase.y = this.settings.pan.finalEase.z = null;
-					this.settings.pan.active.x = this.settings.pan.active.y = this.settings.pan.active.z = false;
-					this.settings.pan.duration.x = this.settings.pan.duration.y = this.settings.pan.duration.z = null;
-					this.settings.pan.destination.x = this.settings.pan.destination.y = this.settings.pan.destination.z = null;
+					this.settings.pan.time.x = this.settings.pan.time.y = 0;
+					this.settings.pan.initialPos.x = this.settings.pan.initialPos.y = null;
+					this.settings.pan.finalDuration.x = this.settings.pan.finalDuration.y = null;
+					this.settings.pan.ease.x = this.settings.pan.ease.y = null;
+					this.settings.pan.finalEase.x = this.settings.pan.finalEase.y = null;
+					this.settings.pan.active.x = this.settings.pan.active.y = false;
+					this.settings.pan.duration.x = this.settings.pan.duration.y = null;
+					this.settings.pan.destination.x = this.settings.pan.destination.y = null;
 					this.settings.panning = false;
 					this.isPanning = false;
 					break;
@@ -540,19 +518,12 @@
 					this.settings.standard.initialPos.y = this.yPos;
 					break;
 
-				case 'standardZ':
-					this.settings.standard.active.z = false;
-					this.settings.standard.time.z = 0;
-					this.settings.standard.initialPos.z = this.zPos;
-					break;
-
 				case 'standard':
-					this.settings.standard.active.x = this.settings.standard.active.y = this.settings.standard.active.z = false;
-					this.settings.standard.time.x = this.settings.standard.time.y = this.settings.standard.time.z = 0;
+					this.settings.standard.active.x = this.settings.standard.active.y = false;
+					this.settings.standard.time.x = this.settings.standard.time.y = 0;
 
 					this.settings.standard.initialPos.x = this.xPos;
 					this.settings.standard.initialPos.y = this.yPos;
-					this.settings.standard.initialPos.z = this.zPos;
 					this.isMoving = false;
 					break;
 
@@ -568,19 +539,12 @@
 					this.settings.custom.initialPos.y = this.yPos;
 					break;
 
-				case 'customZ':
-					this.settings.custom.active.z = false;
-					this.settings.custom.time.z = 0;
-					this.settings.custom.initialPos.z = this.zPos;
-					break;
-
 				case 'custom':
-					this.settings.custom.active.x = this.settings.custom.active.y = this.settings.custom.active.z= false;
-					this.settings.custom.time.x = this.settings.custom.time.y = this.settings.custom.time.z = 0;
+					this.settings.custom.active.x = this.settings.custom.active.y = false;
+					this.settings.custom.time.x = this.settings.custom.time.y = 0;
 
 					this.settings.custom.initialPos.x = this.xPos;
 					this.settings.custom.initialPos.y = this.yPos;
-					this.settings.custom.initialPos.z = this.zPos;
 					this.isMoving = false;
 					break;
 
@@ -731,9 +695,6 @@
 					// target
 					if (typeof(pSettings.target) === 'object' && !Array.isArray(pSettings.target)) {
 						if (typeof(pSettings.target?.xPos) === 'number' && typeof(pSettings.target?.yPos) === 'number' && typeof(pSettings.target?.mapName) === 'string') {
-							if (!pSettings.target.zPos) {
-								pSettings.target.zPos = 0;
-							}
 							if (pSettings.target === this.following) {
 								console.error('aCamera Module [Pan]: You %ccannot', 'font-weight: bold', 'pan to yourself. Pan failed');
 								return
@@ -751,43 +712,39 @@
 					// ease
 					if (pSettings.ease) {
 						if (typeof(pSettings.ease) === 'object' && !Array.isArray(pSettings.ease)) {
-							if (!pSettings.ease.z) {
-								pSettings.ease.z = 'easeOutCubic';
-							}
-							if (typeof(pSettings.ease?.x) === 'string' && typeof(pSettings.ease?.y) === 'string' && typeof(pSettings.ease?.z) === 'string') {
-								if (validEase.includes(pSettings.ease?.x) && validEase.includes(pSettings.ease?.y) && validEase.includes(pSettings.ease?.z)) {
+							if (typeof(pSettings.ease?.x) === 'string' && typeof(pSettings.ease?.y) === 'string') {
+								if (validEase.includes(pSettings.ease?.x) && validEase.includes(pSettings.ease?.y)) {
 									this.settings.pan.ease.x = pSettings.ease.x;
 									this.settings.pan.ease.y = pSettings.ease.y;
-									this.settings.pan.ease.z = pSettings.ease.z;
 								} else {
-									this.settings.pan.ease.x = this.settings.pan.ease.y = this.settings.pan.ease.z = 'easeOutCubic';
+									this.settings.pan.ease.x = this.settings.pan.ease.y = 'easeOutCubic';
 									if (this.debugging) {
-										console.warn('aCamera Module [Pan]: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease.x || pSettings.ease.y || *pSettings.ease.z. Reverted to default');
+										console.warn('aCamera Module [Pan]: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease.x || pSettings.ease.y. Reverted to default');
 									}
 								}
 							} else {
-								this.settings.pan.ease.x = this.settings.pan.ease.y = this.settings.pan.ease.z = 'easeOutCubic';
+								this.settings.pan.ease.x = this.settings.pan.ease.y = 'easeOutCubic';
 								if (this.debugging) {
-									console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.ease.x || pSettings.ease.y || *pSettings.ease.z', 'font-weight: bold', 'parameter. Reverted to default');
+									console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.ease.x || pSettings.ease.y', 'font-weight: bold', 'parameter. Reverted to default');
 								}
 							}
 						} else if (typeof(pSettings.ease) === 'string') {
 							if (validEase.includes(pSettings.ease)) {
-								this.settings.pan.ease.x = this.settings.pan.ease.y = this.settings.pan.ease.z = pSettings.ease;
+								this.settings.pan.ease.x = this.settings.pan.ease.y = pSettings.ease;
 							} else {
-								this.settings.pan.ease.x = this.settings.pan.ease.y = this.settings.pan.ease.z = 'easeOutCubic';
+								this.settings.pan.ease.x = this.settings.pan.ease.y = 'easeOutCubic';
 								if (this.debugging) {
-									console.warn('aCamera Module [Pan]: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease.x || pSettings.ease.y || *pSettings.ease.z. Reverted to default');
+									console.warn('aCamera Module [Pan]: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease.x || pSettings.ease.y. Reverted to default');
 								}
 							}
 						} else {
-							this.settings.pan.ease.x = this.settings.pan.ease.y = this.settings.pan.ease.z = 'easeOutCubic';
+							this.settings.pan.ease.x = this.settings.pan.ease.y = 'easeOutCubic';
 							if (this.debugging) {
 								console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.ease', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					} else {
-							this.settings.pan.ease.x = this.settings.pan.ease.y = this.settings.pan.ease.z = 'easeOutCubic';
+							this.settings.pan.ease.x = this.settings.pan.ease.y = 'easeOutCubic';
 							if (this.debugging) {
 								console.warn('aCamera Module [Pan]: No %cease', 'font-weight: bold', 'property included inside of the pSettings parameter. Reverted to default');
 							}
@@ -796,43 +753,39 @@
 					// finalEase
 					if (pSettings.finalEase) {
 						if (typeof(pSettings.finalEase) === 'object' && !Array.isArray(pSettings.finalEase)) {
-							if (!pSettings.finalEase.z) {
-								pSettings.finalEase.z = 'easeOutCubic';
-							}
-							if (typeof(pSettings.finalEase?.x) === 'string' && typeof(pSettings.finalEase?.y) === 'string' && typeof(pSettings.finalEase?.z) === 'string') {
-								if (validEase.includes(pSettings.finalEase?.x) && validEase.includes(pSettings.finalEase?.y) && validEase.includes(pSettings.finalEase?.z)) {
+							if (typeof(pSettings.finalEase?.x) === 'string' && typeof(pSettings.finalEase?.y) === 'string') {
+								if (validEase.includes(pSettings.finalEase?.x) && validEase.includes(pSettings.finalEase?.y)) {
 									this.settings.pan.finalEase.x = pSettings.finalEase.x;
 									this.settings.pan.finalEase.y = pSettings.finalEase.y;
-									this.settings.pan.finalEase.z = pSettings.finalEase.z;
 								} else {
-									this.settings.pan.finalEase.x = this.settings.pan.finalEase.y = this.settings.pan.finalEase.z = 'easeOutCubic';
+									this.settings.pan.finalEase.x = this.settings.pan.finalEase.y = 'easeOutCubic';
 									if (this.debugging) {
-										console.warn('aCamera Module [Pan]: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.finalEase.x || pSettings.finalEase.y || *pSettings.finalEase.z. Reverted to default');
+										console.warn('aCamera Module [Pan]: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.finalEase.x || pSettings.finalEase.y. Reverted to default');
 									}
 								}
 							} else {
-								this.settings.pan.finalEase.x = this.settings.pan.finalEase.y = this.settings.pan.finalEase.z = 'easeOutCubic';
+								this.settings.pan.finalEase.x = this.settings.pan.finalEase.y = 'easeOutCubic';
 								if (this.debugging) {
-									console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.finalEase.x || pSettings.finalEase.y || *pSettings.finalEase.z', 'font-weight: bold', 'parameter. Reverted to default');
+									console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.finalEase.x || pSettings.finalEase.y', 'font-weight: bold', 'parameter. Reverted to default');
 								}
 							}
 						} else if (typeof(pSettings.finalEase) === 'string') {
 							if (validEase.includes(pSettings.finalEase)) {
-								this.settings.pan.finalEase.x = this.settings.pan.finalEase.y = this.settings.pan.finalEase.z = pSettings.finalEase;
+								this.settings.pan.finalEase.x = this.settings.pan.finalEase.y = pSettings.finalEase;
 							} else {
-								this.settings.pan.finalEase.x = this.settings.pan.finalEase.y = this.settings.pan.finalEase.z = 'easeOutCubic';
+								this.settings.pan.finalEase.x = this.settings.pan.finalEase.y = 'easeOutCubic';
 								if (this.debugging) {
-									console.warn('aCamera Module [Pan]: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.finalEase.x || pSettings.finalEase.y || *pSettings.finalEase.z. Reverted to default');
+									console.warn('aCamera Module [Pan]: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.finalEase.x || pSettings.finalEase.y. Reverted to default');
 								}
 							}
 						} else {
-							this.settings.pan.finalEase.x = this.settings.pan.finalEase.y = this.settings.pan.finalEase.z = 'easeOutCubic';
+							this.settings.pan.finalEase.x = this.settings.pan.finalEase.y = 'easeOutCubic';
 							if (this.debugging) {
 								console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.finalEase', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					} else {
-							this.settings.pan.finalEase.x = this.settings.pan.finalEase.y = this.settings.pan.finalEase.z = 'easeOutCubic';
+							this.settings.pan.finalEase.x = this.settings.pan.finalEase.y = 'easeOutCubic';
 							if (this.debugging) {
 								console.warn('aCamera Module [Pan]: No %cfinalEase', 'font-weight: bold', 'property included inside of the pSettings parameter. Reverted to default');
 							}
@@ -841,29 +794,25 @@
 					//duration
 					if (pSettings.duration) {
 						if (typeof(pSettings.duration) === 'object' && !Array.isArray(pSettings.duration)) {
-							if (!pSettings.duration.z) {
-								pSettings.duration.z = 1000;
-							}
-							if (typeof(pSettings.duration?.x) === 'number' && typeof(pSettings.duration?.y) === 'number' && typeof(pSettings.duration?.z) === 'number') {
+							if (typeof(pSettings.duration?.x) === 'number' && typeof(pSettings.duration?.y) === 'number') {
 								this.settings.pan.duration.x = pSettings.duration.x;
 								this.settings.pan.duration.y = pSettings.duration.y;
-								this.settings.pan.duration.z = pSettings.duration.z;
 							} else {
-								this.settings.pan.duration.x = this.settings.pan.duration.y = this.settings.pan.duration.z = 2000;
+								this.settings.pan.duration.x = this.settings.pan.duration.y = 2000;
 								if (this.debugging) {
-									console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.duration.x || pSettings.duration.y || *pSettings.duration.z', 'font-weight: bold', 'parameter. Reverted to default');
+									console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.duration.x || pSettings.duration.y', 'font-weight: bold', 'parameter. Reverted to default');
 								}
 							}
 						} else if (typeof(pSettings.duration) === 'number') {
-								this.settings.pan.duration.x = this.settings.pan.duration.y = this.settings.pan.duration.z = pSettings.duration;
+								this.settings.pan.duration.x = this.settings.pan.duration.y = pSettings.duration;
 						} else {
-							this.settings.pan.duration.x = this.settings.pan.duration.y = this.settings.pan.duration.z = 2000;
+							this.settings.pan.duration.x = this.settings.pan.duration.y = 2000;
 							if (this.debugging) {
 								console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.duration', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					} else {
-							this.settings.pan.duration.x = this.settings.pan.duration.y = this.settings.pan.duration.z = 2000;
+							this.settings.pan.duration.x = this.settings.pan.duration.y = 2000;
 							if (this.debugging) {
 								console.warn('aCamera Module [Pan]: No %cduration', 'font-weight: bold', 'property included inside of the pSettings parameter. Reverted to default');
 							}
@@ -872,29 +821,25 @@
 					// finalDuration
 					if (pSettings.finalDuration) {
 						if (typeof(pSettings.finalDuration) === 'object' && !Array.isArray(pSettings.finalDuration)) {
-							if (!pSettings.finalDuration.z) {
-								pSettings.finalDuration.z = 1000;
-							}
-							if (typeof(pSettings.finalDuration?.x) === 'number' && typeof(pSettings.finalDuration?.y) === 'number' && typeof(pSettings.finalDuration?.z) === 'number') {
+							if (typeof(pSettings.finalDuration?.x) === 'number' && typeof(pSettings.finalDuration?.y) === 'number') {
 								this.settings.pan.finalDuration.x = pSettings.finalDuration.x;
 								this.settings.pan.finalDuration.y = pSettings.finalDuration.y;
-								this.settings.pan.finalDuration.z = pSettings.finalDuration.z;
 							} else {
-								this.settings.pan.finalDuration.x = this.settings.pan.finalDuration.y = this.settings.pan.finalDuration.z = 2000;
+								this.settings.pan.finalDuration.x = this.settings.pan.finalDuration.y = 2000;
 								if (this.debugging) {
-									console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.finalDuration.x || pSettings.finalDuration.y || *pSettings.finalDuration.z', 'font-weight: bold', 'parameter. Reverted to default');
+									console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.finalDuration.x || pSettings.finalDuration.y', 'font-weight: bold', 'parameter. Reverted to default');
 								}
 							}
 						} else if (typeof(pSettings.finalDuration) === 'number') {
-								this.settings.pan.finalDuration.x = this.settings.pan.finalDuration.y = this.settings.pan.finalDuration.z = pSettings.finalDuration;
+								this.settings.pan.finalDuration.x = this.settings.pan.finalDuration.y = pSettings.finalDuration;
 						} else {
-							this.settings.pan.finalDuration.x = this.settings.pan.finalDuration.y = this.settings.pan.finalDuration.z = 2000;
+							this.settings.pan.finalDuration.x = this.settings.pan.finalDuration.y = 2000;
 							if (this.debugging) {
 								console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.finalDuration', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					} else {
-							this.settings.pan.finalDuration.x = this.settings.pan.finalDuration.y = this.settings.pan.finalDuration.z = 2000;
+							this.settings.pan.finalDuration.x = this.settings.pan.finalDuration.y = 2000;
 							if (this.debugging) {
 								console.warn('aCamera Module [Pan]: No %cfinalDuration', 'font-weight: bold', 'property included inside of the pSettings parameter. Reverted to default');
 							}
@@ -919,7 +864,6 @@
 					// initialPos
 					this.settings.pan.initialPos.x = this.xPos;
 					this.settings.pan.initialPos.y = this.yPos;
-					this.settings.pan.initialPos.z = this.zPos;
 
 					if (this.settings.pan.forceDirChange) {
 						// disable movement
@@ -957,10 +901,6 @@
 						this.settings.pan.active.y = true;
 					}
 
-					if (this.zPos !== this.settings.pan.target.zPos) {
-						this.settings.pan.active.z = true;
-					}
-
 				} else {
 					console.error('aCamera Module [Pan]: No %ctarget', 'font-weight: bold', 'property included inside of the pSettings parameter. Pan failed');
 				}
@@ -980,10 +920,7 @@
 			if (this.settings.pan.attach) {
 				if (this.settings.pan.target?.type) {
 					if (!this.settings.pan.target.iCenter) {
-						this.settings.pan.target.iCenter = { 'x': 16, 'y': 16, 'z': 0 };
-					}
-					if (this.settings.pan.target.zPos === undefined) {
-						this.settings.pan.target.zPos = 0;
+						this.settings.pan.target.iCenter = { 'x': 16, 'y': 16 };
 					}
 					VS.Client.toggleMacroCapture(true);
 					this.following = this.settings.pan.target;
@@ -997,14 +934,11 @@
 				this.settings.pan.target = this.following;
 				this.settings.pan.initialPos.x = this.xPos;
 				this.settings.pan.initialPos.y = this.yPos;
-				this.settings.pan.initialPos.z = this.zPos;
-				this.settings.pan.time.x = this.settings.pan.time.y = this.settings.pan.time.z = 0;
+				this.settings.pan.time.x = this.settings.pan.time.y = 0;
 				this.settings.pan.duration.x = this.settings.pan.finalDuration.x;
 				this.settings.pan.duration.y = this.settings.pan.finalDuration.y;
-				this.settings.pan.duration.z = this.settings.pan.finalDuration.z;
 				this.settings.pan.ease.x = this.settings.pan.finalEase.x;
 				this.settings.pan.ease.y = this.settings.pan.finalEase.y;
-				this.settings.pan.ease.z = this.settings.pan.finalEase.z;
 				this.settings.pan.returning = true;
 			}
 		}
@@ -1025,15 +959,12 @@
 		aCamera.follow = function(pMethod, pElapsedMS, pDeltaTime) {
 			let distanceX;
 			let distanceY;
-			let distanceZ;
 
 			let xPos;
 			let yPos;
-			let zPos;
 
 			let stepSizeX;
 			let stepSizeY;
-			let stepSizeZ;
 
 			let target;
 
@@ -1049,38 +980,28 @@
 								return;
 							}
 						}
-						if (this.xPos !== this.settings.pan.target.xPos) {
+						if (this.xPos !== this.settings.pan.target.xPos + this.settings.pan.target.xIconOffset) {
 							this.settings.pan.active.x = true;
 						}
 
-						if (this.yPos !== this.settings.pan.target.yPos) {
+						if (this.yPos !== this.settings.pan.target.yPos + this.settings.pan.target.yIconOffset) {
 							this.settings.pan.active.y = true;
-						}
-
-						if (this.zPos !== this.settings.pan.target.zPos) {
-							this.settings.pan.active.z = true;
 						}
 					}
 				}
 				if (this.settings[pMethod].active.x) {
-					this.settings[pMethod].destination.x = this.settings[pMethod].target.xPos;
+					this.settings[pMethod].destination.x = this.settings[pMethod].target.xPos + this.settings[pMethod].target.xIconOffset;
 				}
 				if (this.settings[pMethod].active.y) {
-					this.settings[pMethod].destination.y = this.settings[pMethod].target.yPos;
-				}
-				if (this.settings[pMethod].active.z) {
-					this.settings[pMethod].destination.z = this.settings[pMethod].target.zPos;
+					this.settings[pMethod].destination.y = this.settings[pMethod].target.yPos + this.settings[pMethod].target.yIconOffset;
 				}
 				target = this.settings[pMethod].target;
 			} else {
 				if (this.settings[pMethod].active.x) {
-					this.settings[pMethod].destination.x = this.following.xPos;
+					this.settings[pMethod].destination.x = this.following.xPos + this.following.xIconOffset;
 				}
 				if (this.settings[pMethod].active.y) {
-					this.settings[pMethod].destination.y = this.following.yPos;
-				}
-				if (this.settings[pMethod].active.z) {
-					this.settings[pMethod].destination.z = this.following.zPos;
+					this.settings[pMethod].destination.y = this.following.yPos + this.following.yIconOffset;
 				}
 				target = this.following;		
 			}
@@ -1093,37 +1014,26 @@
 				this.xPos += stepSizeX
 			}
 
-			if (this.settings[pMethod].active.z) {
-				this.settings[pMethod].time.z += pElapsedMS;
-				distanceZ = this.settings[pMethod].destination.z - this.settings[pMethod].initialPos.z;
-				zPos = Ease[this.settings[pMethod].ease.z](this.settings[pMethod].time.z, this.settings[pMethod].initialPos.z, distanceZ, this.settings[pMethod].duration.z);
-				stepSizeZ = (zPos - this.zPos) * pDeltaTime;
-			}
-
 			if (this.settings[pMethod].active.y) {
 				this.settings[pMethod].time.y += pElapsedMS;
 				distanceY = this.settings[pMethod].destination.y - this.settings[pMethod].initialPos.y;
 				yPos = Ease[this.settings[pMethod].ease.y](this.settings[pMethod].time.y, this.settings[pMethod].initialPos.y, distanceY, this.settings[pMethod].duration.y);
 				stepSizeY = (yPos - this.yPos) * pDeltaTime;
-				this.yPos += stepSizeY - (stepSizeZ ? stepSizeZ : 0);
+				this.yPos += stepSizeY;
 			}
 			
 			this.mapName = target.mapName;
 
 			if (isNaN(this.xPos)) {
-				this.xPos = target.xPos;
+				this.xPos = target.xPos + target.xIconOffset;
 			}
 
 			if (isNaN(this.yPos)) {
-				this.yPos = target.yPos;
-			}
-
-			if (isNaN(this.zPos)) {
-				this.zPos = 0;
+				this.yPos = target.yPos + target.yIconOffset;
 			}
 
 			if (this.settings[pMethod].time.x >= this.settings[pMethod].duration.x) {
-				this.xPos = target.xPos/*  + (target.iCenter?.x ? target.iCenter.x : 16) */;
+				this.xPos = target.xPos + target.xIconOffset/*  + (target.iCenter?.x ? target.iCenter.x : 16) */;
 				if (pMethod === 'pan') {
 					this.reset('panX');
 				} else if (pMethod === 'standard') {
@@ -1134,7 +1044,7 @@
 			}
 
 			if (this.settings[pMethod].time.y >= this.settings[pMethod].duration.y) {
-				this.yPos = (target.yPos/*  + (target.iCenter?.y ? target.iCenter.y : 16) */);
+				this.yPos = (target.yPos + target.yIconOffset/*  + (target.iCenter?.y ? target.iCenter.y : 16) */);
 				if (pMethod === 'pan') {
 					this.reset('panY');
 				} else if (pMethod === 'standard') {
@@ -1144,18 +1054,8 @@
 				}
 			}
 
-			if (this.settings[pMethod].time.z >= this.settings[pMethod].duration.z) {
-				if (pMethod === 'pan') {
-					this.reset('panZ');
-				} else if (pMethod === 'standard') {
-					this.reset('standardZ');
-				} else if (pMethod === 'custom') {
-					this.reset('customZ');
-				}
-			}
-
 			if (pMethod === 'standard') {
-				if (!this.settings[pMethod].active.x && !this.settings[pMethod].active.y && !this.settings[pMethod].active.z) {
+				if (!this.settings[pMethod].active.x && !this.settings[pMethod].active.y) {
 					if (pMethod === 'standard') {
 						this.reset('standard');
 					} else if (pMethod === 'custom') {
@@ -1165,7 +1065,7 @@
 			}
 
 			if (pMethod === 'pan') {
-				if (!this.settings[pMethod].active.x && !this.settings[pMethod].active.y && !this.settings[pMethod].active.z) {
+				if (!this.settings[pMethod].active.x && !this.settings[pMethod].active.y) {
 					if (this.settings[pMethod].returning) {
 						// you have panned on every axis and now can call the pan return callback
 						this.onPanFinish();
@@ -1178,7 +1078,6 @@
 
 			this.oldPos.x = this.xPos;
 			this.oldPos.y = this.yPos;
-			this.oldPos.z = this.zPos;
 		}
 
 		aCamera.update = function(pElapsedMS, pDeltaTime) {
@@ -1193,64 +1092,54 @@
 			}
 			
 			// shake
-			if (this.settings.shake.active.x || this.settings.shake.active.y || this.settings.shake.active.z) {
+			if (this.settings.shake.active.x || this.settings.shake.active.y) {
 				// this.settings.shaking = true;
 				this.shakeUpdate(pElapsedMS, pDeltaTime);
 			}
 
 			if (this.attached) {
 				// pan
-				if (!this.settings.scrolling && (this.settings.pan.active.x || this.settings.pan.active.y || this.settings.pan.active.z || this.settings.pan.returning)) {
+				if (!this.settings.scrolling && (this.settings.pan.active.x || this.settings.pan.active.y || this.settings.pan.returning)) {
 					this.follow('pan', pElapsedMS, pDeltaTime);
 				}
 				// camera moving after whatever its following
 				if (!this.settings.scrolling && !this.settings.panning && this.following) {
 					if (this.oldFollowingPos) {
-						if (this.following.isMoving || this.oldFollowingPos.x !== this.following.xPos || this.oldFollowingPos.y !== this.following.yPos || this.oldFollowingPos.z !== this.following.zPos) {
+						if (this.following.isMoving || this.oldFollowingPos.x !== (this.following.xPos + this.following.xIconOffset) || this.oldFollowingPos.y !== (this.following.yPos + this.following.yIconOffset)) {
 							this.isMoving = true;
 							if (this.custom) {
 								this.settings.custom.time.x = 0;
-								this.settings.custom.active.x = (this.xPos !== this.following.xPos ? true : false);
+								this.settings.custom.active.x = (this.xPos !== (this.following.xPos + this.following.xIconOffset) ? true : false);
 								this.settings.custom.initialPos.x = this.xPos;
 
 								this.settings.custom.time.y = 0;
-								this.settings.custom.active.y = (this.yPos !== this.following.yPos ? true : false);
+								this.settings.custom.active.y = (this.yPos !== (this.following.yPos + this.following.yIconOffset) ? true : false);
 								this.settings.custom.initialPos.y = this.yPos;
-
-								this.settings.custom.time.z = 0;
-								this.settings.custom.active.z = (this.zPos !== this.following.zPos ? true : false);
-								this.settings.custom.initialPos.z = this.zPos;
-
 							} else {
 								this.settings.standard.time.x = 0;
-								this.settings.standard.active.x = (this.xPos !== this.following.xPos ? true : false);
+								this.settings.standard.active.x = (this.xPos !== (this.following.xPos + this.following.xIconOffset) ? true : false);
 								this.settings.standard.initialPos.x = this.xPos;
 
 								this.settings.standard.time.y = 0;
-								this.settings.standard.active.y = (this.yPos !== this.following.yPos ? true : false);
+								this.settings.standard.active.y = (this.yPos !== (this.following.yPos + this.following.yIconOffset) ? true : false);
 								this.settings.standard.initialPos.y = this.yPos;
-
-								this.settings.standard.time.z = 0;
-								this.settings.standard.active.z = (this.zPos !== this.following.zPos ? true : false);
-								this.settings.standard.initialPos.z = this.zPos;
 							}
 						}
 					}
 
 					// custom camera moving
 					if (this.custom) {
-						if (this.settings.custom.active.x || this.settings.custom.active.y || this.settings.custom.active.z) {
+						if (this.settings.custom.active.x || this.settings.custom.active.y) {
 							this.follow('custom', pElapsedMS, pDeltaTime);
 						}
 					// default camera moving
 					} else {
-						if (this.settings.standard.active.x || this.settings.standard.active.y || this.settings.standard.active.z) {
+						if (this.settings.standard.active.x || this.settings.standard.active.y) {
 							this.follow('standard', pElapsedMS, pDeltaTime);
 						}
 					}
-					this.oldFollowingPos.x = this.following.xPos;
-					this.oldFollowingPos.y = this.following.yPos;
-					this.oldFollowingPos.z = this.following.zPos;
+					this.oldFollowingPos.x = this.following.xPos + this.following.xIconOffset;
+					this.oldFollowingPos.y = this.following.yPos + this.following.yIconOffset;
 				}
 			}
 		}
@@ -1277,7 +1166,7 @@
 						this.settings.loop.elapsedMS *= VS.Client.timeScale;
 					}
 					if (VS.Client.___EVITCA_aParallax && this.attached) {
-						VS.Client.aParallax.update((this.following.xPos-this.oldPos.x) * this.settings.loop.deltaTime, (this.following.yPos-this.oldPos.y) * this.settings.loop.deltaTime)
+						VS.Client.aParallax.update(((this.following.xPos+this.following.xIconOffset)-this.oldPos.x) * this.settings.loop.deltaTime, ((this.following.yPos+this.following.yIconOffset)-this.oldPos.y) * this.settings.loop.deltaTime)
 					}
 					this.update(this.settings.loop.elapsedMS, this.settings.loop.deltaTime);
 					this.settings.loop.lastTime = pCurrentTime;
@@ -1444,29 +1333,25 @@
 				if (typeof(pSettings) === 'object' && !Array.isArray(pSettings)) {
 					if (pSettings.duration) {
 						if (typeof(pSettings.duration) === 'object' && !Array.isArray(pSettings.duration)) {
-							if (!pSettings.duration.z) {
-								pSettings.duration.z = 1000;
-							}
-							if (typeof(pSettings.duration?.x) === 'number' && typeof(pSettings.duration?.y) === 'number' && typeof(pSettings.duration?.z) === 'number') {
+							if (typeof(pSettings.duration?.x) === 'number' && typeof(pSettings.duration?.y) === 'number') {
 								this.settings.custom.duration.x = pSettings.duration.x;
 								this.settings.custom.duration.y = pSettings.duration.y;
-								this.settings.custom.duration.z = pSettings.duration.z;
 							} else {
-								this.settings.custom.duration.x = this.settings.custom.duration.y = this.settings.custom.duration.z = 1000;
+								this.settings.custom.duration.x = this.settings.custom.duration.y = 1000;
 								if (this.debugging) {
-									console.warn('aCamera Module [setSettings]: Invalid variable type passed for the %cpSettings.duration.x || pSettings.duration.y || *pSettings.duration.z', 'font-weight: bold', 'property. Reverted to default');
+									console.warn('aCamera Module [setSettings]: Invalid variable type passed for the %cpSettings.duration.x || pSettings.duration.y', 'font-weight: bold', 'property. Reverted to default');
 								}
 							}
 						} else if (typeof(pSettings.duration === 'number')) {
-							this.settings.custom.duration.x = this.settings.custom.duration.y = this.settings.custom.duration.z = pSettings.duration;
+							this.settings.custom.duration.x = this.settings.custom.duration.y = pSettings.duration;
 						} else {
-							this.settings.custom.duration.x = this.settings.custom.duration.y = this.settings.custom.duration.z = 1000;
+							this.settings.custom.duration.x = this.settings.custom.duration.y = 1000;
 							if (this.debugging) {
 								console.warn('aCamera Module [setSettings]: Invalid variable type passed for the %cpSettings.duration', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					} else {
-						this.settings.custom.duration.x = this.settings.custom.duration.y = this.settings.custom.duration.z = 1000;
+						this.settings.custom.duration.x = this.settings.custom.duration.y = 1000;
 						if (this.debugging) {
 							console.warn('aCamera Module [setSettings]: No %cpSettings.duration', 'font-weight: bold', 'parameter passed. Reverted to default');
 						}
@@ -1474,43 +1359,39 @@
 
 					if (pSettings.ease) {
 						if (typeof(pSettings.ease) === 'object' && !Array.isArray(pSettings.ease)) {
-							if (!pSettings.ease.z) {
-								pSettings.ease.z = 'easeOutCubic';
-							}
-							if (typeof(pSettings.ease?.x) === 'string' && typeof(pSettings.ease?.y) === 'string' && typeof(pSettings.ease?.z) === 'string') {
-								if (validEase.includes(pSettings.ease?.x) && validEase.includes(pSettings.ease?.y) && validEase.includes(pSettings.ease?.z)) {
+							if (typeof(pSettings.ease?.x) === 'string' && typeof(pSettings.ease?.y) === 'string') {
+								if (validEase.includes(pSettings.ease?.x) && validEase.includes(pSettings.ease?.y)) {
 									this.settings.custom.ease.x = pSettings.ease.x;
 									this.settings.custom.ease.y = pSettings.ease.y;
-									this.settings.custom.ease.z = pSettings.ease.z;
 								} else {
-									this.settings.custom.ease.x = this.settings.custom.ease.y = this.settings.custom.ease.z = 'easeOutCubic';
+									this.settings.custom.ease.x = this.settings.custom.ease.y = 'easeOutCubic';
 									if (this.debugging) {
-										console.warn('aCamera Module [setSettings]: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease.x || pSettings.ease.y || *pSettings.ease.z. Reverted to default');
+										console.warn('aCamera Module [setSettings]: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease.x || pSettings.ease.y. Reverted to default');
 									}
 								}
 							} else {
-								this.settings.custom.ease.x = this.settings.custom.ease.y = this.settings.custom.ease.z = 'easeOutCubic';
+								this.settings.custom.ease.x = this.settings.custom.ease.y = 'easeOutCubic';
 								if (this.debugging) {
-									console.warn('aCamera Module [setSettings]: Invalid variable type passed for the %cpSettings.ease.x || pSettings.ease.y || *pSettings.ease.z', 'font-weight: bold', 'property. Reverted to default');
+									console.warn('aCamera Module [setSettings]: Invalid variable type passed for the %cpSettings.ease.x || pSettings.ease.y', 'font-weight: bold', 'property. Reverted to default');
 								}
 							}
 						} else if (typeof(pSettings.ease === 'string')) {
 							if (validEase.includes(pSettings.ease)) {
-								this.settings.custom.ease.x = this.settings.custom.ease.y = this.settings.custom.ease.z = pSettings.ease;
+								this.settings.custom.ease.x = this.settings.custom.ease.y = pSettings.ease;
 							} else {
-								this.settings.custom.ease.x = this.settings.custom.ease.y = this.settings.custom.ease.z = 'easeOutCubic';
+								this.settings.custom.ease.x = this.settings.custom.ease.y = 'easeOutCubic';
 								if (this.debugging) {
 									console.warn('aCamera Module [setSettings]: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease. Reverted to default');
 								}
 							}
 						} else {
-							this.settings.custom.ease.x = this.settings.custom.ease.y = this.settings.custom.ease.z = 'easeOutCubic';
+							this.settings.custom.ease.x = this.settings.custom.ease.y = 'easeOutCubic';
 							if (this.debugging) {
 								console.warn('aCamera Module [setSettings]: Invalid variable type passed for the %cpSettings.ease', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					} else {
-						this.settings.custom.ease.x = this.settings.custom.ease.y = this.settings.custom.ease.z = 'easeOutCubic';
+						this.settings.custom.ease.x = this.settings.custom.ease.y = 'easeOutCubic';
 						if (this.debugging) {
 							console.warn('aCamera Module [setSettings]: No %cpSettings.ease', 'font-weight: bold', 'parameter passed. Reverted to default');
 						}
@@ -1520,13 +1401,11 @@
 					this.custom = true;
 					this.settings.custom.initialPos.x = this.xPos;
 					this.settings.custom.initialPos.y = this.yPos;
-					this.settings.custom.initialPos.z = this.zPos;
 				} else {
 					this.reset('custom');
 					this.custom = false;
 					this.settings.standard.initialPos.x = this.xPos;
 					this.settings.standard.initialPos.y = this.yPos;
-					this.settings.standard.initialPos.z = this.zPos;
 					if (this.debugging) {
 						console.warn('aCamera Module [setSettings]: Invalid variable type passed for the %cpSettings', 'font-weight: bold', 'parameter. Reverted to default');
 					}
@@ -1536,7 +1415,6 @@
 				this.custom = false;
 				this.settings.standard.initialPos.x = this.xPos;
 				this.settings.standard.initialPos.y = this.yPos;
-				this.settings.standard.initialPos.z = this.zPos;
 				if (this.debugging) {
 					console.warn('aCamera Module [setSettings]: No %cpSettings', 'font-weight: bold', 'parameter passed. Reverted to default');
 				}
@@ -1555,10 +1433,7 @@
 						this.settings.spectate.forcePos = false;
 
 						if (!pSettings.target.iCenter) {
-							pSettings.target.iCenter = { 'x': 16, 'y': 16, 'z': 0 };
-						}
-						if (pSettings.target.zPos === undefined) {
-							pSettings.target.zPos = 0;
+							pSettings.target.iCenter = { 'x': 16, 'y': 16 };
 						}
 						// prevents player from moving while spectating
 						if (pSettings.preventMovement) {
@@ -1629,7 +1504,7 @@
 			this.reset('spectate');
 			this.following = VS.Client.mob;
 			this.setSettings();
-			this.setPos(this.following.xPos, (this.following.yPos) - (this.following.iCenter?.z ? this.following.iCenter.z : 0), this.following.mapName);
+			this.setPos(this.following.xPos + this.following.xIconOffset, (this.following.yPos + this.following.yIconOffset), this.following.mapName);
 			this.attached = false;
 			this.setLoc();
 			VS.Client.setViewEye(this.following);
@@ -1645,8 +1520,7 @@
 			this.following = VS.Client.mob;
 			this.oldPos.x = this.following.xPos;
 			this.oldPos.y = this.following.yPos;
-			this.oldPos.z = 0; // might be an issue, but update loop should fix it in a frame, should grab the followers zPos
-			this.setPos(this.following.xPos, (this.following.yPos) - (this.zPos + (this.following.iCenter?.z ? this.following.iCenter.z : 0)), this.following.mapName);
+			this.setPos(this.following.xPos + this.following.xIconOffset, (this.following.yPos + this.following.tIconOffset), this.following.mapName);
 			this.attached = true;
 			VS.Client.setViewEye(this);
 		}
