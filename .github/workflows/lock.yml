@@ -17,3 +17,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: dessant/lock-threads@v3
+        with:
+          issue-inactive-days: '180'
+          include-any-issue-labels: 'needs-test-case'
+          exclude-any-issue-labels: 'todo, bug, help wanted, good first issue, documentation, wip, important ❗'
+          add-issue-labels: 'stale'
+          issue-comment: >
+            This issue has been automatically locked since there
+            has not been any recent activity after it was closed.
+            Please open a new issue for related bugs.
+          issue-lock-reason: 'resolved'
+          pr-inactive-days: '180'
+          exclude-any-pr-labels: 'todo, bug, help wanted, needs-test-case, good first issue, documentation, wip, important ❗'
+          add-pr-labels: 'stale'
+          pr-comment: >
+            This pull request has been automatically locked since there
+            has not been any recent activity after it was closed.
+            Please open a new issue for related bugs.
