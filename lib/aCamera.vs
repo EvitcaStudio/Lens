@@ -1146,43 +1146,44 @@
 
 		aCamera.updateLoop = function() {
 			let update = function (pCurrentTime = Date.now()) {
-				if (this.init) {
+				if (aCamera.init) {
 					if (VS.Client.___EVITCA_aPause) {
 						if (VS.Client.aPause.paused) {
-							this.settings.loop.lastTime = pCurrentTime;
-							window.requestAnimationFrame(update.bind(this));
+							aCamera.settings.loop.lastTime = pCurrentTime;
+							window.requestAnimationFrame(update);
 							return;
 						}
 					}
-					if (pCurrentTime > this.settings.loop.lastTime) {
-						this.settings.loop.elapsedMS = pCurrentTime - this.settings.loop.lastTime;
+					if (pCurrentTime > aCamera.settings.loop.lastTime) {
+						aCamera.settings.loop.elapsedMS = pCurrentTime - aCamera.settings.loop.lastTime;
 
-						if (this.settings.loop.elapsedMS > MAX_ELAPSED_MS) {
-							this.settings.loop.elapsedMS = MAX_ELAPSED_MS;
+						if (aCamera.settings.loop.elapsedMS > MAX_ELAPSED_MS) {
+							aCamera.settings.loop.elapsedMS = MAX_ELAPSED_MS;
 						} else {
-							this.settings.loop.deltaTime = 1;
+							aCamera.settings.loop.deltaTime = 1;
 						}
-						this.settings.loop.deltaTime = (this.settings.loop.elapsedMS / TICK_FPS) * VS.Client.timeScale;
-						this.settings.loop.elapsedMS *= VS.Client.timeScale;
+						aCamera.settings.loop.deltaTime = (aCamera.settings.loop.elapsedMS / TICK_FPS) * VS.Client.timeScale;
+						aCamera.settings.loop.elapsedMS *= VS.Client.timeScale;
 					}
-					if (VS.Client.___EVITCA_aParallax && this.attached) {
-						VS.Client.aParallax.update(((this.following.xPos+this.following.xIconOffset)-this.oldPos.x) * this.settings.loop.deltaTime, ((this.following.yPos+this.following.yIconOffset)-this.oldPos.y) * this.settings.loop.deltaTime)
+					if (VS.Client.___EVITCA_aParallax && aCamera.attached) {
+						VS.Client.aParallax.update(((aCamera.following.xPos+aCamera.following.xIconOffset)-aCamera.oldPos.x) * aCamera.settings.loop.deltaTime, ((aCamera.following.yPos+aCamera.following.yIconOffset)-aCamera.oldPos.y) * aCamera.settings.loop.deltaTime)
 					}
-					this.update(this.settings.loop.elapsedMS, this.settings.loop.deltaTime);
-					this.settings.loop.lastTime = pCurrentTime;
-					window.requestAnimationFrame(update.bind(this));
+					aCamera.update(aCamera.settings.loop.elapsedMS, aCamera.settings.loop.deltaTime);
+					aCamera.settings.loop.lastTime = pCurrentTime;
+					window.requestAnimationFrame(update);
 				}
 			}
-			window.requestAnimationFrame(update.bind(this));
+			window.requestAnimationFrame(update);
 		}
 
 		aCamera.zoom = function(pDestinationLevel={'x': 1, 'y': 1}, pDuration={'x': 1000, 'y': 1000}, pEase={'x': 'easeOutCirc', 'y': 'easeOutCirc'}, pCallback) {
 			if (this.settings.zoom.active.x || this.settings.zoom.active.y) {
 				return;
 			}
+			// destination level
 			var dx;
 			var dy;
-			if (pDestinationLevel) {
+			if (pDestinationLevel || pDestinationLevel === 0) {
 				if (typeof(pDestinationLevel) !== 'object') {
 					if (typeof(pDestinationLevel) === 'number') {
 						dx = dy = pDestinationLevel;
