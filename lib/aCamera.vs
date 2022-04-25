@@ -2,8 +2,8 @@
 #BEGIN CLIENTCODE
 #BEGIN JAVASCRIPT
 
-(function () {
-	let engineWaitId = setInterval(function() {
+(() => {
+	const engineWaitId = setInterval(() => {
 		if (VS.Client) {
 			clearInterval(engineWaitId);
 			prepClient();
@@ -12,54 +12,97 @@
 	});
 	
 	const MAX_PLANE = 999999;
+	const TILE_SIZE = VS.World.getTileSize();
 
-	let validEase = [ 
+	const validEase = [ 
 		'linear', 'easeInQuad', 'easeOutQuad', 'easeInOutQuad', 'easeInSine', 'easeOutSine', 'easeInOutSine', 'easeInExpo', 
 		'easeOutExpo', 'easeInOutExpo', 'easeInCirc', 'easeOutCirc', 'easeInOutCirc', 'easeInCubic', 'easeOutCubic', 'easeInOutCubic', 
 		'easeInQuart', 'easeOutQuart', 'easeInOutQuart','easeInQuint', 'easeOutQuint', 'easeInOutQuint', 'easeInElastic', 'easeOutElastic', 
 		'easeInOutElastic', 'easeInBack', 'easeOutBack', 'easeInOutBack', 'easeInBounce', 'easeOutBounce', 'easeInOutBounce'
 	]
 
-	let prepClient = function() {
+	const prepClient = () => {
 		// update will allow us to just check `mapView.scale.x` when veek presets the definitions of all the objects
 		// you don't have a object scale set
 		if (typeof(VS.Client.mapView.scale) !== 'object') {
-			VS.Client.mapView.scale = { 'x': 1, 'y': 1 };
-			VS.Client.setMapView(VS.Client.mapView);
+			VS.Client.mapView.scale = { 'x': VS.Client.mapView.scale, 'y': VS.Client.mapView.scale };
 		}
+
+		VS.Client.mapView.anchor = { 'x': 0.5, 'y': 0.5 };
+		VS.Client.setMapView(VS.Client.mapView);
 
 		if (VS.Client.timeScale === undefined) {
 			VS.Client.timeScale = 1;
 		}
 	}
 
-	let assignCamera = function(aCamera) {
-		VS.Client.aCamera = aCamera;
+	const assignCamera = (aCamera) => {
+		const MAX_ELAPSED_MS = VS.Client.maxFPS ? (1000 / VS.Client.maxFPS) * 2 : 33.34;
+		const TICK_FPS = VS.Client.maxFPS ? (1000 / VS.Client.maxFPS) : 16.67;
 		VS.Client.___EVITCA_aCamera = true;
+		VS.Client.aCamera = aCamera;
 		VS.World.global.aCamera = aCamera;
 		// the version of the camera
 		aCamera.version = 'v1.6.0';
+		// a object that stores the icon sizes of icons used in this library
+		aCamera.cachedResourcesInfo = {};
 		// whether the camera has been created and is ready for use or not
 		aCamera.init = true;
 		// whether the camera is attached to something and will follow it
 		aCamera.attached = false;
-		aCamera.updateLoop();
 		aCamera.isMoving = false;
 		aCamera.isZooming = false;
 		aCamera.isSpectating = false;
 		aCamera.isShaking = false;
 		aCamera.isScrolling = false;
 		aCamera.isPanning = false;
+
+		const prototypeDiob = VS.newDiob();
+		prototypeDiob.constructor.prototype.aCenterPos = { 'x': 0, 'y': 0 };
+		prototypeDiob.constructor.prototype.getTrueCenterPos = function() {
+			this.aCenterPos.x = Math.round(this.xPos + (this.aIconInfo.halfWidth) + this.xIconOffset);
+			this.aCenterPos.y = Math.round(this.yPos + (this.aIconInfo.halfHeight) + this.yIconOffset);
+			return this.aCenterPos;
+		};
+		if (!aCamera.onScreenRenderSet) {
+			aCamera._onScreenRender = VS.Client.onScreenRender;
+			aCamera.onScreenRenderSet = true;
+			VS.Client.onScreenRender = function(pT) {
+				if (this.aCamera.init) {
+					if (this.___EVITCA_aPause) {
+						if (this.aPause.paused) {
+							this.aCamera.settings.loop.lastTime = pT;
+							return;
+						}
+					}
+					if (pT > this.aCamera.settings.loop.lastTime) {
+						this.aCamera.settings.loop.elapsedMS = pT - this.aCamera.settings.loop.lastTime;
+						if (this.aCamera.settings.loop.elapsedMS > MAX_ELAPSED_MS) {
+							// check here, if warnings are showing up about setInterval taking too long
+							this.aCamera.settings.loop.elapsedMS = MAX_ELAPSED_MS;
+						}
+						this.aCamera.settings.loop.deltaTime = (this.aCamera.settings.loop.elapsedMS / TICK_FPS) * this.timeScale;
+						this.aCamera.settings.loop.elapsedMS *= this.timeScale;
+					}
+
+					if (this.___EVITCA_aParallax && this.aCamera.attached) {
+						this.aParallax.update((this.aCamera.following.getTrueCenterPos().x-this.aCamera.oldPos.x) * this.aCamera.settings.loop.deltaTime, (this.aCamera.following.getTrueCenterPos().y-this.aCamera.oldPos.y) * this.aCamera.settings.loop.deltaTime)
+					}
+					this.aCamera.update(this.aCamera.settings.loop.elapsedMS, this.aCamera.settings.loop.deltaTime);
+					this.aCamera.settings.loop.lastTime = pT;
+				}
+				if (this.aCamera._onScreenRender) {
+					this.aCamera._onScreenRender.apply(this, arguments);
+				}
+			}
+		}
 		
 		VS.Client.attachCamera = function(pSettings) {
-			// if no iCenter, give a initial default value
-			if (!this.mob.iCenter) {
-				this.mob.iCenter = { 'x': 16, 'y': 16 };
-			}
 			this.aCamera.settings.zoom.currentLevel.x = this.mapView.scale.x;
 			this.aCamera.settings.zoom.currentLevel.y = this.mapView.scale.y;
+			this.aCamera.assignIconSize(this.mob);
 			this.aCamera.following = this.mob;
-			this.aCamera.setPos(this.mob.xPos + this.mob.xIconOffset, this.mob.yPos + this.mob.yIconOffset, this.mob.mapName);
+			this.aCamera.setPos(this.mob.getTrueCenterPos().x, this.mob.getTrueCenterPos().y, this.mob.mapName);
 			this.aCamera.oldPos.x = this.aCamera.xPos;
 			this.aCamera.oldPos.y = this.aCamera.yPos;
 			this.aCamera.attached = true;
@@ -160,8 +203,8 @@
 		}
 	}
 
-	let buildCamera = function() {
-		let Ease = {};
+	const buildCamera = () => {
+		const Ease = {};
 		Ease.linear = function(t, b, c, d) {
 			return c * t / d + b;
 		}
@@ -326,11 +369,7 @@
 		
 		const ZERO = 0;
 		const MAX_CAMERA_SHAKE_FORCE = 100;
-		const MAX_ELAPSED_MS = 20;
-		const TICK_FPS = 16.67;
-		const MAX_PARALLAX_OBJECTS = 100;
-
-		let aCamera = VS.newDiob();
+		const aCamera = VS.newDiob();
 
 		aCamera.atlasName = '';
 		aCamera.width = 1;
@@ -346,7 +385,7 @@
 		 // who owns this camera
 		aCamera.owner = VS.Client;
 		aCamera.following;
-		// if the camera is currently being debugged, (shows icon info for the camera)
+		// // debugging is whether this library is in debug mode. Extra warnings will be thrown in this mode to help explain any issues that may arise. if the camera is currently being debugged, (shows icon info for the camera)
 		aCamera.debugging = false;
 		aCamera.preventScreenRelayer = true;
 		aCamera.preventInterpolation = true;
@@ -444,8 +483,42 @@
 		};
 
 		aCamera.decimalRand = function(pNum, pNum2, pPlaces=1) {
-			let result = Number((Math.random() * (pNum - pNum2) + pNum2).toFixed(pPlaces));
+			const result = Number((Math.random() * (pNum - pNum2) + pNum2).toFixed(pPlaces));
 			return (result >= 1 ? Math.floor(result) : result);
+		}
+
+		aCamera.assignIconSize = function(pDiob) {
+			if (pDiob.aIconInfo) return;
+			const resourceID = (pDiob.atlasName + '_' + (pDiob.iconName ? pDiob.iconName : '') + '_' + (pDiob.iconState ? pDiob.iconState : '')).trim();
+			pDiob.aIconInfo = {};
+
+			if (this.cachedResourcesInfo[resourceID]) {
+				pDiob.aIconInfo = JSON.parse(JSON.stringify(this.cachedResourcesInfo[resourceID]));
+			} else {
+				pDiob.aIconInfo.width = Math.round(TILE_SIZE.width);
+				pDiob.aIconInfo.height = Math.round(TILE_SIZE.height);
+				pDiob.aIconInfo.halfWidth = Math.round(TILE_SIZE.width/2);
+				pDiob.aIconInfo.halfHeight = Math.round(TILE_SIZE.height/2);
+			}
+			
+			const setIconSize = function() {
+				const iconSize = VS.Icon.getIconSize(pDiob.atlasName, pDiob.iconName);
+				this.cachedResourcesInfo[resourceID] = {
+					'width': Math.round(iconSize.width),
+					'height': Math.round(iconSize.height),
+					'halfWidth': Math.round(iconSize.width / 2),
+					'halfHeight': Math.round(iconSize.height / 2)
+				};
+				pDiob.aIconInfo.width = this.cachedResourcesInfo[resourceID].width;
+				pDiob.aIconInfo.height = this.cachedResourcesInfo[resourceID].height;
+				pDiob.aIconInfo.halfWidth = this.cachedResourcesInfo[resourceID].halfWidth;
+				pDiob.aIconInfo.halfHeight = this.cachedResourcesInfo[resourceID].halfHeight;
+			}
+			if (pDiob.atlasName) {
+				VS.Resource.loadResource('icon', pDiob.atlasName, setIconSize.bind(this));
+			} else {
+				console.error('aCamera Module [assignIconSize]: No %cpDiob.atlasName', 'font-weight: bold', 'to load.');
+			}
 		}
 
 		aCamera.reset = function(pMethod) {
@@ -593,14 +666,14 @@
 			if (this.settings.zoom.active.x) {
 				this.settings.zoom.time.x += pElapsedMS;
 				this.settings.zoom.currentLevel.x = Ease[this.settings.zoom.ease.x](this.settings.zoom.time.x, this.settings.zoom.initialLevel.x, this.settings.zoom.differenceLevel.x, this.settings.zoom.duration.x);
-				let stepSizeX = (this.settings.zoom.currentLevel.x - VS.Client.mapView.scale.x) * pDeltaTime
+				const stepSizeX = ((this.settings.zoom.currentLevel.x - VS.Client.mapView.scale.x) * pDeltaTime) / VS.Client.timeScale;
 				VS.Client.mapView.scale.x += stepSizeX;
 			}
 
 			if (this.settings.zoom.active.y) {
 				this.settings.zoom.time.y += pElapsedMS
 				this.settings.zoom.currentLevel.y = Ease[this.settings.zoom.ease.y](this.settings.zoom.time.y, this.settings.zoom.initialLevel.y, this.settings.zoom.differenceLevel.y, this.settings.zoom.duration.y);
-				let stepSizeY = (this.settings.zoom.currentLevel.y - VS.Client.mapView.scale.y) * pDeltaTime
+				const stepSizeY = ((this.settings.zoom.currentLevel.y - VS.Client.mapView.scale.y) * pDeltaTime) / VS.Client.timeScale;
 				VS.Client.mapView.scale.y += stepSizeY;
 			}
 
@@ -624,14 +697,9 @@
 		}
 
 		aCamera.shakeUpdate = function(pElapsedMS, pDeltaTime) {
-			// let xView = Math.lerp(Client.xViewEyeOffset, 0, 0.5) * pDeltaTime;
-			// let yView = Math.lerp(Client.yViewEyeOffset, 0, 0.5) * pDeltaTime;
-
-			// if (this.settings.shake.rotational) {
-			// 	var angle = Math.lerp(Client.mapView.angle, 0, 0.1) * pDeltaTime
-			// 	Client.mapView.angle = Math.clamp(angle, 0, 1)
-			// 	Client.setMapView(Client.mapView)				
-			// }
+			let angle;
+			let xForce;
+			let yForce;
 			if (this.settings.shake.rotational) {
 				let seed;
 				let seed2;
@@ -646,22 +714,22 @@
 					seed2 = seed*0.5;	
 				}
 
-				var angle = this.decimalRand(-this.decimalRand(seed, seed2) / 100, this.decimalRand(seed, seed2) / 100) * pDeltaTime;
+				angle = this.decimalRand(-this.decimalRand(seed, seed2) / 200, this.decimalRand(seed, seed2) / 200) * pDeltaTime;
 				VS.Client.mapView.angle = angle;
 				VS.Client.setMapView(VS.Client.mapView);
 			}
 
 			if (this.settings.shake.active.x) {
-				let seed = this.settings.shake.intensity.x;
-				let seed2 = seed*0.5;
-				var xForce = this.decimalRand(-this.decimalRand(seed, seed2), this.decimalRand(seed, seed2)) * pDeltaTime;
+				const seed = this.settings.shake.intensity.x;
+				const seed2 = seed*0.5;
+				xForce = this.decimalRand(-this.decimalRand(seed, seed2), this.decimalRand(seed, seed2)) * pDeltaTime;
 				this.settings.shake.time.x += pElapsedMS;
 			}
 
 			if (this.settings.shake.active.y) {
-				let seed = this.settings.shake.intensity.y;
-				let seed2 = seed*0.5;
-				var yForce = this.decimalRand(-this.decimalRand(seed, seed2), this.decimalRand(seed, seed2)) * pDeltaTime;
+				const seed = this.settings.shake.intensity.y;
+				const seed2 = seed*0.5;
+				yForce = this.decimalRand(-this.decimalRand(seed, seed2), this.decimalRand(seed, seed2)) * pDeltaTime;
 				this.settings.shake.time.y += pElapsedMS;
 			}
 
@@ -690,7 +758,7 @@
 				return;
 			}
 			if (typeof(pSettings) === 'object' && !Array.isArray(pSettings)) {
-				let settingsProps = Object.keys(pSettings);
+				const settingsProps = Object.keys(pSettings);
 				if (settingsProps.includes('target')) {
 					// target
 					if (typeof(pSettings.target) === 'object' && !Array.isArray(pSettings.target)) {
@@ -699,6 +767,7 @@
 								console.error('aCamera Module [Pan]: You %ccannot', 'font-weight: bold', 'pan to yourself. Pan failed');
 								return
 							}
+							this.assignIconSize(pSettings.target);
 							this.settings.pan.target = pSettings.target;
 						} else {
 							console.error('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.target.xPos || pSettings.target.yPos || *pSettings.target.mapName', 'font-weight: bold', 'parameter. Pan failed');
@@ -918,10 +987,7 @@
 				this.settings.pan.pannedCallback = null;
 			}
 			if (this.settings.pan.attach) {
-				if (this.settings.pan.target?.type) {
-					if (!this.settings.pan.target.iCenter) {
-						this.settings.pan.target.iCenter = { 'x': 16, 'y': 16 };
-					}
+				if (this.settings.pan.target?.constructor === Diob) {
 					VS.Client.toggleMacroCapture(true);
 					this.following = this.settings.pan.target;
 					this.reset('pan');
@@ -960,48 +1026,43 @@
 			let distanceX;
 			let distanceY;
 
-			let xPos;
-			let yPos;
-
 			let stepSizeX;
 			let stepSizeY;
 
 			let target;
 
 			if (pMethod === 'pan') {
-				if (pMethod === 'pan') {
-					// now check to see if there is a paused duration you want the camera to stay at the panned object for before moving back
-					if (this.settings[pMethod].returning) {
-						if (this.settings[pMethod].pauseDuration) {
-							this.settings[pMethod].pauseDuration -= pElapsedMS
-							if (this.settings[pMethod].pauseDuration <= 0) {
-								this.settings[pMethod].pauseDuration = 0;
-							} else {
-								return;
-							}
+				// now check to see if there is a paused duration you want the camera to stay at the panned object for before moving back
+				if (this.settings[pMethod].returning) {
+					if (this.settings[pMethod].pauseDuration) {
+						this.settings[pMethod].pauseDuration -= pElapsedMS
+						if (this.settings[pMethod].pauseDuration <= 0) {
+							this.settings[pMethod].pauseDuration = 0;
+						} else {
+							return;
 						}
-						if (this.xPos !== this.settings.pan.target.xPos + this.settings.pan.target.xIconOffset) {
-							this.settings.pan.active.x = true;
-						}
+					}
+					if (this.xPos !== this.settings.pan.target.getTrueCenterPos().x) {
+						this.settings.pan.active.x = true;
+					}
 
-						if (this.yPos !== this.settings.pan.target.yPos + this.settings.pan.target.yIconOffset) {
-							this.settings.pan.active.y = true;
-						}
+					if (this.yPos !== this.settings.pan.target.getTrueCenterPos().y) {
+						this.settings.pan.active.y = true;
 					}
 				}
 				if (this.settings[pMethod].active.x) {
-					this.settings[pMethod].destination.x = this.settings[pMethod].target.xPos + this.settings[pMethod].target.xIconOffset;
+					this.settings[pMethod].destination.x = this.settings[pMethod].target.getTrueCenterPos().x;
 				}
 				if (this.settings[pMethod].active.y) {
-					this.settings[pMethod].destination.y = this.settings[pMethod].target.yPos + this.settings[pMethod].target.yIconOffset;
+					this.settings[pMethod].destination.y = this.settings[pMethod].target.getTrueCenterPos().y;
 				}
 				target = this.settings[pMethod].target;
 			} else {
 				if (this.settings[pMethod].active.x) {
-					this.settings[pMethod].destination.x = this.following.xPos + this.following.xIconOffset;
+					this.settings[pMethod].destination.x = this.following.getTrueCenterPos().x;
 				}
 				if (this.settings[pMethod].active.y) {
-					this.settings[pMethod].destination.y = this.following.yPos + this.following.yIconOffset;
+					this.settings[pMethod].destination.y = this.following.getTrueCenterPos().y;
 				}
 				target = this.following;		
 			}
@@ -1009,31 +1070,33 @@
 			if (this.settings[pMethod].active.x) {
 				this.settings[pMethod].time.x += pElapsedMS;
 				distanceX = this.settings[pMethod].destination.x - this.settings[pMethod].initialPos.x;
-				xPos = Ease[this.settings[pMethod].ease.x](this.settings[pMethod].time.x, this.settings[pMethod].initialPos.x, distanceX, this.settings[pMethod].duration.x);
-				stepSizeX = (xPos - this.xPos) * pDeltaTime;
-				this.xPos += stepSizeX
+				const xPos = Ease[this.settings[pMethod].ease.x](this.settings[pMethod].time.x, this.settings[pMethod].initialPos.x, distanceX, this.settings[pMethod].duration.x);
+				// the dividing by `VS.Client.timeScale` is done to keep the duration's time calculation separate from the `timeScale`. This makes sure the position is in the correct place 
+				stepSizeX = ((xPos - this.xPos) * pDeltaTime) / VS.Client.timeScale;
+				this.xPos += stepSizeX;
 			}
 
 			if (this.settings[pMethod].active.y) {
 				this.settings[pMethod].time.y += pElapsedMS;
 				distanceY = this.settings[pMethod].destination.y - this.settings[pMethod].initialPos.y;
-				yPos = Ease[this.settings[pMethod].ease.y](this.settings[pMethod].time.y, this.settings[pMethod].initialPos.y, distanceY, this.settings[pMethod].duration.y);
-				stepSizeY = (yPos - this.yPos) * pDeltaTime;
+				const yPos = Ease[this.settings[pMethod].ease.y](this.settings[pMethod].time.y, this.settings[pMethod].initialPos.y, distanceY, this.settings[pMethod].duration.y);
+				// the dividing by `VS.Client.timeScale` is done to keep the duration's time calculation separate from the `timeScale`. This makes sure the position is in the correct place 
+				stepSizeY = ((yPos - this.yPos) * pDeltaTime) / VS.Client.timeScale;
 				this.yPos += stepSizeY;
 			}
 			
 			this.mapName = target.mapName;
 
-			if (isNaN(this.xPos)) {
-				this.xPos = target.xPos + target.xIconOffset;
-			}
+			// if (isNaN(this.xPos)) {
+			// 	this.xPos = target.getTrueCenterPos().x;
+			// }
 
-			if (isNaN(this.yPos)) {
-				this.yPos = target.yPos + target.yIconOffset;
-			}
+			// if (isNaN(this.yPos)) {
+			// 	this.yPos = target.getTrueCenterPos().y;
+			// } 
 
 			if (this.settings[pMethod].time.x >= this.settings[pMethod].duration.x) {
-				this.xPos = target.xPos + target.xIconOffset/*  + (target.iCenter?.x ? target.iCenter.x : 16) */;
+				this.xPos = target.getTrueCenterPos().x;
 				if (pMethod === 'pan') {
 					this.reset('panX');
 				} else if (pMethod === 'standard') {
@@ -1044,7 +1107,7 @@
 			}
 
 			if (this.settings[pMethod].time.y >= this.settings[pMethod].duration.y) {
-				this.yPos = (target.yPos + target.yIconOffset/*  + (target.iCenter?.y ? target.iCenter.y : 16) */);
+				this.yPos = target.getTrueCenterPos().y;
 				if (pMethod === 'pan') {
 					this.reset('panY');
 				} else if (pMethod === 'standard') {
@@ -1104,26 +1167,26 @@
 				}
 				// camera moving after whatever its following
 				if (!this.settings.scrolling && !this.settings.panning && this.following) {
-					if (this.oldFollowingPos) {
-						if (this.following.isMoving || this.oldFollowingPos.x !== (this.following.xPos + this.following.xIconOffset) || this.oldFollowingPos.y !== (this.following.yPos + this.following.yIconOffset)) {
-							this.isMoving = true;
-							if (this.custom) {
-								this.settings.custom.time.x = 0;
-								this.settings.custom.active.x = (this.xPos !== (this.following.xPos + this.following.xIconOffset) ? true : false);
-								this.settings.custom.initialPos.x = this.xPos;
+					const xFollowingPos = this.following.getTrueCenterPos().x;
+					const yFollowingPos = this.following.getTrueCenterPos().y;
+					if (this.following.isMoving || this.oldFollowingPos.x !== xFollowingPos || this.oldFollowingPos.y !== yFollowingPos) {
+						this.isMoving = true;
+						if (this.custom) {
+							this.settings.custom.time.x = 0;
+							this.settings.custom.active.x = (this.xPos !== xFollowingPos ? true : false);
+							this.settings.custom.initialPos.x = this.xPos;
 
-								this.settings.custom.time.y = 0;
-								this.settings.custom.active.y = (this.yPos !== (this.following.yPos + this.following.yIconOffset) ? true : false);
-								this.settings.custom.initialPos.y = this.yPos;
-							} else {
-								this.settings.standard.time.x = 0;
-								this.settings.standard.active.x = (this.xPos !== (this.following.xPos + this.following.xIconOffset) ? true : false);
-								this.settings.standard.initialPos.x = this.xPos;
+							this.settings.custom.time.y = 0;
+							this.settings.custom.active.y = (this.yPos !== yFollowingPos ? true : false);
+							this.settings.custom.initialPos.y = this.yPos;
+						} else {
+							this.settings.standard.time.x = 0;
+							this.settings.standard.active.x = (this.xPos !== xFollowingPos ? true : false);
+							this.settings.standard.initialPos.x = this.xPos;
 
-								this.settings.standard.time.y = 0;
-								this.settings.standard.active.y = (this.yPos !== (this.following.yPos + this.following.yIconOffset) ? true : false);
-								this.settings.standard.initialPos.y = this.yPos;
-							}
+							this.settings.standard.time.y = 0;
+							this.settings.standard.active.y = (this.yPos !== yFollowingPos ? true : false);
+							this.settings.standard.initialPos.y = this.yPos;
 						}
 					}
 
@@ -1138,42 +1201,10 @@
 							this.follow('standard', pElapsedMS, pDeltaTime);
 						}
 					}
-					this.oldFollowingPos.x = this.following.xPos + this.following.xIconOffset;
-					this.oldFollowingPos.y = this.following.yPos + this.following.yIconOffset;
+					this.oldFollowingPos.x = xFollowingPos;
+					this.oldFollowingPos.y = yFollowingPos;
 				}
 			}
-		}
-
-		aCamera.updateLoop = function() {
-			let update = function (pCurrentTime = Date.now()) {
-				if (aCamera.init) {
-					if (VS.Client.___EVITCA_aPause) {
-						if (VS.Client.aPause.paused) {
-							aCamera.settings.loop.lastTime = pCurrentTime;
-							window.requestAnimationFrame(update);
-							return;
-						}
-					}
-					if (pCurrentTime > aCamera.settings.loop.lastTime) {
-						aCamera.settings.loop.elapsedMS = pCurrentTime - aCamera.settings.loop.lastTime;
-
-						if (aCamera.settings.loop.elapsedMS > MAX_ELAPSED_MS) {
-							aCamera.settings.loop.elapsedMS = MAX_ELAPSED_MS;
-						} else {
-							aCamera.settings.loop.deltaTime = 1;
-						}
-						aCamera.settings.loop.deltaTime = (aCamera.settings.loop.elapsedMS / TICK_FPS) * VS.Client.timeScale;
-						aCamera.settings.loop.elapsedMS *= VS.Client.timeScale;
-					}
-					if (VS.Client.___EVITCA_aParallax && aCamera.attached) {
-						VS.Client.aParallax.update(((aCamera.following.xPos+aCamera.following.xIconOffset)-aCamera.oldPos.x) * aCamera.settings.loop.deltaTime, ((aCamera.following.yPos+aCamera.following.yIconOffset)-aCamera.oldPos.y) * aCamera.settings.loop.deltaTime)
-					}
-					aCamera.update(aCamera.settings.loop.elapsedMS, aCamera.settings.loop.deltaTime);
-					aCamera.settings.loop.lastTime = pCurrentTime;
-					window.requestAnimationFrame(update);
-				}
-			}
-			window.requestAnimationFrame(update);
 		}
 
 		aCamera.zoom = function(pDestinationLevel={'x': 1, 'y': 1}, pDuration={'x': 1000, 'y': 1000}, pEase={'x': 'easeOutCirc', 'y': 'easeOutCirc'}, pCallback) {
@@ -1181,8 +1212,8 @@
 				return;
 			}
 			// destination level
-			var dx;
-			var dy;
+			let dx;
+			let dy;
 			if (pDestinationLevel || pDestinationLevel === 0) {
 				if (typeof(pDestinationLevel) !== 'object') {
 					if (typeof(pDestinationLevel) === 'number') {
@@ -1218,7 +1249,7 @@
 				this.settings.zoom.active.x = true;
 				this.settings.zoom.destinationLevel.x = dx;
 				this.settings.zoom.initialLevel.x = VS.Client.mapView.scale.x;
-				this.settings.zoom.differenceLevel.x = Math.round(this.settings.zoom.destinationLevel.x - this.settings.zoom.initialLevel.x);
+				this.settings.zoom.differenceLevel.x = Math.round((this.settings.zoom.destinationLevel.x - this.settings.zoom.initialLevel.x) * 10) / 10;
 			}
 
 			if (this.settings.zoom.destinationLevel.y !== dy) {
@@ -1228,7 +1259,7 @@
 				this.settings.zoom.active.y = true;
 				this.settings.zoom.destinationLevel.y = dy;
 				this.settings.zoom.initialLevel.y = VS.Client.mapView.scale.y;
-				this.settings.zoom.differenceLevel.y = Math.round(this.settings.zoom.destinationLevel.y - this.settings.zoom.initialLevel.y);
+				this.settings.zoom.differenceLevel.y = Math.round((this.settings.zoom.destinationLevel.y - this.settings.zoom.initialLevel.y) * 10) / 10;
 			}
 
 			// duration
@@ -1321,10 +1352,9 @@
 		aCamera.onZoomEnd = function() {
 			if (this.settings.zoom.callback) {
 				this.settings.zoom.callback();
-				this.settings.zoom.callback = null;
 			}
-			VS.Client.mapView.scale.x = Math.round(this.settings.zoom.destinationLevel.x);
-			VS.Client.mapView.scale.y = Math.round(this.settings.zoom.destinationLevel.y);
+			VS.Client.mapView.scale.x = Math.round(this.settings.zoom.destinationLevel.x * 10) / 10;
+			VS.Client.mapView.scale.y = Math.round(this.settings.zoom.destinationLevel.y * 10) / 10;
 			VS.Client.setMapView(VS.Client.mapView);
 			this.reset('zoom');
 		}
@@ -1430,12 +1460,15 @@
 			if (pSettings) {
 				if (typeof(pSettings) === 'object' && !Array.isArray(pSettings)) {
 					if (typeof(pSettings.target?.xPos) === 'number' && typeof(pSettings.target?.yPos) === 'number' && typeof(pSettings.target?.mapName) === 'string') {
+						this.assignIconSize(pSettings.target);
 						this.settings.spectate.preventMovement = false;
 						this.settings.spectate.forcePos = false;
-
-						if (!pSettings.target.iCenter) {
-							pSettings.target.iCenter = { 'x': 16, 'y': 16 };
+						// If you are using the aBlip library
+						if (VS.Client.___EVITCA_aBlip) {
+							// when you start spectating there should be no blips at all so they should be all hidden
+							VS.Client.aBlip.destroyAllBlips();
 						}
+
 						// prevents player from moving while spectating
 						if (pSettings.preventMovement) {
 							this.settings.spectate.preventMovement = pSettings.preventMovement;
@@ -1444,23 +1477,12 @@
 						// doesn't ease to the spectatee
 						if (pSettings.forcePos) {
 							this.settings.spectate.forcePos = pSettings.forcePos;
-							this.setPos(pSettings.target.xPos, pSettings.target.yPos, pSettings.target.mapName);
+							this.setPos(pSettings.target.getTrueCenterPos().x, pSettings.target.getTrueCenterPos().y, pSettings.target.mapName);
 						} else {
-							if (pSettings.target.width && pSettings.target.height) {
-								if (typeof(pSettings.target.width) !== 'number') {
-									pSettings.target.width = 32;
-								}
-								if (typeof(pSettings.target.height) !== 'number') {
-									pSettings.target.height = 32;
-								}
-							} else {
-								pSettings.target.width = 32;
-								pSettings.target.height = 32;
-							}
 							// if the distance is too far, then just force the position
 							if (VS.Map.getDist(this.following, pSettings.target) > 1000) {
 								this.settings.spectate.forcePos = true;
-								this.setPos(pSettings.target.xPos, pSettings.target.yPos, pSettings.target.mapName);								
+								this.setPos(pSettings.target.getTrueCenterPos().x, pSettings.target.getTrueCenterPos().y, pSettings.target.mapName);							
 							}
 						}
 						if (!this.settings.spectate.player) {
@@ -1485,50 +1507,50 @@
 
 		aCamera.cancelSpectate = function() {
 			if (this.settings.spectate.forcePos) {
-				this.setPos(this.settings.spectate.player.xPos, this.settings.spectate.player.yPos, this.settings.spectate.player.mapName);
+				this.setPos(this.settings.spectate.player.getTrueCenterPos().x, this.settings.spectate.player.getTrueCenterPos().y, this.settings.spectate.player.mapName);
 			}
 			this.following = this.settings.spectate.player;
 			if (this.settings.spectate.preventMovement) {
 				VS.Client.toggleMacroCapture(true);
 			}
+			if (VS.Client.onSpectateEnd && typeof(VS.Client.onSpectateEnd) === 'function') VS.Client.onSpectateEnd();
 			this.reset('spectate');
 		}
 
 		aCamera.detach = function() {
 			if (!this.attached) {
 				console.error('aCamera Module [detach]: aCamera is already %cdetached!', 'font-weight: bold');
-			}
-			if (!this.following?.id) {
-				console.error('aCamera Module [detach]: Nothing to %cdeatach', 'font-weight: bold', 'from. Attachment failed');
+				return;
 			}
 
 			this.reset('spectate');
 			this.following = VS.Client.mob;
 			this.setSettings();
-			this.setPos(this.following.xPos + this.following.xIconOffset, (this.following.yPos + this.following.yIconOffset), this.following.mapName);
 			this.attached = false;
 			this.setLoc();
 			VS.Client.setViewEye(this.following);
 		}
 
-		aCamera.attach = function() {
-			if (this.attached) {
-				console.error('aCamera Module [attach]: aCamera is already %cattached!', 'font-weight: bold');
+		aCamera.attach = function(pDiob) {
+			if (pDiob?.constructor !== Diob) {
+				console.error('aCamera Module [attach]: Nothing to %cattach', 'font-weight: bold', 'to. Attachment failed');
+				return;
 			}
-			// if (!this.following?.id && !this.following?.mapName) {
-			// 	console.error('aCamera Module [attach]: Nothing to %cattach', 'font-weight: bold', 'to. Attachment failed');
-			// }
-			this.following = VS.Client.mob;
+			if (this.attached) {
+				console.warn('aCamera Module [attach]: aCamera is already %cattached!', 'font-weight: bold');
+			}
+			this.assignIconSize(pDiob);
+			this.following = pDiob;
 			this.oldPos.x = this.following.xPos;
 			this.oldPos.y = this.following.yPos;
-			this.setPos(this.following.xPos + this.following.xIconOffset, (this.following.yPos + this.following.tIconOffset), this.following.mapName);
+			this.setPos(this.following.getTrueCenterPos().x, this.following.getTrueCenterPos().y, this.following.mapName);
 			this.attached = true;
 			VS.Client.setViewEye(this);
 		}
 
 		aCamera.shake = function(pIntensity, pDuration, pRotational=false, pCallback) {
-			let intensityValue = { 'x': 1, 'y': 1 };
-			let durationValue = { 'x': 1000, 'y': 1000 };
+			const intensityValue = { 'x': 1, 'y': 1 };
+			const durationValue = { 'x': 1000, 'y': 1000 };
 			if (pIntensity) {
 				if (typeof(pIntensity) === 'object' && !Array.isArray(pIntensity)) {
 					if (pIntensity?.x || pIntensity.x === 0) {
@@ -1631,7 +1653,7 @@
 			}
 
 			// if (this.settings.shake.active.x || this.settings.shake.active.y) {
-			// 	let intensityObject = { 'x': 0, 'y': 0 };
+			// 	const intensityObject = { 'x': 0, 'y': 0 };
 
 			// 	if (this.settings.shake.intensity.x === intensityValue.x) {
 			// 		if (durationValue.x > (this.settings.shake.duration.x - this.settings.shake.time.x)) {
@@ -1672,7 +1694,6 @@
 		aCamera.onShakeEnd = function() {
 			if (this.settings.shake.callback) {
 				this.settings.shake.callback();
-				this.settings.shake.callback = null;
 				VS.Client.setViewEyeOffsets(0, 0);
 			}
 			this.reset('shake');
@@ -1686,8 +1707,10 @@
 		aCamera.destroy = function() {
 			this.init = false;
 			this.attached = false;
+			this.reset('spectate');
+			this.setSettings();
+			this.setLoc();
 			VS.Client.setViewEye(VS.Client.mob);
-			VS.delDiob(this);
 		}
 
 		assignCamera(aCamera);
