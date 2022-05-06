@@ -1515,7 +1515,6 @@
 
 		aCamera.cancelSpectate = function() {
 			if (this.settings.spectate.forcePos) {
-				console.log(this.settings.spectate.player)
 				this.setPos(this.settings.spectate.player.getTrueCenterPos().x, this.settings.spectate.player.getTrueCenterPos().y, this.settings.spectate.player.mapName);
 			}
 			this.following = this.settings.spectate.player;
