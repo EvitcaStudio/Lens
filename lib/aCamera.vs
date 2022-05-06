@@ -108,10 +108,10 @@
 			this.aCamera.attached = true;
 
 			if (pSettings) {
-				if (typeof(pSettings) === 'object' && !Array.isArray(pSettings)) {
+				if (typeof(pSettings) === 'object' && pSettings.constructor === Object) {
 					if (pSettings.duration) {
-						if (typeof(pSettings.duration) === 'object' && !Array.isArray(pSettings.duration)) {
-							if (typeof(pSettings.duration?.x) === 'number' && typeof(pSettings.duration?.y) === 'number') {
+						if (typeof(pSettings.duration) === 'object' && pSettings.duration.constructor === Object) {
+							if (typeof(pSettings.duration.x) === 'number' && typeof(pSettings.duration.y) === 'number') {
 								this.aCamera.settings.custom.duration.x = pSettings.duration.x;
 								this.aCamera.settings.custom.duration.y = pSettings.duration.y;
 							} else {
@@ -136,9 +136,9 @@
 					}
 
 					if (pSettings.ease) {
-						if (typeof(pSettings.ease) === 'object' && !Array.isArray(pSettings.ease)) {
-							if (typeof(pSettings.ease?.x) === 'string' && typeof(pSettings.ease?.y) === 'string') {
-								if (validEase.includes(pSettings.ease?.x) && validEase.includes(pSettings.ease?.y)) {
+						if (typeof(pSettings.ease) === 'object' && pSettings.ease.constructor === Object) {
+							if (typeof(pSettings.ease.x) === 'string' && typeof(pSettings.ease.y) === 'string') {
+								if (validEase.includes(pSettings.ease.x) && validEase.includes(pSettings.ease.y)) {
 									this.aCamera.settings.custom.ease.x = pSettings.ease.x;
 									this.aCamera.settings.custom.ease.y = pSettings.ease.y;
 								} else {
@@ -757,12 +757,12 @@
 				console.error('aCamera Module [Pan]: You are %cspectating', 'font-weight: bold', 'and cannot pan right now. Pan failed');
 				return;
 			}
-			if (typeof(pSettings) === 'object' && !Array.isArray(pSettings)) {
+			if (typeof(pSettings) === 'object' && pSettings.constructor === Object) {
 				const settingsProps = Object.keys(pSettings);
 				if (settingsProps.includes('target')) {
 					// target
-					if (typeof(pSettings.target) === 'object' && !Array.isArray(pSettings.target)) {
-						if (typeof(pSettings.target?.xPos) === 'number' && typeof(pSettings.target?.yPos) === 'number' && typeof(pSettings.target?.mapName) === 'string') {
+					if (typeof(pSettings.target) === 'object' && pSettings.target.constructor === Diob) {
+						if (typeof(pSettings.target.xPos) === 'number' && typeof(pSettings.target.yPos) === 'number' && typeof(pSettings.target.mapName) === 'string') {
 							if (pSettings.target === this.following) {
 								console.error('aCamera Module [Pan]: You %ccannot', 'font-weight: bold', 'pan to yourself. Pan failed');
 								return
@@ -780,9 +780,9 @@
 
 					// ease
 					if (pSettings.ease) {
-						if (typeof(pSettings.ease) === 'object' && !Array.isArray(pSettings.ease)) {
-							if (typeof(pSettings.ease?.x) === 'string' && typeof(pSettings.ease?.y) === 'string') {
-								if (validEase.includes(pSettings.ease?.x) && validEase.includes(pSettings.ease?.y)) {
+						if (typeof(pSettings.ease) === 'object' && pSettings.ease.constructor === Object) {
+							if (typeof(pSettings.ease.x) === 'string' && typeof(pSettings.ease.y) === 'string') {
+								if (validEase.includes(pSettings.ease.x) && validEase.includes(pSettings.ease.y)) {
 									this.settings.pan.ease.x = pSettings.ease.x;
 									this.settings.pan.ease.y = pSettings.ease.y;
 								} else {
@@ -821,9 +821,9 @@
 
 					// finalEase
 					if (pSettings.finalEase) {
-						if (typeof(pSettings.finalEase) === 'object' && !Array.isArray(pSettings.finalEase)) {
-							if (typeof(pSettings.finalEase?.x) === 'string' && typeof(pSettings.finalEase?.y) === 'string') {
-								if (validEase.includes(pSettings.finalEase?.x) && validEase.includes(pSettings.finalEase?.y)) {
+						if (typeof(pSettings.finalEase) === 'object' && pSettings.finalEase.constructor === Object) {
+							if (typeof(pSettings.finalEase.x) === 'string' && typeof(pSettings.finalEase.y) === 'string') {
+								if (validEase.includes(pSettings.finalEase.x) && validEase.includes(pSettings.finalEase.y)) {
 									this.settings.pan.finalEase.x = pSettings.finalEase.x;
 									this.settings.pan.finalEase.y = pSettings.finalEase.y;
 								} else {
@@ -862,8 +862,8 @@
 
 					//duration
 					if (pSettings.duration) {
-						if (typeof(pSettings.duration) === 'object' && !Array.isArray(pSettings.duration)) {
-							if (typeof(pSettings.duration?.x) === 'number' && typeof(pSettings.duration?.y) === 'number') {
+						if (typeof(pSettings.duration) === 'object' && pSettings.duration.constructor === Object) {
+							if (typeof(pSettings.duration.x) === 'number' && typeof(pSettings.duration.y) === 'number') {
 								this.settings.pan.duration.x = pSettings.duration.x;
 								this.settings.pan.duration.y = pSettings.duration.y;
 							} else {
@@ -889,8 +889,8 @@
 
 					// finalDuration
 					if (pSettings.finalDuration) {
-						if (typeof(pSettings.finalDuration) === 'object' && !Array.isArray(pSettings.finalDuration)) {
-							if (typeof(pSettings.finalDuration?.x) === 'number' && typeof(pSettings.finalDuration?.y) === 'number') {
+						if (typeof(pSettings.finalDuration) === 'object' && pSettings.finalDuration.constructor === Object) {
+							if (typeof(pSettings.finalDuration.x) === 'number' && typeof(pSettings.finalDuration.y) === 'number') {
 								this.settings.pan.finalDuration.x = pSettings.finalDuration.x;
 								this.settings.pan.finalDuration.y = pSettings.finalDuration.y;
 							} else {
@@ -987,13 +987,15 @@
 				this.settings.pan.pannedCallback = null;
 			}
 			if (this.settings.pan.attach) {
-				if (this.settings.pan.target?.constructor === Diob) {
-					VS.Client.toggleMacroCapture(true);
-					this.following = this.settings.pan.target;
-					this.reset('pan');
-				} else {
-					if (this.debugging) {
-						console.warn('aCamera Module [Pan]: Cannot attach to a non %cdiob', 'font-weight: bold', 'type. Attachment failed');
+				if (this.settings.pan.target && typeof(this.settings.pan.target) === 'object') {
+					if (this.settings.pan.target.constructor === Diob) {
+						VS.Client.toggleMacroCapture(true);
+						this.following = this.settings.pan.target;
+						this.reset('pan');
+					} else {
+						if (this.debugging) {
+							console.warn('aCamera Module [Pan]: Cannot attach to a non %cdiob', 'font-weight: bold', 'type. Attachment failed');
+						}
 					}
 				}
 			} else {
@@ -1275,12 +1277,14 @@
 						}
 					}
 				} else {
-					if (typeof(pDuration?.x) === 'number' && typeof(pDuration?.y) === 'number') {
-						this.settings.zoom.duration = pDuration;
-					} else {
-						this.settings.zoom.duration.x = this.settings.zoom.duration.y = 1000;
-						if (this.debugging) {
-							console.warn('aCamera Module [Zoom]: Invalid variable type passed for the %cpDuration.x || pDuration.y', 'font-weight: bold', 'parameter. Reverted to default');
+					if (typeof(pDuration) === 'object') {
+						if (typeof(pDuration.x) === 'number' && typeof(pDuration.y) === 'number') {
+							this.settings.zoom.duration = pDuration;
+						} else {
+							this.settings.zoom.duration.x = this.settings.zoom.duration.y = 1000;
+							if (this.debugging) {
+								console.warn('aCamera Module [Zoom]: Invalid variable type passed for the %cpDuration.x || pDuration.y', 'font-weight: bold', 'parameter. Reverted to default');
+							}
 						}
 					}
 				}
@@ -1311,22 +1315,24 @@
 					}
 
 				} else {
-					if (typeof(pEase?.x) === 'string' && typeof(pEase?.y) === 'string') {
-						if (validEase.includes(pEase?.x) && validEase.includes(pEase?.y)) {
-							this.settings.zoom.ease = pEase;
+					if (typeof(pEase) === 'object') {
+						if (typeof(pEase.x) === 'string' && typeof(pEase.y) === 'string') {
+							if (validEase.includes(pEase.x) && validEase.includes(pEase.y)) {
+								this.settings.zoom.ease = pEase;
+							} else {
+								this.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';
+								if (this.debugging) {
+									console.warn('aCamera Module [Zoom]: Invalid %cpEase', 'font-weight: bold', 'name passed for pEase.x || pEase.y. Reverted to default');
+								}
+							}
+							
 						} else {
 							this.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';
 							if (this.debugging) {
-								console.warn('aCamera Module [Zoom]: Invalid %cpEase', 'font-weight: bold', 'name passed for pEase.x || pEase.y. Reverted to default');
+								console.warn('aCamera Module [Zoom]: Invalid variable type passed for the %cpEase.x || pEase.y', 'font-weight: bold', 'parameter. Reverted to default');
 							}
 						}
-						
-					} else {
-						this.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';
-						if (this.debugging) {
-							console.warn('aCamera Module [Zoom]: Invalid variable type passed for the %cpEase.x || pEase.y', 'font-weight: bold', 'parameter. Reverted to default');
-						}
-					}					
+					}				
 				}
 			} else {
 				this.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';
@@ -1361,10 +1367,10 @@
 
 		aCamera.setSettings = function(pSettings) {
 			if (pSettings) {
-				if (typeof(pSettings) === 'object' && !Array.isArray(pSettings)) {
+				if (typeof(pSettings) === 'object' && pSettings.constructor === Object) {
 					if (pSettings.duration) {
-						if (typeof(pSettings.duration) === 'object' && !Array.isArray(pSettings.duration)) {
-							if (typeof(pSettings.duration?.x) === 'number' && typeof(pSettings.duration?.y) === 'number') {
+						if (typeof(pSettings.duration) === 'object' && pSettings.duration.constructor === Object) {
+							if (typeof(pSettings.duration.x) === 'number' && typeof(pSettings.duration.y) === 'number') {
 								this.settings.custom.duration.x = pSettings.duration.x;
 								this.settings.custom.duration.y = pSettings.duration.y;
 							} else {
@@ -1389,9 +1395,9 @@
 					}
 
 					if (pSettings.ease) {
-						if (typeof(pSettings.ease) === 'object' && !Array.isArray(pSettings.ease)) {
-							if (typeof(pSettings.ease?.x) === 'string' && typeof(pSettings.ease?.y) === 'string') {
-								if (validEase.includes(pSettings.ease?.x) && validEase.includes(pSettings.ease?.y)) {
+						if (typeof(pSettings.ease) === 'object' && pSettings.ease.constructor === Object) {
+							if (typeof(pSettings.ease.x) === 'string' && typeof(pSettings.ease.y) === 'string') {
+								if (validEase.includes(pSettings.ease.x) && validEase.includes(pSettings.ease.y)) {
 									this.settings.custom.ease.x = pSettings.ease.x;
 									this.settings.custom.ease.y = pSettings.ease.y;
 								} else {
@@ -1458,40 +1464,42 @@
 				return;
 			}
 			if (pSettings) {
-				if (typeof(pSettings) === 'object' && !Array.isArray(pSettings)) {
-					if (typeof(pSettings.target?.xPos) === 'number' && typeof(pSettings.target?.yPos) === 'number' && typeof(pSettings.target?.mapName) === 'string') {
-						this.assignIconSize(pSettings.target);
-						this.settings.spectate.preventMovement = false;
-						this.settings.spectate.forcePos = false;
-						// If you are using the aBlip library
-						if (VS.Client.___EVITCA_aBlip) {
-							// when you start spectating there should be no blips at all so they should be all hidden
-							VS.Client.aBlip.destroyAllBlips();
-						}
-
-						// prevents player from moving while spectating
-						if (pSettings.preventMovement) {
-							this.settings.spectate.preventMovement = pSettings.preventMovement;
-							VS.Client.toggleMacroCapture(false);
-						}
-						// doesn't ease to the spectatee
-						if (pSettings.forcePos) {
-							this.settings.spectate.forcePos = pSettings.forcePos;
-							this.setPos(pSettings.target.getTrueCenterPos().x, pSettings.target.getTrueCenterPos().y, pSettings.target.mapName);
-						} else {
-							// if the distance is too far, then just force the position
-							if (VS.Map.getDist(this.following, pSettings.target) > 1000) {
-								this.settings.spectate.forcePos = true;
-								this.setPos(pSettings.target.getTrueCenterPos().x, pSettings.target.getTrueCenterPos().y, pSettings.target.mapName);							
+				if (typeof(pSettings) === 'object' && pSettings.constructor === Object) {
+					if (typeof(pSettings.target) === 'object') {
+						if (typeof(pSettings.target.xPos) === 'number' && typeof(pSettings.target.yPos) === 'number' && typeof(pSettings.target.mapName) === 'string') {
+							this.assignIconSize(pSettings.target);
+							this.settings.spectate.preventMovement = false;
+							this.settings.spectate.forcePos = false;
+							// If you are using the aBlip library
+							if (VS.Client.___EVITCA_aBlip) {
+								// when you start spectating there should be no blips at all so they should be all hidden
+								VS.Client.aBlip.destroyAllBlips();
 							}
+
+							// prevents player from moving while spectating
+							if (pSettings.preventMovement) {
+								this.settings.spectate.preventMovement = pSettings.preventMovement;
+								VS.Client.toggleMacroCapture(false);
+							}
+							// doesn't ease to the spectatee
+							if (pSettings.forcePos) {
+								this.settings.spectate.forcePos = pSettings.forcePos;
+								this.setPos(pSettings.target.getTrueCenterPos().x, pSettings.target.getTrueCenterPos().y, pSettings.target.mapName);
+							} else {
+								// if the distance is too far, then just force the position
+								if (VS.Map.getDist(this.following, pSettings.target) > 1000) {
+									this.settings.spectate.forcePos = true;
+									this.setPos(pSettings.target.getTrueCenterPos().x, pSettings.target.getTrueCenterPos().y, pSettings.target.mapName);							
+								}
+							}
+							if (!this.settings.spectate.player) {
+								this.settings.spectate.player = this.following;
+							}
+							this.following = pSettings.target;
+						} else {
+							console.error('aCamera Module [spectate]: Invalid variable type passed for the %cpSettings.target.xPos || pSettings.target.yPos || pSettings.target.mapName', 'font-weight: bold', 'property. Spectate failed');
+							return;
 						}
-						if (!this.settings.spectate.player) {
-							this.settings.spectate.player = this.following;
-						}
-						this.following = pSettings.target;
-					} else {
-						console.error('aCamera Module [spectate]: Invalid variable type passed for the %cpSettings.target.xPos || pSettings.target.yPos || pSettings.target.mapName', 'font-weight: bold', 'property. Spectate failed');
-						return;
 					}
 				} else {
 					console.error('aCamera Module [spectate]: Invalid variable type passed for the %cpSettings', 'font-weight: bold', 'parameter. Spectate failed');
@@ -1507,6 +1515,7 @@
 
 		aCamera.cancelSpectate = function() {
 			if (this.settings.spectate.forcePos) {
+				console.log(this.settings.spectate.player)
 				this.setPos(this.settings.spectate.player.getTrueCenterPos().x, this.settings.spectate.player.getTrueCenterPos().y, this.settings.spectate.player.mapName);
 			}
 			this.following = this.settings.spectate.player;
@@ -1532,9 +1541,11 @@
 		}
 
 		aCamera.attach = function(pDiob) {
-			if (pDiob?.constructor !== Diob) {
-				console.error('aCamera Module [attach]: Nothing to %cattach', 'font-weight: bold', 'to. Attachment failed');
-				return;
+			if (typeof(pDiob) === 'object') {
+				if (pDiob.constructor !== Diob) {
+					console.error('aCamera Module [attach]: Nothing to %cattach', 'font-weight: bold', 'to. Attachment failed');
+					return;
+				}
 			}
 			if (this.attached) {
 				console.warn('aCamera Module [attach]: aCamera is already %cattached!', 'font-weight: bold');
@@ -1552,8 +1563,8 @@
 			const intensityValue = { 'x': 1, 'y': 1 };
 			const durationValue = { 'x': 1000, 'y': 1000 };
 			if (pIntensity) {
-				if (typeof(pIntensity) === 'object' && !Array.isArray(pIntensity)) {
-					if (pIntensity?.x || pIntensity.x === 0) {
+				if (typeof(pIntensity) === 'object' && pIntensity.constructor === Object) {
+					if (pIntensity.x || pIntensity.x === 0) {
 						if (typeof(pIntensity.x) === 'number') {
 							intensityValue.x = Math.clamp(pIntensity.x, 0, MAX_CAMERA_SHAKE_FORCE);
 						} else {
@@ -1567,7 +1578,7 @@
 						}
 					}
 
-					if (pIntensity?.y || pIntensity.y === 0) {
+					if (pIntensity.y || pIntensity.y === 0) {
 						if (typeof(pIntensity.y) === 'number') {
 							intensityValue.y = Math.clamp(pIntensity.y, 0, MAX_CAMERA_SHAKE_FORCE);
 						} else {
@@ -1596,8 +1607,8 @@
 			}
 
 			if (pDuration) {
-				if (typeof(pDuration) === 'object' && !Array.isArray(pDuration)) {
-					if (pDuration?.x || pDuration.x === 0) {
+				if (typeof(pDuration) === 'object' && pDuration.constructor === Object) {
+					if (pDuration.x || pDuration.x === 0) {
 						if (typeof(pDuration.x) === 'number') {
 							durationValue.x = pDuration.x;
 						} else {
@@ -1611,7 +1622,7 @@
 						}
 					}
 
-					if (pDuration?.y || pDuration.y === 0) {
+					if (pDuration.y || pDuration.y === 0) {
 						if (typeof(pDuration.y) === 'number') {
 							durationValue.y = pDuration.y;
 						} else {
