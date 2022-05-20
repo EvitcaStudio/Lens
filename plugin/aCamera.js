@@ -63,38 +63,31 @@
 			return this.aCenterPos;
 		};
 		
-		if (!aCamera.onScreenRenderSet) {
-			aCamera._onScreenRender = VS.Client.onScreenRender;
-			aCamera.onScreenRenderSet = true;
-			VS.Client.onScreenRender = function(pT) {
-				if (this.aCamera.init) {
-					if (this.___EVITCA_aPause) {
-						if (this.aPause.paused) {
-							this.aCamera.settings.loop.lastTime = pT;
-							return;
-						}
+		VS.global.aListener.addEventListener(VS.Client, 'onScreenRender', function(pT) {
+			if (this.aCamera.init) {
+				if (this.___EVITCA_aPause) {
+					if (this.aPause.paused) {
+						this.aCamera.settings.loop.lastTime = pT;
+						return;
 					}
-					if (pT > this.aCamera.settings.loop.lastTime) {
-						this.aCamera.settings.loop.elapsedMS = pT - this.aCamera.settings.loop.lastTime;
-						if (this.aCamera.settings.loop.elapsedMS > MAX_ELAPSED_MS) {
-							// check here, if warnings are showing up about setInterval taking too long
-							this.aCamera.settings.loop.elapsedMS = MAX_ELAPSED_MS;
-						}
-						this.aCamera.settings.loop.deltaTime = (this.aCamera.settings.loop.elapsedMS / TICK_FPS) * this.timeScale;
-						this.aCamera.settings.loop.elapsedMS *= this.timeScale;
+				}
+				if (pT > this.aCamera.settings.loop.lastTime) {
+					this.aCamera.settings.loop.elapsedMS = pT - this.aCamera.settings.loop.lastTime;
+					if (this.aCamera.settings.loop.elapsedMS > MAX_ELAPSED_MS) {
+						// check here, if warnings are showing up about setInterval taking too long
+						this.aCamera.settings.loop.elapsedMS = MAX_ELAPSED_MS;
 					}
+					this.aCamera.settings.loop.deltaTime = (this.aCamera.settings.loop.elapsedMS / TICK_FPS) * this.timeScale;
+					this.aCamera.settings.loop.elapsedMS *= this.timeScale;
+				}
 
-					if (this.___EVITCA_aParallax && this.aCamera.attached) {
-						this.aParallax.update((this.aCamera.following.getTrueCenterPos().x-this.aCamera.oldPos.x) * this.aCamera.settings.loop.deltaTime, (this.aCamera.following.getTrueCenterPos().y-this.aCamera.oldPos.y) * this.aCamera.settings.loop.deltaTime)
-					}
-					this.aCamera.update(this.aCamera.settings.loop.elapsedMS, this.aCamera.settings.loop.deltaTime);
-					this.aCamera.settings.loop.lastTime = pT;
+				if (this.___EVITCA_aParallax && this.aCamera.attached) {
+					this.aParallax.update((this.aCamera.following.getTrueCenterPos().x-this.aCamera.oldPos.x) * this.aCamera.settings.loop.deltaTime, (this.aCamera.following.getTrueCenterPos().y-this.aCamera.oldPos.y) * this.aCamera.settings.loop.deltaTime)
 				}
-				if (this.aCamera._onScreenRender) {
-					this.aCamera._onScreenRender.apply(this, arguments);
-				}
+				this.aCamera.update(this.aCamera.settings.loop.elapsedMS, this.aCamera.settings.loop.deltaTime);
+				this.aCamera.settings.loop.lastTime = pT;
 			}
-		}
+		});
 		
 		VS.Client.attachCamera = function(pSettings) {
 			this.aCamera.settings.zoom.currentLevel.x = this.mapView.scale.x;
