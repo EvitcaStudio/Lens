@@ -669,10 +669,6 @@
 				VS.Client.mapView.scale.y += stepSizeY;
 			}
 
-			if (VS.Client.___EVITCA_aInventory) {
-				VS.Client.aInventory.outlineFilter.thickness = VS.Client.aInventory.outlineDefaultThickness * mainM.mapScaleWidth;
-			}
-
 			VS.Client.setMapView(VS.Client.mapView);
 
 			if (this.settings.zoom.time.x >= this.settings.zoom.duration.x) {
