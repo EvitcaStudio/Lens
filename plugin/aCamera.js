@@ -92,7 +92,12 @@
 		VS.Client.attachCamera = function(pSettings) {
 			this.aCamera.settings.zoom.currentLevel.x = this.mapView.scale.x;
 			this.aCamera.settings.zoom.currentLevel.y = this.mapView.scale.y;
-			this.aCamera.attach(this.mob);
+			this.aCamera.assignIconSize(this.mob);
+			this.aCamera.following = this.mob;
+			this.aCamera.setPos(this.mob.getTrueCenterPos().x, this.mob.getTrueCenterPos().y, this.mob.mapName);
+			this.aCamera.oldPos.x = this.aCamera.xPos;
+			this.aCamera.oldPos.y = this.aCamera.yPos;
+			this.aCamera.attached = true;
 
 			if (pSettings) {
 				if (typeof(pSettings) === 'object' && pSettings.constructor === Object) {
