@@ -38,9 +38,10 @@
 		const TICK_FPS = VS.Client.maxFPS ? (1000 / VS.Client.maxFPS) : 16.67;
 		VS.Client.___EVITCA_aCamera = true;
 		VS.Client.aCamera = aCamera;
-		VS.World.global.aCamera = aCamera;
+		VS.global.aCamera = aCamera;
+		window.aCamera = aCamera;
 		// the version of the camera
-		aCamera.version = 'v1.6.0';
+		aCamera.version = 'v1.0.0';
 		// a object that stores the icon sizes of icons used in this library
 		aCamera.cachedResourcesInfo = {};
 		// whether the camera has been created and is ready for use or not
