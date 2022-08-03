@@ -1510,7 +1510,7 @@
 			if (this.settings.spectate.preventMovement) {
 				VS.Client.toggleMacroCapture(true);
 			}
-			if (VS.Client.onSpectateEnd && typeof(VS.Client.onSpectateEnd) === 'function') VS.Client.onSpectateEnd();
+			if (typeof(VS.Client.onSpectateEnd) === 'function') VS.Client.onSpectateEnd();
 			this.reset('spectate');
 		}
 
