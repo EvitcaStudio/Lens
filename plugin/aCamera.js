@@ -1,7 +1,6 @@
 (() => {
-	// Client library
 	const engineWaitId = setInterval(() => {
-		if (VS.Client) {
+		if (VYLO.Client) {
 			clearInterval(engineWaitId);
 			prepClient();
 			buildCamera();
@@ -9,7 +8,8 @@
 	});
 	
 	const MAX_PLANE = 999999;
-	const TILE_SIZE = VS.World.getTileSize();
+	const MAX_DELTA_TIME = 0.033;
+	const TILE_SIZE = VYLO.World.getTileSize();
 
 	const validEase = [ 
 		'linear', 'easeInQuad', 'easeOutQuad', 'easeInOutQuad', 'easeInSine', 'easeOutSine', 'easeInOutSine', 'easeInExpo', 
@@ -19,26 +19,23 @@
 	]
 
 	const prepClient = () => {
-		// update will allow us to just check `mapView.scale.x` when veek presets the definitions of all the objects
 		// you don't have a object scale set
-		if (typeof(VS.Client.mapView.scale) !== 'object') {
-			VS.Client.mapView.scale = { 'x': VS.Client.mapView.scale, 'y': VS.Client.mapView.scale };
+		if (typeof(VYLO.Client.mapView.scale) !== 'object') {
+			VYLO.Client.mapView.scale = { 'x': VYLO.Client.mapView.scale, 'y': VYLO.Client.mapView.scale };
 		}
 
-		VS.Client.mapView.anchor = { 'x': 0.5, 'y': 0.5 };
-		VS.Client.setMapView(VS.Client.mapView);
+		VYLO.Client.mapView.anchor = { 'x': 0.5, 'y': 0.5 };
+		VYLO.Client.setMapView(VYLO.Client.mapView);
 
-		if (VS.Client.timeScale === undefined) {
-			VS.Client.timeScale = 1;
+		if (VYLO.Client.timeScale === undefined) {
+			VYLO.Client.timeScale = 1;
 		}
 	}
 
 	const assignCamera = (aCamera) => {
-		const MAX_ELAPSED_MS = VS.Client.maxFPS ? (1000 / VS.Client.maxFPS) * 2 : 33.34;
-		const TICK_FPS = VS.Client.maxFPS ? (1000 / VS.Client.maxFPS) : 16.67;
-		VS.Client.___EVITCA_aCamera = true;
-		VS.Client.aCamera = aCamera;
-		VS.global.aCamera = aCamera;
+		VYLO.Client.___EVITCA_aCamera = true;
+		VYLO.Client.aCamera = aCamera;
+		VYLO.global.aCamera = aCamera;
 		window.aCamera = aCamera;
 		// the version of the camera
 		aCamera.version = 'v1.0.0';
@@ -55,42 +52,40 @@
 		aCamera.isScrolling = false;
 		aCamera.isPanning = false;
 
-		const prototypeDiob = VS.newDiob();
-		prototypeDiob.constructor.prototype.aCenterPos = { 'x': 0, 'y': 0 };
-		prototypeDiob.constructor.prototype.getTrueCenterPos = function() {
-			const tileSize = VS.World.getTileSize();
+		Diob.prototype.aCenterPos = { 'x': 0, 'y': 0 };
+		Diob.prototype.getTrueCenterPos = function() {
+			const tileSize = VYLO.World.getTileSize();
 			this.aCenterPos.x = Math.round(this.xPos + (this.aIconInfo ? this.aIconInfo.halfWidth : tileSize.width) + this.xIconOffset);
 			this.aCenterPos.y = Math.round(this.yPos + (this.aIconInfo ? this.aIconInfo.halfHeight : tileSize.height) + this.yIconOffset);
 			return this.aCenterPos;
 		};
 		
-		VS.global.aListener.addEventListener(VS.Client, 'onScreenRender', function(pT) {
+		VYLO.global.aListener.addEventListener(VYLO.Client, 'onScreenRender', function(pT) {
 			if (this.aCamera.init) {
+				const now = Date.now();
 				if (this.___EVITCA_aPause) {
 					if (this.aPause.paused) {
-						this.aCamera.settings.loop.lastTime = pT;
+						this.aCamera.settings.loop.lastTime = now;
 						return;
 					}
 				}
-				if (pT > this.aCamera.settings.loop.lastTime) {
-					this.aCamera.settings.loop.elapsedMS = pT - this.aCamera.settings.loop.lastTime;
-					if (this.aCamera.settings.loop.elapsedMS > MAX_ELAPSED_MS) {
-						// check here, if warnings are showing up about setInterval taking too long
-						this.aCamera.settings.loop.elapsedMS = MAX_ELAPSED_MS;
-					}
-					this.aCamera.settings.loop.deltaTime = (this.aCamera.settings.loop.elapsedMS / TICK_FPS) * this.timeScale;
-					this.aCamera.settings.loop.elapsedMS *= this.timeScale;
-				}
-
+				if (!this.aCamera.settings.loop.lastTime) this.aCamera.settings.loop.lastTime = now;
+				const elapsedMS = (now - this.aCamera.settings.loop.lastTime);
+				let dt = (now - this.aCamera.settings.loop.lastTime) * 0.001;
+				this.aCamera.settings.loop.elapsedMS = elapsedMS;
+				if (dt > MAX_DELTA_TIME) dt = MAX_DELTA_TIME;
+				this.aCamera.settings.loop.deltaTime = dt;
+				// PINGABLE
+				// legacy code for aParallax plugin (will be removed)
 				if (this.___EVITCA_aParallax && this.aCamera.attached) {
 					this.aParallax.update((this.aCamera.following.getTrueCenterPos().x-this.aCamera.oldPos.x) * this.aCamera.settings.loop.deltaTime, (this.aCamera.following.getTrueCenterPos().y-this.aCamera.oldPos.y) * this.aCamera.settings.loop.deltaTime)
 				}
 				this.aCamera.update(this.aCamera.settings.loop.elapsedMS, this.aCamera.settings.loop.deltaTime);
-				this.aCamera.settings.loop.lastTime = pT;
+				this.aCamera.settings.loop.lastTime = now;
 			}
 		});
 		
-		VS.Client.attachCamera = function(pSettings) {
+		VYLO.Client.attachCamera = function(pSettings) {
 			this.aCamera.settings.zoom.currentLevel.x = this.mapView.scale.x;
 			this.aCamera.settings.zoom.currentLevel.y = this.mapView.scale.y;
 			this.aCamera.assignIconSize(this.mob);
@@ -362,7 +357,7 @@
 		
 		const ZERO = 0;
 		const MAX_CAMERA_SHAKE_FORCE = 100;
-		const aCamera = VS.newDiob();
+		const aCamera = VYLO.newDiob();
 
 		aCamera.atlasName = '';
 		aCamera.width = 1;
@@ -376,7 +371,7 @@
 		// set when the player gives the camera settings to follow
 		aCamera.custom = false;
 		 // who owns this camera
-		aCamera.owner = VS.Client;
+		aCamera.owner = VYLO.Client;
 		aCamera.following;
 		// // debugging is whether this library is in debug mode. Extra warnings will be thrown in this mode to help explain any issues that may arise. if the camera is currently being debugged, (shows icon info for the camera)
 		aCamera.debugging = false;
@@ -495,7 +490,7 @@
 			}
 			
 			const setIconSize = function() {
-				const iconSize = VS.Icon.getIconSize(pDiob.atlasName, pDiob.iconName);
+				const iconSize = VYLO.Icon.getIconSize(pDiob.atlasName, pDiob.iconName);
 				this.cachedResourcesInfo[resourceID] = {
 					'width': Math.round(iconSize.width),
 					'height': Math.round(iconSize.height),
@@ -508,7 +503,7 @@
 				pDiob.aIconInfo.halfHeight = this.cachedResourcesInfo[resourceID].halfHeight;
 			}
 			if (pDiob.atlasName) {
-				VS.Resource.loadResource('icon', pDiob.atlasName, setIconSize.bind(this));
+				VYLO.Resource.loadResource('icon', pDiob.atlasName, setIconSize.bind(this));
 			} else {
 				console.warn('aCamera Module [assignIconSize]: No %cpDiob.atlasName', 'font-weight: bold', 'to load.');
 			}
@@ -621,13 +616,13 @@
 				case 'shakeX':
 					this.settings.shake.time.x = 0;
 					this.settings.shake.active.x = false;
-					VS.Client.setViewEyeOffsets(0, VS.Client.getViewEyeOffsets().y)
+					VYLO.Client.setViewEyeOffsets(0, VYLO.Client.getViewEyeOffsets().y)
 					break;
 
 				case 'shakeY':
 					this.settings.shake.time.y = 0;
 					this.settings.shake.active.y = false;
-					VS.Client.setViewEyeOffsets(VS.Client.getViewEyeOffsets().x, 0)
+					VYLO.Client.setViewEyeOffsets(VYLO.Client.getViewEyeOffsets().x, 0)
 					break;
 
 				case 'shake':
@@ -639,9 +634,9 @@
 					this.settings.shake.active.x = this.settings.shake.active.y = false;
 					this.settings.shake.duration.x = this.settings.shake.duration.y = 0;
 					this.settings.shake.intensity.x = this.settings.shake.intensity.y = 0;
-					VS.Client.setViewEyeOffsets(0, 0)
-					VS.Client.mapView.angle = 0;
-					VS.Client.setMapView(VS.Client.mapView);
+					VYLO.Client.setViewEyeOffsets(0, 0)
+					VYLO.Client.mapView.angle = 0;
+					VYLO.Client.setMapView(VYLO.Client.mapView);
 					this.isShaking = false;
 					break;
 
@@ -657,26 +652,26 @@
 
 		aCamera.zoomUpdate = function(pElapsedMS, pDeltaTime) {
 			if (this.settings.zoom.active.x) {
-				this.settings.zoom.time.x += pElapsedMS;
+				this.settings.zoom.time.x = Math.min(this.settings.zoom.time.x + pElapsedMS, this.settings.zoom.duration.x);
 				this.settings.zoom.currentLevel.x = Ease[this.settings.zoom.ease.x](this.settings.zoom.time.x, this.settings.zoom.initialLevel.x, this.settings.zoom.differenceLevel.x, this.settings.zoom.duration.x);
-				const stepSizeX = ((this.settings.zoom.currentLevel.x - VS.Client.mapView.scale.x) * pDeltaTime) / VS.Client.timeScale;
-				VS.Client.mapView.scale.x += stepSizeX;
+				const stepSizeX = ((this.settings.zoom.currentLevel.x - VYLO.Client.mapView.scale.x));
+				VYLO.Client.mapView.scale.x += stepSizeX;
 			}
 
 			if (this.settings.zoom.active.y) {
-				this.settings.zoom.time.y += pElapsedMS
+				this.settings.zoom.time.y = Math.min(this.settings.zoom.time.y + pElapsedMS, this.settings.zoom.duration.y);
 				this.settings.zoom.currentLevel.y = Ease[this.settings.zoom.ease.y](this.settings.zoom.time.y, this.settings.zoom.initialLevel.y, this.settings.zoom.differenceLevel.y, this.settings.zoom.duration.y);
-				const stepSizeY = ((this.settings.zoom.currentLevel.y - VS.Client.mapView.scale.y) * pDeltaTime) / VS.Client.timeScale;
-				VS.Client.mapView.scale.y += stepSizeY;
+				const stepSizeY = ((this.settings.zoom.currentLevel.y - VYLO.Client.mapView.scale.y));
+				VYLO.Client.mapView.scale.y += stepSizeY;
 			}
 
-			VS.Client.setMapView(VS.Client.mapView);
+			VYLO.Client.setMapView(VYLO.Client.mapView);
 
-			if (this.settings.zoom.time.x >= this.settings.zoom.duration.x) {
+			if (this.settings.zoom.time.x === this.settings.zoom.duration.x) {
 				this.reset('zoomX');
 			}
 
-			if (this.settings.zoom.time.y >= this.settings.zoom.duration.y) {
+			if (this.settings.zoom.time.y === this.settings.zoom.duration.y) {
 				this.reset('zoomY');
 			}
 
@@ -703,32 +698,32 @@
 					seed2 = seed*0.5;	
 				}
 
-				angle = this.decimalRand(-this.decimalRand(seed, seed2) / 200, this.decimalRand(seed, seed2) / 200) * pDeltaTime;
-				VS.Client.mapView.angle = angle;
-				VS.Client.setMapView(VS.Client.mapView);
+				angle = this.decimalRand(-this.decimalRand(seed, seed2) / 200, this.decimalRand(seed, seed2) / 200);
+				VYLO.Client.mapView.angle = angle;
+				VYLO.Client.setMapView(VYLO.Client.mapView);
 			}
 
 			if (this.settings.shake.active.x) {
 				const seed = this.settings.shake.intensity.x;
 				const seed2 = seed*0.5;
-				xForce = this.decimalRand(-this.decimalRand(seed, seed2), this.decimalRand(seed, seed2)) * pDeltaTime;
-				this.settings.shake.time.x += pElapsedMS;
+				xForce = this.decimalRand(-this.decimalRand(seed, seed2), this.decimalRand(seed, seed2));
+				this.settings.shake.time.x = Math.min(this.settings.shake.time.x + pElapsedMS, this.settings.shake.duration.x);
 			}
 
 			if (this.settings.shake.active.y) {
 				const seed = this.settings.shake.intensity.y;
 				const seed2 = seed*0.5;
-				yForce = this.decimalRand(-this.decimalRand(seed, seed2), this.decimalRand(seed, seed2)) * pDeltaTime;
-				this.settings.shake.time.y += pElapsedMS;
+				yForce = this.decimalRand(-this.decimalRand(seed, seed2), this.decimalRand(seed, seed2));
+				this.settings.shake.time.y = Math.min(this.settings.shake.time.y + pElapsedMS, this.settings.shake.duration.y);
 			}
 
-			VS.Client.setViewEyeOffsets(xForce ? xForce : 0, yForce ? yForce : 0);
+			VYLO.Client.setViewEyeOffsets(xForce ? xForce : 0, yForce ? yForce : 0);
 
-			if (this.settings.shake.time.x >= this.settings.shake.duration.x) {
+			if (this.settings.shake.time.x === this.settings.shake.duration.x) {
 				this.reset('shakeX');
 			}
 
-			if (this.settings.shake.time.y >= this.settings.shake.duration.y) {
+			if (this.settings.shake.time.y === this.settings.shake.duration.y) {
 				this.reset('shakeY');
 			}
 
@@ -925,9 +920,9 @@
 
 					if (this.settings.pan.forceDirChange) {
 						// disable movement
-						VS.Client.toggleMacroCapture(false);
+						VYLO.Client.toggleMacroCapture(false);
 						this.settings.pan.storedDir = this.following.dir;
-						this.following.dir = VS.Map.getDir(this.following, this.settings.pan.target);
+						this.following.dir = VYLO.Map.getDir(this.following, this.settings.pan.target);
 					}
 					// pannedCallback
 					if (pSettings.pannedCallback) {
@@ -978,7 +973,7 @@
 			if (this.settings.pan.attach) {
 				if (this.settings.pan.target && typeof(this.settings.pan.target) === 'object') {
 					if (this.settings.pan.target.constructor === Diob) {
-						VS.Client.toggleMacroCapture(true);
+						VYLO.Client.toggleMacroCapture(true);
 						this.following = this.settings.pan.target;
 						this.reset('pan');
 					} else {
@@ -1006,7 +1001,7 @@
 			}
 			this.reset('pan');
 			// allow players to move again
-			VS.Client.toggleMacroCapture(true);
+			VYLO.Client.toggleMacroCapture(true);
 			if (this.settings.pan.returnCallback) {
 				this.settings.pan.returnCallback();
 				this.settings.pan.returnCallback = null;
@@ -1059,23 +1054,21 @@
 			}
 
 			if (this.settings[pMethod].active.x) {
-				this.settings[pMethod].time.x += pElapsedMS;
+				this.settings[pMethod].time.x = Math.min(this.settings[pMethod].time.x + pElapsedMS, this.settings[pMethod].duration.x);
 				distanceX = this.settings[pMethod].destination.x - this.settings[pMethod].initialPos.x;
 				const xPos = Ease[this.settings[pMethod].ease.x](this.settings[pMethod].time.x, this.settings[pMethod].initialPos.x, distanceX, this.settings[pMethod].duration.x);
-				// the dividing by `VS.Client.timeScale` is done to keep the duration's time calculation separate from the `timeScale`. This makes sure the position is in the correct place 
-				stepSizeX = ((xPos - this.xPos) * pDeltaTime) / VS.Client.timeScale;
+				stepSizeX = (xPos - this.xPos);
 				this.xPos += stepSizeX;
 			}
 
 			if (this.settings[pMethod].active.y) {
-				this.settings[pMethod].time.y += pElapsedMS;
+				this.settings[pMethod].time.y = Math.min(this.settings[pMethod].time.y + pElapsedMS, this.settings[pMethod].duration.y);
 				distanceY = this.settings[pMethod].destination.y - this.settings[pMethod].initialPos.y;
 				const yPos = Ease[this.settings[pMethod].ease.y](this.settings[pMethod].time.y, this.settings[pMethod].initialPos.y, distanceY, this.settings[pMethod].duration.y);
-				// the dividing by `VS.Client.timeScale` is done to keep the duration's time calculation separate from the `timeScale`. This makes sure the position is in the correct place 
-				stepSizeY = ((yPos - this.yPos) * pDeltaTime) / VS.Client.timeScale;
+				stepSizeY = (yPos - this.yPos);
 				this.yPos += stepSizeY;
 			}
-			
+
 			this.mapName = target.mapName;
 
 			// if (isNaN(this.xPos)) {
@@ -1086,7 +1079,7 @@
 			// 	this.yPos = target.getTrueCenterPos().y;
 			// } 
 
-			if (this.settings[pMethod].time.x >= this.settings[pMethod].duration.x) {
+			if (this.settings[pMethod].time.x === this.settings[pMethod].duration.x) {
 				this.xPos = target.getTrueCenterPos().x;
 				if (pMethod === 'pan') {
 					this.reset('panX');
@@ -1097,7 +1090,7 @@
 				}
 			}
 
-			if (this.settings[pMethod].time.y >= this.settings[pMethod].duration.y) {
+			if (this.settings[pMethod].time.y === this.settings[pMethod].duration.y) {
 				this.yPos = target.getTrueCenterPos().y;
 				if (pMethod === 'pan') {
 					this.reset('panY');
@@ -1239,7 +1232,7 @@
 				}
 				this.settings.zoom.active.x = true;
 				this.settings.zoom.destinationLevel.x = dx;
-				this.settings.zoom.initialLevel.x = VS.Client.mapView.scale.x;
+				this.settings.zoom.initialLevel.x = VYLO.Client.mapView.scale.x;
 				this.settings.zoom.differenceLevel.x = Math.round((this.settings.zoom.destinationLevel.x - this.settings.zoom.initialLevel.x) * 10) / 10;
 			}
 
@@ -1249,7 +1242,7 @@
 				}
 				this.settings.zoom.active.y = true;
 				this.settings.zoom.destinationLevel.y = dy;
-				this.settings.zoom.initialLevel.y = VS.Client.mapView.scale.y;
+				this.settings.zoom.initialLevel.y = VYLO.Client.mapView.scale.y;
 				this.settings.zoom.differenceLevel.y = Math.round((this.settings.zoom.destinationLevel.y - this.settings.zoom.initialLevel.y) * 10) / 10;
 			}
 
@@ -1348,9 +1341,9 @@
 			if (this.settings.zoom.callback) {
 				this.settings.zoom.callback();
 			}
-			VS.Client.mapView.scale.x = Math.round(this.settings.zoom.destinationLevel.x * 10) / 10;
-			VS.Client.mapView.scale.y = Math.round(this.settings.zoom.destinationLevel.y * 10) / 10;
-			VS.Client.setMapView(VS.Client.mapView);
+			VYLO.Client.mapView.scale.x = Math.round(this.settings.zoom.destinationLevel.x * 10) / 10;
+			VYLO.Client.mapView.scale.y = Math.round(this.settings.zoom.destinationLevel.y * 10) / 10;
+			VYLO.Client.setMapView(VYLO.Client.mapView);
 			this.reset('zoom');
 		}
 
@@ -1460,15 +1453,15 @@
 							this.settings.spectate.preventMovement = false;
 							this.settings.spectate.forcePos = false;
 							// If you are using the aBlip library
-							if (VS.Client.___EVITCA_aBlip) {
+							if (VYLO.Client.___EVITCA_aBlip) {
 								// when you start spectating there should be no blips at all so they should be all hidden
-								VS.Client.aBlip.destroyAllBlips();
+								VYLO.Client.aBlip.destroyAllBlips();
 							}
 
 							// prevents player from moving while spectating
 							if (pSettings.preventMovement) {
 								this.settings.spectate.preventMovement = pSettings.preventMovement;
-								VS.Client.toggleMacroCapture(false);
+								VYLO.Client.toggleMacroCapture(false);
 							}
 							// doesn't ease to the spectatee
 							if (pSettings.forcePos) {
@@ -1476,7 +1469,7 @@
 								this.setPos(pSettings.target.getTrueCenterPos().x, pSettings.target.getTrueCenterPos().y, pSettings.target.mapName);
 							} else {
 								// if the distance is too far, then just force the position
-								if (VS.Map.getDist(this.following, pSettings.target) > 1000) {
+								if (VYLO.Map.getDist(this.following, pSettings.target) > 1000) {
 									this.settings.spectate.forcePos = true;
 									this.setPos(pSettings.target.getTrueCenterPos().x, pSettings.target.getTrueCenterPos().y, pSettings.target.mapName);							
 								}
@@ -1508,9 +1501,9 @@
 			}
 			this.following = this.settings.spectate.player;
 			if (this.settings.spectate.preventMovement) {
-				VS.Client.toggleMacroCapture(true);
+				VYLO.Client.toggleMacroCapture(true);
 			}
-			if (typeof(VS.Client.onSpectateEnd) === 'function') VS.Client.onSpectateEnd();
+			if (typeof(VYLO.Client.onSpectateEnd) === 'function') VYLO.Client.onSpectateEnd();
 			this.reset('spectate');
 		}
 
@@ -1521,11 +1514,11 @@
 			}
 
 			this.reset('spectate');
-			this.following = VS.Client.mob;
+			this.following = VYLO.Client.mob;
 			this.setSettings();
 			this.attached = false;
 			this.setLoc();
-			VS.Client.setViewEye(this.following);
+			VYLO.Client.setViewEye(this.following);
 		}
 
 		aCamera.attach = function(pDiob) {
@@ -1544,7 +1537,7 @@
 			this.oldPos.y = this.following.yPos;
 			this.setPos(this.following.getTrueCenterPos().x, this.following.getTrueCenterPos().y, this.following.mapName);
 			this.attached = true;
-			VS.Client.setViewEye(this);
+			VYLO.Client.setViewEye(this);
 		}
 
 		aCamera.shake = function(pIntensity, pDuration, pRotational=false, pCallback) {
@@ -1624,7 +1617,7 @@
 						}
 					}
 				} else if (typeof(pDuration) === 'number') {
-					durationValue.x = durationValue.y = Math.clamp(pDuration, 0, MAX_CAMERA_SHAKE_FORCE);
+					durationValue.x = durationValue.y = pDuration;
 				} else {
 					if (this.debugging) {
 						console.warn('aCamera Module [Shake]: Invalid variable type passed for the %cpDuration.x || pDuration.y', 'font-weight: bold', 'property. Reverted to default');
@@ -1693,7 +1686,7 @@
 		aCamera.onShakeEnd = function() {
 			if (this.settings.shake.callback) {
 				this.settings.shake.callback();
-				VS.Client.setViewEyeOffsets(0, 0);
+				VYLO.Client.setViewEyeOffsets(0, 0);
 			}
 			this.reset('shake');
 		}
@@ -1709,7 +1702,7 @@
 			this.reset('spectate');
 			this.setSettings();
 			this.setLoc();
-			VS.Client.setViewEye(VS.Client.mob);
+			VYLO.Client.setViewEye(VYLO.Client.mob);
 		}
 
 		assignCamera(aCamera);
