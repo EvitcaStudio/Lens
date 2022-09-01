@@ -71,7 +71,7 @@
 				}
 				if (!this.aCamera.settings.loop.lastTime) this.aCamera.settings.loop.lastTime = now;
 				const elapsedMS = (now - this.aCamera.settings.loop.lastTime);
-				let dt = (now - this.aCamera.settings.loop.lastTime) * 0.001;
+				let dt = (now - this.aCamera.settings.loop.lastTime) / 1000;
 				this.aCamera.settings.loop.elapsedMS = elapsedMS;
 				if (dt > MAX_DELTA_TIME) dt = MAX_DELTA_TIME;
 				this.aCamera.settings.loop.deltaTime = dt;
