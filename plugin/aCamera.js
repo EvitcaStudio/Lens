@@ -78,7 +78,7 @@
 				// PINGABLE
 				// legacy code for aParallax plugin (will be removed)
 				if (this.___EVITCA_aParallax && this.aCamera.attached) {
-					this.aParallax.update((this.aCamera.following.getTrueCenterPos().x-this.aCamera.oldPos.x) * this.aCamera.settings.loop.deltaTime, (this.aCamera.following.getTrueCenterPos().y-this.aCamera.oldPos.y) * this.aCamera.settings.loop.deltaTime)
+					this.aParallax.update((this.aCamera.following.getTrueCenterPos().x-this.aCamera.oldPos.x), (this.aCamera.following.getTrueCenterPos().y-this.aCamera.oldPos.y))
 				}
 				this.aCamera.update(this.aCamera.settings.loop.elapsedMS, this.aCamera.settings.loop.deltaTime);
 				this.aCamera.settings.loop.lastTime = now;
