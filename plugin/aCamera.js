@@ -52,15 +52,17 @@
 		aCamera.isScrolling = false;
 		aCamera.isPanning = false;
 
-		Diob.prototype.aCenterPos = { 'x': 0, 'y': 0 };
-		Diob.prototype.getTrueCenterPos = function() {
-			const tileSize = VYLO.World.getTileSize();
-			this.aCenterPos.x = Math.round(this.xPos + (this.aIconInfo ? this.aIconInfo.halfWidth : tileSize.width) + this.xIconOffset);
-			this.aCenterPos.y = Math.round(this.yPos + (this.aIconInfo ? this.aIconInfo.halfHeight : tileSize.height) + this.yIconOffset);
-			return this.aCenterPos;
-		};
+		// Another plugin that could be used while in tandem with this one already presets this information, so we check to make sure we don't set it again.
+		// If the other plugin is not used, then this is preset for use in positioning calculations.
+		if (!Diob.prototype.getTrueCenterPos) {
+			Diob.prototype.getTrueCenterPos = function() {
+				const tileSize = VYLO.World.getTileSize();
+				const position = { x: Math.round(this.x + (this.aIconInfo ? this.aIconInfo.halfWidth : tileSize.width) + this.xIconOffset), y: Math.round(this.y + (this.aIconInfo ? this.aIconInfo.halfHeight : tileSize.height) + this.yIconOffset) };
+				return position;
+			};
+		}
 		
-		VYLO.global.aListener.addEventListener(VYLO.Client, 'onScreenRender', function(pT) {
+		AListener.addEventListener(VYLO.Client, 'onScreenRender', function(pT) {
 			if (this.aCamera.init) {
 				const now = Date.now();
 				if (this.___EVITCA_aPause) {
