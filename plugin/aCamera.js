@@ -66,7 +66,7 @@
 			if (this.aCamera.init) {
 				const now = Date.now();
 				if (this.___EVITCA_aPause) {
-					if (this.aPause.paused) {
+					if (aPause && aPause.paused) {
 						this.aCamera.settings.loop.lastTime = now;
 						return;
 					}
