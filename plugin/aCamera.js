@@ -368,7 +368,8 @@
 		aCamera.mouseOpacity = 0;
 		aCamera.touchOpacity = 0;
 		aCamera.density = 0;
-		aCamera.plane = MAX_PLANE;
+		aCamera.plane = 1;
+		aCamera.layer = MAX_PLANE;
 		aCamera.invisibility = MAX_PLANE;
 		// set when the player gives the camera settings to follow
 		aCamera.custom = false;
