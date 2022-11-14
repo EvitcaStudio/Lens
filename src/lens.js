@@ -26,31 +26,25 @@
 
 		VYLO.Client.mapView.anchor = { 'x': 0.5, 'y': 0.5 };
 		VYLO.Client.setMapView(VYLO.Client.mapView);
-
-		if (VYLO.Client.timeScale === undefined) {
-			VYLO.Client.timeScale = 1;
-		}
 	}
 
-	const assignCamera = (aCamera) => {
-		VYLO.Client.___EVITCA_aCamera = true;
-		VYLO.Client.aCamera = aCamera;
-		VYLO.global.aCamera = aCamera;
-		window.aCamera = aCamera;
+	const assignCamera = (Lens) => {
+		VYLO.global.Lens = Lens;
+		window.Lens = Lens;
 		// the version of the camera
-		aCamera.version = 'v1.0.0';
+		Lens.version = 'v1.0.0';
 		// a object that stores the icon sizes of icons used in this library
-		aCamera.cachedResourcesInfo = {};
+		Lens.cachedResourcesInfo = {};
 		// whether the camera has been created and is ready for use or not
-		aCamera.init = true;
+		Lens.init = true;
 		// whether the camera is attached to something and will follow it
-		aCamera.attached = false;
-		aCamera.isMoving = false;
-		aCamera.isZooming = false;
-		aCamera.isSpectating = false;
-		aCamera.isShaking = false;
-		aCamera.isScrolling = false;
-		aCamera.isPanning = false;
+		Lens.attached = false;
+		Lens.isMoving = false;
+		Lens.isZooming = false;
+		Lens.isSpectating = false;
+		Lens.isShaking = false;
+		Lens.isScrolling = false;
+		Lens.isPanning = false;
 
 		// Another plugin that could be used while in tandem with this one already presets this information, so we check to make sure we don't set it again.
 		// If the other plugin is not used, then this is preset for use in positioning calculations.
@@ -62,66 +56,67 @@
 			};
 		}
 		
-		AListener.addEventListener(VYLO.Client, 'onScreenRender', function(pT) {
-			if (this.aCamera.init) {
+		EListener.on(VYLO.Client, 'onScreenRender', function(pT) {
+			if (Lens.init) {
 				const now = Date.now();
+				// Legacy code, will be removed
 				if (this.___EVITCA_aPause) {
 					if (aPause && aPause.paused) {
-						this.aCamera.settings.loop.lastTime = now;
+						Lens.settings.loop.lastTime = now;
 						return;
 					}
 				}
-				if (!this.aCamera.settings.loop.lastTime) this.aCamera.settings.loop.lastTime = now;
-				const elapsedMS = (now - this.aCamera.settings.loop.lastTime);
-				let dt = (now - this.aCamera.settings.loop.lastTime) / 1000;
-				this.aCamera.settings.loop.elapsedMS = elapsedMS;
+				if (!Lens.settings.loop.lastTime) Lens.settings.loop.lastTime = now;
+				const elapsedMS = (now - Lens.settings.loop.lastTime);
+				let dt = (now - Lens.settings.loop.lastTime) / 1000;
+				Lens.settings.loop.elapsedMS = elapsedMS;
 				if (dt > MAX_DELTA_TIME) dt = MAX_DELTA_TIME;
-				this.aCamera.settings.loop.deltaTime = dt;
+				Lens.settings.loop.deltaTime = dt;
 				// PINGABLE
 				// legacy code for aParallax plugin (will be removed)
-				if (this.___EVITCA_aParallax && this.aCamera.attached) {
-					this.aParallax.update((this.aCamera.following.getTrueCenterPos().x-this.aCamera.oldPos.x), (this.aCamera.following.getTrueCenterPos().y-this.aCamera.oldPos.y))
+				if (this.___EVITCA_aParallax && Lens.attached) {
+					this.aParallax.update((Lens.following.getTrueCenterPos().x-Lens.oldPos.x), (Lens.following.getTrueCenterPos().y-Lens.oldPos.y))
 				}
-				this.aCamera.update(this.aCamera.settings.loop.elapsedMS, this.aCamera.settings.loop.deltaTime);
-				this.aCamera.settings.loop.lastTime = now;
+				Lens.update(Lens.settings.loop.elapsedMS, Lens.settings.loop.deltaTime);
+				Lens.settings.loop.lastTime = now;
 			}
 		});
 		
 		VYLO.Client.attachCamera = function(pSettings) {
-			this.aCamera.settings.zoom.currentLevel.x = this.mapView.scale.x;
-			this.aCamera.settings.zoom.currentLevel.y = this.mapView.scale.y;
-			this.aCamera.assignIconSize(this.mob);
-			this.aCamera.following = this.mob;
-			this.aCamera.setPos(this.mob.getTrueCenterPos().x, this.mob.getTrueCenterPos().y, this.mob.mapName);
-			this.aCamera.oldPos.x = this.aCamera.xPos;
-			this.aCamera.oldPos.y = this.aCamera.yPos;
-			this.aCamera.attached = true;
+			Lens.settings.zoom.currentLevel.x = this.mapView.scale.x;
+			Lens.settings.zoom.currentLevel.y = this.mapView.scale.y;
+			Lens.assignIconSize(this.mob);
+			Lens.following = this.mob;
+			Lens.setPos(this.mob.getTrueCenterPos().x, this.mob.getTrueCenterPos().y, this.mob.mapName);
+			Lens.oldPos.x = Lens.xPos;
+			Lens.oldPos.y = Lens.yPos;
+			Lens.attached = true;
 
 			if (pSettings) {
 				if (typeof(pSettings) === 'object' && pSettings.constructor === Object) {
 					if (pSettings.duration) {
 						if (typeof(pSettings.duration) === 'object' && pSettings.duration.constructor === Object) {
 							if (typeof(pSettings.duration.x) === 'number' && typeof(pSettings.duration.y) === 'number') {
-								this.aCamera.settings.custom.duration.x = pSettings.duration.x;
-								this.aCamera.settings.custom.duration.y = pSettings.duration.y;
+								Lens.settings.custom.duration.x = pSettings.duration.x;
+								Lens.settings.custom.duration.y = pSettings.duration.y;
 							} else {
-								this.aCamera.settings.custom.duration.x = this.aCamera.settings.custom.duration.y = 1000;
+								Lens.settings.custom.duration.x = Lens.settings.custom.duration.y = 1000;
 								if (this.debugging) {
-									console.warn('aCamera Module: Invalid variable type passed for the %cpSettings.duration.x || pSettings.duration.y', 'font-weight: bold', 'property. Reverted to default');
+									console.warn('Lens: Invalid variable type passed for the %cpSettings.duration.x || pSettings.duration.y', 'font-weight: bold', 'property. Reverted to default');
 								}
 							}
 						} else if (typeof(pSettings.duration === 'number')) {
-							this.aCamera.settings.custom.duration.x = this.aCamera.settings.custom.duration.y = pSettings.duration;
+							Lens.settings.custom.duration.x = Lens.settings.custom.duration.y = pSettings.duration;
 						} else {
-							this.aCamera.settings.custom.duration.x = this.aCamera.settings.custom.duration.y = 1000;
+							Lens.settings.custom.duration.x = Lens.settings.custom.duration.y = 1000;
 							if (this.debugging) {
-								console.warn('aCamera Module: Invalid variable type passed for the %cpSettings.duration', 'font-weight: bold', 'property. Reverted to default');
+								console.warn('Lens: Invalid variable type passed for the %cpSettings.duration', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					} else {
-						this.aCamera.settings.custom.duration.x = this.aCamera.settings.custom.duration.y = 1000;
+						Lens.settings.custom.duration.x = Lens.settings.custom.duration.y = 1000;
 						if (this.debugging) {
-							console.warn('aCamera Module: No %cpSettings.duration', 'font-weight: bold', 'parameter passed. Reverted to default');
+							console.warn('Lens: No %cpSettings.duration', 'font-weight: bold', 'parameter passed. Reverted to default');
 						}
 					}
 
@@ -129,67 +124,67 @@
 						if (typeof(pSettings.ease) === 'object' && pSettings.ease.constructor === Object) {
 							if (typeof(pSettings.ease.x) === 'string' && typeof(pSettings.ease.y) === 'string') {
 								if (validEase.includes(pSettings.ease.x) && validEase.includes(pSettings.ease.y)) {
-									this.aCamera.settings.custom.ease.x = pSettings.ease.x;
-									this.aCamera.settings.custom.ease.y = pSettings.ease.y;
+									Lens.settings.custom.ease.x = pSettings.ease.x;
+									Lens.settings.custom.ease.y = pSettings.ease.y;
 								} else {
-									this.aCamera.settings.custom.ease.x = this.aCamera.settings.custom.ease.y = 'easeOutCubic';
+									Lens.settings.custom.ease.x = Lens.settings.custom.ease.y = 'easeOutCubic';
 									if (this.debugging) {
-										console.warn('aCamera Module: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease.x || pSettings.ease.y. Reverted to default');
+										console.warn('Lens: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease.x || pSettings.ease.y. Reverted to default');
 									}
 								}
 							} else {
-								this.aCamera.settings.custom.ease.x = this.aCamera.settings.custom.ease.y = 'easeOutCubic';
+								Lens.settings.custom.ease.x = Lens.settings.custom.ease.y = 'easeOutCubic';
 								if (this.debugging) {
-									console.warn('aCamera Module: Invalid variable type passed for the %cpSettings.ease.x || pSettings.ease.y', 'font-weight: bold', 'property. Reverted to default');
+									console.warn('Lens: Invalid variable type passed for the %cpSettings.ease.x || pSettings.ease.y', 'font-weight: bold', 'property. Reverted to default');
 								}
 							}
 						} else if (typeof(pSettings.ease === 'string')) {
 							if (validEase.includes(pSettings.ease)) {
-								this.aCamera.settings.custom.ease.x = this.aCamera.settings.custom.ease.y = pSettings.ease;
+								Lens.settings.custom.ease.x = Lens.settings.custom.ease.y = pSettings.ease;
 							} else {
-								this.aCamera.settings.custom.ease.x = this.aCamera.settings.custom.ease.y = 'easeOutCubic';
+								Lens.settings.custom.ease.x = Lens.settings.custom.ease.y = 'easeOutCubic';
 								if (this.debugging) {
-									console.warn('aCamera Module: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease. Reverted to default');
+									console.warn('Lens: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease. Reverted to default');
 								}
 							}
 						} else {
-							this.aCamera.settings.custom.ease.x = this.aCamera.settings.custom.ease.y = 'easeOutCubic';
+							Lens.settings.custom.ease.x = Lens.settings.custom.ease.y = 'easeOutCubic';
 							if (this.debugging) {
-								console.warn('aCamera Module: Invalid variable type passed for the %cpSettings.ease', 'font-weight: bold', 'property. Reverted to default');
+								console.warn('Lens: Invalid variable type passed for the %cpSettings.ease', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					} else {
-						this.aCamera.settings.custom.ease.x = this.aCamera.settings.custom.ease.y = 'easeOutCubic';
+						Lens.settings.custom.ease.x = Lens.settings.custom.ease.y = 'easeOutCubic';
 						if (this.debugging) {
-							console.warn('aCamera Module: No %cpSettings.ease', 'font-weight: bold', 'parameter passed. Reverted to default');
+							console.warn('Lens: No %cpSettings.ease', 'font-weight: bold', 'parameter passed. Reverted to default');
 						}		
 					}
 
-					this.aCamera.reset('standard');
-					this.aCamera.custom = true;
+					Lens.reset('standard');
+					Lens.custom = true;
 					this.following = this.mob;
-					this.aCamera.settings.custom.initialPos.x = this.aCamera.xPos;
-					this.aCamera.settings.custom.initialPos.y = this.aCamera.yPos;
+					Lens.settings.custom.initialPos.x = Lens.xPos;
+					Lens.settings.custom.initialPos.y = Lens.yPos;
 				} else {
-					this.aCamera.reset('custom');
-					this.aCamera.custom = false;
-					this.aCamera.following = this.mob;
-					this.aCamera.settings.standard.initialPos.x = this.aCamera.xPos;
-					this.aCamera.settings.standard.initialPos.y = this.aCamera.yPos;
+					Lens.reset('custom');
+					Lens.custom = false;
+					Lens.following = this.mob;
+					Lens.settings.standard.initialPos.x = Lens.xPos;
+					Lens.settings.standard.initialPos.y = Lens.yPos;
 					if (this.debugging) {
-						console.warn('aCamera Module: Invalid variable type passed for the %cpSettings', 'font-weight: bold', 'parameter. Reverted to default');
+						console.warn('Lens: Invalid variable type passed for the %cpSettings', 'font-weight: bold', 'parameter. Reverted to default');
 					}
 				}
 			} else {
-				this.aCamera.reset('custom');
-				this.aCamera.custom = false;
-				this.aCamera.following = this.mob;
-				this.aCamera.settings.standard.initialPos.x = this.aCamera.xPos;
-				this.aCamera.settings.standard.initialPos.y = this.aCamera.yPos;
+				Lens.reset('custom');
+				Lens.custom = false;
+				Lens.following = this.mob;
+				Lens.settings.standard.initialPos.x = Lens.xPos;
+				Lens.settings.standard.initialPos.y = Lens.yPos;
 			}
 			
-			this.aCamera.oldFollowingPos = { 'x': this.aCamera.following.xPos + this.aCamera.following.xIconOffset, 'y': this.aCamera.following.yPos + this.aCamera.following.yIconOffset }
-			this.setViewEye(this.aCamera);
+			Lens.oldFollowingPos = { 'x': Lens.following.xPos + Lens.following.xIconOffset, 'y': Lens.following.yPos + Lens.following.yIconOffset }
+			this.setViewEye(Lens);
 		}
 	}
 
@@ -359,36 +354,36 @@
 		
 		const ZERO = 0;
 		const MAX_CAMERA_SHAKE_FORCE = 100;
-		const aCamera = VYLO.newDiob();
+		const Lens = VYLO.newDiob();
 
-		aCamera.atlasName = '';
-		aCamera.width = 1;
-		aCamera.height = 1;
-		aCamera.color = { 'tint': 0xFF69B4 };
-		aCamera.mouseOpacity = 0;
-		aCamera.touchOpacity = 0;
-		aCamera.density = 0;
-		aCamera.plane = 1;
-		aCamera.layer = MAX_PLANE;
-		aCamera.invisibility = MAX_PLANE;
+		Lens.atlasName = '';
+		Lens.width = 1;
+		Lens.height = 1;
+		Lens.color = { 'tint': 0xFF69B4 };
+		Lens.mouseOpacity = 0;
+		Lens.touchOpacity = 0;
+		Lens.density = 0;
+		Lens.plane = 1;
+		Lens.layer = MAX_PLANE;
+		Lens.invisibility = MAX_PLANE;
 		// set when the player gives the camera settings to follow
-		aCamera.custom = false;
+		Lens.custom = false;
 		 // who owns this camera
-		aCamera.owner = VYLO.Client;
-		aCamera.following = null;
+		Lens.owner = VYLO.Client;
+		Lens.following = null;
 		// // debugging is whether this library is in debug mode. Extra warnings will be thrown in this mode to help explain any issues that may arise. if the camera is currently being debugged, (shows icon info for the camera)
-		aCamera.debugging = false;
-		aCamera.preventScreenRelayer = true;
-		aCamera.preventInterpolation = true;
-		aCamera.ONE = 1;
-		aCamera.TWO = 2;
-		aCamera.THREE = 3;
-		aCamera.FOUR = 4;
-		aCamera.FIVE = 5;
-		aCamera.SIX = 6;
-		aCamera.oldPos = { 'x': 0, 'y': 0 };
-		aCamera.oldFollowingPos = { 'x': 0, 'y': 0 };
-		aCamera.settings = {
+		Lens.debugging = false;
+		Lens.preventScreenRelayer = true;
+		Lens.preventInterpolation = true;
+		Lens.ONE = 1;
+		Lens.TWO = 2;
+		Lens.THREE = 3;
+		Lens.FOUR = 4;
+		Lens.FIVE = 5;
+		Lens.SIX = 6;
+		Lens.oldPos = { 'x': 0, 'y': 0 };
+		Lens.oldFollowingPos = { 'x': 0, 'y': 0 };
+		Lens.settings = {
 			'zoom': { // allows separate dimension zooming
 				'active': { 'x': false, 'y': false },
 				'time': { 'x': 0, 'y': 0 },
@@ -473,12 +468,12 @@
 			'shaking': false
 		};
 
-		aCamera.decimalRand = function(pNum, pNum2, pPlaces=1) {
+		Lens.decimalRand = function(pNum, pNum2, pPlaces=1) {
 			const result = Number((Math.random() * (pNum - pNum2) + pNum2).toFixed(pPlaces));
 			return (result >= 1 ? Math.floor(result) : result);
 		}
 
-		aCamera.assignIconSize = function(pDiob) {
+		Lens.assignIconSize = function(pDiob) {
 			if (pDiob.aIconInfo) return;
 			const resourceID = (pDiob.atlasName + '_' + (pDiob.iconName ? pDiob.iconName : '') + '_' + (pDiob.iconState ? pDiob.iconState : '')).trim();
 			pDiob.aIconInfo = {};
@@ -508,11 +503,11 @@
 			if (pDiob.atlasName) {
 				VYLO.Resource.loadResource('icon', pDiob.atlasName, setIconSize.bind(this));
 			} else {
-				console.warn('aCamera Module [assignIconSize]: No %cpDiob.atlasName', 'font-weight: bold', 'to load.');
+				console.warn('Lens: No %cpDiob.atlasName', 'font-weight: bold', 'to load.');
 			}
 		}
 
-		aCamera.reset = function(pMethod) {
+		Lens.reset = function(pMethod) {
 			switch (pMethod) {
 				case 'zoomX':
 					this.settings.zoom.active.x = false;
@@ -653,7 +648,7 @@
 			}
 		}
 
-		aCamera.zoomUpdate = function(pElapsedMS, pDeltaTime) {
+		Lens.zoomUpdate = function(pElapsedMS, pDeltaTime) {
 			if (this.settings.zoom.active.x) {
 				this.settings.zoom.time.x = Math.min(this.settings.zoom.time.x + pElapsedMS, this.settings.zoom.duration.x);
 				this.settings.zoom.currentLevel.x = Ease[this.settings.zoom.ease.x](this.settings.zoom.time.x, this.settings.zoom.initialLevel.x, this.settings.zoom.differenceLevel.x, this.settings.zoom.duration.x);
@@ -683,7 +678,7 @@
 			}
 		}
 
-		aCamera.shakeUpdate = function(pElapsedMS, pDeltaTime) {
+		Lens.shakeUpdate = function(pElapsedMS, pDeltaTime) {
 			let angle;
 			let xForce;
 			let yForce;
@@ -735,13 +730,13 @@
 			}
 		}
 
-		aCamera.pan = function(pSettings) {
+		Lens.pan = function(pSettings) {
 			if (this.settings.panning && !this.settings.pan.returning) {
-				console.error('aCamera Module [Pan]: You are already %cpanning', 'font-weight: bold', '. Pan failed');
+				console.error('Lens: You are already %cpanning', 'font-weight: bold', '. Pan failed');
 				return;
 			}
 			if (this.settings.spectating) {
-				console.error('aCamera Module [Pan]: You are %cspectating', 'font-weight: bold', 'and cannot pan right now. Pan failed');
+				console.error('Lens: You are %cspectating', 'font-weight: bold', 'and cannot pan right now. Pan failed');
 				return;
 			}
 			if (typeof(pSettings) === 'object' && pSettings.constructor === Object) {
@@ -751,17 +746,17 @@
 					if (typeof(pSettings.target) === 'object' && pSettings.target.constructor === Diob) {
 						if (typeof(pSettings.target.xPos) === 'number' && typeof(pSettings.target.yPos) === 'number' && typeof(pSettings.target.mapName) === 'string') {
 							if (pSettings.target === this.following) {
-								console.error('aCamera Module [Pan]: You %ccannot', 'font-weight: bold', 'pan to yourself. Pan failed');
+								console.error('Lens: You %ccannot', 'font-weight: bold', 'pan to yourself. Pan failed');
 								return
 							}
 							this.assignIconSize(pSettings.target);
 							this.settings.pan.target = pSettings.target;
 						} else {
-							console.error('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.target.xPos || pSettings.target.yPos || *pSettings.target.mapName', 'font-weight: bold', 'parameter. Pan failed');
+							console.error('Lens: Invalid variable type passed for the %cpSettings.target.xPos || pSettings.target.yPos || *pSettings.target.mapName', 'font-weight: bold', 'parameter. Pan failed');
 							return
 						}
 					} else {
-						console.error('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.target', 'font-weight: bold', 'property. Pan failed');
+						console.error('Lens: Invalid variable type passed for the %cpSettings.target', 'font-weight: bold', 'property. Pan failed');
 						return;
 					}
 
@@ -775,13 +770,13 @@
 								} else {
 									this.settings.pan.ease.x = this.settings.pan.ease.y = 'easeOutCubic';
 									if (this.debugging) {
-										console.warn('aCamera Module [Pan]: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease.x || pSettings.ease.y. Reverted to default');
+										console.warn('Lens: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease.x || pSettings.ease.y. Reverted to default');
 									}
 								}
 							} else {
 								this.settings.pan.ease.x = this.settings.pan.ease.y = 'easeOutCubic';
 								if (this.debugging) {
-									console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.ease.x || pSettings.ease.y', 'font-weight: bold', 'parameter. Reverted to default');
+									console.warn('Lens: Invalid variable type passed for the %cpSettings.ease.x || pSettings.ease.y', 'font-weight: bold', 'parameter. Reverted to default');
 								}
 							}
 						} else if (typeof(pSettings.ease) === 'string') {
@@ -790,19 +785,19 @@
 							} else {
 								this.settings.pan.ease.x = this.settings.pan.ease.y = 'easeOutCubic';
 								if (this.debugging) {
-									console.warn('aCamera Module [Pan]: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease.x || pSettings.ease.y. Reverted to default');
+									console.warn('Lens: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease.x || pSettings.ease.y. Reverted to default');
 								}
 							}
 						} else {
 							this.settings.pan.ease.x = this.settings.pan.ease.y = 'easeOutCubic';
 							if (this.debugging) {
-								console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.ease', 'font-weight: bold', 'property. Reverted to default');
+								console.warn('Lens: Invalid variable type passed for the %cpSettings.ease', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					} else {
 							this.settings.pan.ease.x = this.settings.pan.ease.y = 'easeOutCubic';
 							if (this.debugging) {
-								console.warn('aCamera Module [Pan]: No %cease', 'font-weight: bold', 'property included inside of the pSettings parameter. Reverted to default');
+								console.warn('Lens: No %cease', 'font-weight: bold', 'property included inside of the pSettings parameter. Reverted to default');
 							}
 					}
 
@@ -816,13 +811,13 @@
 								} else {
 									this.settings.pan.finalEase.x = this.settings.pan.finalEase.y = 'easeOutCubic';
 									if (this.debugging) {
-										console.warn('aCamera Module [Pan]: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.finalEase.x || pSettings.finalEase.y. Reverted to default');
+										console.warn('Lens: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.finalEase.x || pSettings.finalEase.y. Reverted to default');
 									}
 								}
 							} else {
 								this.settings.pan.finalEase.x = this.settings.pan.finalEase.y = 'easeOutCubic';
 								if (this.debugging) {
-									console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.finalEase.x || pSettings.finalEase.y', 'font-weight: bold', 'parameter. Reverted to default');
+									console.warn('Lens: Invalid variable type passed for the %cpSettings.finalEase.x || pSettings.finalEase.y', 'font-weight: bold', 'parameter. Reverted to default');
 								}
 							}
 						} else if (typeof(pSettings.finalEase) === 'string') {
@@ -831,19 +826,19 @@
 							} else {
 								this.settings.pan.finalEase.x = this.settings.pan.finalEase.y = 'easeOutCubic';
 								if (this.debugging) {
-									console.warn('aCamera Module [Pan]: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.finalEase.x || pSettings.finalEase.y. Reverted to default');
+									console.warn('Lens: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.finalEase.x || pSettings.finalEase.y. Reverted to default');
 								}
 							}
 						} else {
 							this.settings.pan.finalEase.x = this.settings.pan.finalEase.y = 'easeOutCubic';
 							if (this.debugging) {
-								console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.finalEase', 'font-weight: bold', 'property. Reverted to default');
+								console.warn('Lens: Invalid variable type passed for the %cpSettings.finalEase', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					} else {
 							this.settings.pan.finalEase.x = this.settings.pan.finalEase.y = 'easeOutCubic';
 							if (this.debugging) {
-								console.warn('aCamera Module [Pan]: No %cfinalEase', 'font-weight: bold', 'property included inside of the pSettings parameter. Reverted to default');
+								console.warn('Lens: No %cfinalEase', 'font-weight: bold', 'property included inside of the pSettings parameter. Reverted to default');
 							}
 					}
 
@@ -856,7 +851,7 @@
 							} else {
 								this.settings.pan.duration.x = this.settings.pan.duration.y = 2000;
 								if (this.debugging) {
-									console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.duration.x || pSettings.duration.y', 'font-weight: bold', 'parameter. Reverted to default');
+									console.warn('Lens: Invalid variable type passed for the %cpSettings.duration.x || pSettings.duration.y', 'font-weight: bold', 'parameter. Reverted to default');
 								}
 							}
 						} else if (typeof(pSettings.duration) === 'number') {
@@ -864,13 +859,13 @@
 						} else {
 							this.settings.pan.duration.x = this.settings.pan.duration.y = 2000;
 							if (this.debugging) {
-								console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.duration', 'font-weight: bold', 'property. Reverted to default');
+								console.warn('Lens: Invalid variable type passed for the %cpSettings.duration', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					} else {
 							this.settings.pan.duration.x = this.settings.pan.duration.y = 2000;
 							if (this.debugging) {
-								console.warn('aCamera Module [Pan]: No %cduration', 'font-weight: bold', 'property included inside of the pSettings parameter. Reverted to default');
+								console.warn('Lens: No %cduration', 'font-weight: bold', 'property included inside of the pSettings parameter. Reverted to default');
 							}
 					}
 
@@ -883,7 +878,7 @@
 							} else {
 								this.settings.pan.finalDuration.x = this.settings.pan.finalDuration.y = 2000;
 								if (this.debugging) {
-									console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.finalDuration.x || pSettings.finalDuration.y', 'font-weight: bold', 'parameter. Reverted to default');
+									console.warn('Lens: Invalid variable type passed for the %cpSettings.finalDuration.x || pSettings.finalDuration.y', 'font-weight: bold', 'parameter. Reverted to default');
 								}
 							}
 						} else if (typeof(pSettings.finalDuration) === 'number') {
@@ -891,13 +886,13 @@
 						} else {
 							this.settings.pan.finalDuration.x = this.settings.pan.finalDuration.y = 2000;
 							if (this.debugging) {
-								console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.finalDuration', 'font-weight: bold', 'property. Reverted to default');
+								console.warn('Lens: Invalid variable type passed for the %cpSettings.finalDuration', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					} else {
 							this.settings.pan.finalDuration.x = this.settings.pan.finalDuration.y = 2000;
 							if (this.debugging) {
-								console.warn('aCamera Module [Pan]: No %cfinalDuration', 'font-weight: bold', 'property included inside of the pSettings parameter. Reverted to default');
+								console.warn('Lens: No %cfinalDuration', 'font-weight: bold', 'property included inside of the pSettings parameter. Reverted to default');
 							}
 					}
 
@@ -908,7 +903,7 @@
 						} else {
 							this.settings.pan.pauseDuration = 0;
 							if (this.debugging) {
-								console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.pauseDuration', 'font-weight: bold', 'property. Reverted to default');
+								console.warn('Lens: Invalid variable type passed for the %cpSettings.pauseDuration', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					}
@@ -933,7 +928,7 @@
 							this.settings.pan.pannedCallback = pSettings.pannedCallback;
 						} else {
 							if (this.debugging) {
-								console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.pannedCallback', 'font-weight: bold', 'property.');
+								console.warn('Lens: Invalid variable type passed for the %cpSettings.pannedCallback', 'font-weight: bold', 'property.');
 							}
 						}
 					}
@@ -944,7 +939,7 @@
 							this.settings.pan.finalCallback = pSettings.finalCallback;
 						} else {
 							if (this.debugging) {
-								console.warn('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings.finalCallback', 'font-weight: bold', 'property.');
+								console.warn('Lens: Invalid variable type passed for the %cpSettings.finalCallback', 'font-weight: bold', 'property.');
 							}
 						}
 					}
@@ -958,17 +953,17 @@
 					}
 
 				} else {
-					console.error('aCamera Module [Pan]: No %ctarget', 'font-weight: bold', 'property included inside of the pSettings parameter. Pan failed');
+					console.error('Lens: No %ctarget', 'font-weight: bold', 'property included inside of the pSettings parameter. Pan failed');
 				}
 
 			} else {
-				console.error('aCamera Module [Pan]: Invalid variable type passed for the %cpSettings', 'font-weight: bold', 'parameter. Pan failed');
+				console.error('Lens: Invalid variable type passed for the %cpSettings', 'font-weight: bold', 'parameter. Pan failed');
 			}
 			this.settings.panning = true;
 			this.isPanning = true;
 		}
 
-		aCamera.onPanned = function() {
+		Lens.onPanned = function() {
 			if (this.settings.pan.pannedCallback) {
 				this.settings.pan.pannedCallback();
 				this.settings.pan.pannedCallback = null;
@@ -981,7 +976,7 @@
 						this.reset('pan');
 					} else {
 						if (this.debugging) {
-							console.warn('aCamera Module [Pan]: Cannot attach to a non %cdiob', 'font-weight: bold', 'type. Attachment failed');
+							console.warn('Lens: Cannot attach to a non %cdiob', 'font-weight: bold', 'type. Attachment failed');
 						}
 					}
 				}
@@ -998,7 +993,7 @@
 			}
 		}
 
-		aCamera.onPanFinish = function() {
+		Lens.onPanFinish = function() {
 			if (this.settings.pan.forceDirChange) {
 				this.following.dir = this.settings.pan.storedDir;
 			}
@@ -1011,7 +1006,7 @@
 			}
 		}
 
-		aCamera.follow = function(pMethod, pElapsedMS, pDeltaTime) {
+		Lens.follow = function(pMethod, pElapsedMS, pDeltaTime) {
 			let distanceX;
 			let distanceY;
 
@@ -1130,7 +1125,7 @@
 			this.oldPos.y = this.yPos;
 		}
 
-		aCamera.update = function(pElapsedMS, pDeltaTime) {
+		Lens.update = function(pElapsedMS, pDeltaTime) {
 			// zoom
 			if (this.settings.zoom.active.x || this.settings.zoom.active.y) {
 				this.zoomUpdate(pElapsedMS, pDeltaTime);
@@ -1194,7 +1189,7 @@
 			}
 		}
 
-		aCamera.zoom = function(pDestinationLevel={'x': 1, 'y': 1}, pDuration={'x': 1000, 'y': 1000}, pEase={'x': 'easeOutCirc', 'y': 'easeOutCirc'}, pCallback) {
+		Lens.zoom = function(pDestinationLevel={'x': 1, 'y': 1}, pDuration={'x': 1000, 'y': 1000}, pEase={'x': 'easeOutCirc', 'y': 'easeOutCirc'}, pCallback) {
 			if (this.settings.zoom.active.x || this.settings.zoom.active.y) {
 				return;
 			}
@@ -1208,7 +1203,7 @@
 					} else {
 						dx = dy = 1;
 						if (this.debugging) {
-							console.warn('aCamera Module [Zoom]: Invalid variable type passed for the %cpDestinationLevel', 'font-weight: bold', 'parameter. Reverted to default');
+							console.warn('Lens: Invalid variable type passed for the %cpDestinationLevel', 'font-weight: bold', 'parameter. Reverted to default');
 						}							
 					}
 				} else {
@@ -1218,14 +1213,14 @@
 					} else {
 						dx = dy = 1;
 						if (this.debugging) {
-							console.warn('aCamera Module [Zoom]: Invalid variable type passed for the %cpDestinationLevel.x || pDestinationLevel.y', 'font-weight: bold', 'parameter. Reverted to default');
+							console.warn('Lens: Invalid variable type passed for the %cpDestinationLevel.x || pDestinationLevel.y', 'font-weight: bold', 'parameter. Reverted to default');
 						}		
 					}
 				}
 			} else {
 				dx = dy = 1;
 				if (this.debugging) {
-					console.warn('aCamera Module [Zoom]: No %cpDestinationLevel', 'font-weight: bold', 'parameter passed. Reverted to default');
+					console.warn('Lens: No %cpDestinationLevel', 'font-weight: bold', 'parameter passed. Reverted to default');
 				}	
 			}
 
@@ -1258,7 +1253,7 @@
 					} else {
 						this.settings.zoom.duration.x = this.settings.zoom.duration.y = 1000;
 						if (this.debugging) {
-							console.warn('aCamera Module [Zoom]: Invalid variable type passed for the %cpDuration', 'font-weight: bold', 'parameter. Reverted to default');
+							console.warn('Lens: Invalid variable type passed for the %cpDuration', 'font-weight: bold', 'parameter. Reverted to default');
 						}
 					}
 				} else {
@@ -1268,7 +1263,7 @@
 						} else {
 							this.settings.zoom.duration.x = this.settings.zoom.duration.y = 1000;
 							if (this.debugging) {
-								console.warn('aCamera Module [Zoom]: Invalid variable type passed for the %cpDuration.x || pDuration.y', 'font-weight: bold', 'parameter. Reverted to default');
+								console.warn('Lens: Invalid variable type passed for the %cpDuration.x || pDuration.y', 'font-weight: bold', 'parameter. Reverted to default');
 							}
 						}
 					}
@@ -1276,7 +1271,7 @@
 			} else {
 				this.settings.zoom.duration.x = this.settings.zoom.duration.y = 1000;
 				if (this.debugging) {
-					console.warn('aCamera Module [Zoom]: No %cpDuration', 'font-weight: bold', 'parameter passed. Reverted to default');
+					console.warn('Lens: No %cpDuration', 'font-weight: bold', 'parameter passed. Reverted to default');
 				}	
 			}
 
@@ -1289,13 +1284,13 @@
 						} else {
 							this.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';
 							if (this.debugging) {
-								console.warn('aCamera Module [Zoom]: Invalid %cpEase', 'font-weight: bold', 'name passed. Reverted to default');
+								console.warn('Lens: Invalid %cpEase', 'font-weight: bold', 'name passed. Reverted to default');
 							}
 						}
 					} else {
 						this.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';
 						if (this.debugging) {
-							console.warn('aCamera Module [Zoom]: Invalid variable type passed for the %cpEase', 'font-weight: bold', 'parameter. Reverted to default');
+							console.warn('Lens: Invalid variable type passed for the %cpEase', 'font-weight: bold', 'parameter. Reverted to default');
 						}
 					}
 
@@ -1307,14 +1302,14 @@
 							} else {
 								this.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';
 								if (this.debugging) {
-									console.warn('aCamera Module [Zoom]: Invalid %cpEase', 'font-weight: bold', 'name passed for pEase.x || pEase.y. Reverted to default');
+									console.warn('Lens: Invalid %cpEase', 'font-weight: bold', 'name passed for pEase.x || pEase.y. Reverted to default');
 								}
 							}
 							
 						} else {
 							this.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';
 							if (this.debugging) {
-								console.warn('aCamera Module [Zoom]: Invalid variable type passed for the %cpEase.x || pEase.y', 'font-weight: bold', 'parameter. Reverted to default');
+								console.warn('Lens: Invalid variable type passed for the %cpEase.x || pEase.y', 'font-weight: bold', 'parameter. Reverted to default');
 							}
 						}
 					}				
@@ -1322,7 +1317,7 @@
 			} else {
 				this.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';
 				if (this.debugging) {
-					console.warn('aCamera Module [Zoom]: No %cpEase', 'font-weight: bold', 'parameter passed. Reverted to default');
+					console.warn('Lens: No %cpEase', 'font-weight: bold', 'parameter passed. Reverted to default');
 				}		
 			}
 
@@ -1332,7 +1327,7 @@
 					this.settings.zoom.callback = pCallback;
 				} else {
 					if (this.debugging) {
-						console.warn('aCamera Module [Zoom]: Invalid variable type passed for the %pCallback', 'font-weight: bold', 'property.');
+						console.warn('Lens: Invalid variable type passed for the %pCallback', 'font-weight: bold', 'property.');
 					}
 				}
 			}
@@ -1340,7 +1335,7 @@
 			this.isZooming = true;
 		}
 
-		aCamera.onZoomEnd = function() {
+		Lens.onZoomEnd = function() {
 			if (this.settings.zoom.callback) {
 				this.settings.zoom.callback();
 			}
@@ -1350,7 +1345,7 @@
 			this.reset('zoom');
 		}
 
-		aCamera.setSettings = function(pSettings) {
+		Lens.setSettings = function(pSettings) {
 			if (pSettings) {
 				if (typeof(pSettings) === 'object' && pSettings.constructor === Object) {
 					if (pSettings.duration) {
@@ -1361,7 +1356,7 @@
 							} else {
 								this.settings.custom.duration.x = this.settings.custom.duration.y = 1000;
 								if (this.debugging) {
-									console.warn('aCamera Module [setSettings]: Invalid variable type passed for the %cpSettings.duration.x || pSettings.duration.y', 'font-weight: bold', 'property. Reverted to default');
+									console.warn('Lens: Invalid variable type passed for the %cpSettings.duration.x || pSettings.duration.y', 'font-weight: bold', 'property. Reverted to default');
 								}
 							}
 						} else if (typeof(pSettings.duration === 'number')) {
@@ -1369,13 +1364,13 @@
 						} else {
 							this.settings.custom.duration.x = this.settings.custom.duration.y = 1000;
 							if (this.debugging) {
-								console.warn('aCamera Module [setSettings]: Invalid variable type passed for the %cpSettings.duration', 'font-weight: bold', 'property. Reverted to default');
+								console.warn('Lens: Invalid variable type passed for the %cpSettings.duration', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					} else {
 						this.settings.custom.duration.x = this.settings.custom.duration.y = 1000;
 						if (this.debugging) {
-							console.warn('aCamera Module [setSettings]: No %cpSettings.duration', 'font-weight: bold', 'parameter passed. Reverted to default');
+							console.warn('Lens: No %cpSettings.duration', 'font-weight: bold', 'parameter passed. Reverted to default');
 						}
 					}
 
@@ -1388,13 +1383,13 @@
 								} else {
 									this.settings.custom.ease.x = this.settings.custom.ease.y = 'easeOutCubic';
 									if (this.debugging) {
-										console.warn('aCamera Module [setSettings]: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease.x || pSettings.ease.y. Reverted to default');
+										console.warn('Lens: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease.x || pSettings.ease.y. Reverted to default');
 									}
 								}
 							} else {
 								this.settings.custom.ease.x = this.settings.custom.ease.y = 'easeOutCubic';
 								if (this.debugging) {
-									console.warn('aCamera Module [setSettings]: Invalid variable type passed for the %cpSettings.ease.x || pSettings.ease.y', 'font-weight: bold', 'property. Reverted to default');
+									console.warn('Lens: Invalid variable type passed for the %cpSettings.ease.x || pSettings.ease.y', 'font-weight: bold', 'property. Reverted to default');
 								}
 							}
 						} else if (typeof(pSettings.ease === 'string')) {
@@ -1403,19 +1398,19 @@
 							} else {
 								this.settings.custom.ease.x = this.settings.custom.ease.y = 'easeOutCubic';
 								if (this.debugging) {
-									console.warn('aCamera Module [setSettings]: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease. Reverted to default');
+									console.warn('Lens: Invalid %cease', 'font-weight: bold', 'name passed for pSettings.ease. Reverted to default');
 								}
 							}
 						} else {
 							this.settings.custom.ease.x = this.settings.custom.ease.y = 'easeOutCubic';
 							if (this.debugging) {
-								console.warn('aCamera Module [setSettings]: Invalid variable type passed for the %cpSettings.ease', 'font-weight: bold', 'property. Reverted to default');
+								console.warn('Lens: Invalid variable type passed for the %cpSettings.ease', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					} else {
 						this.settings.custom.ease.x = this.settings.custom.ease.y = 'easeOutCubic';
 						if (this.debugging) {
-							console.warn('aCamera Module [setSettings]: No %cpSettings.ease', 'font-weight: bold', 'parameter passed. Reverted to default');
+							console.warn('Lens: No %cpSettings.ease', 'font-weight: bold', 'parameter passed. Reverted to default');
 						}
 					}
 
@@ -1429,7 +1424,7 @@
 					this.settings.standard.initialPos.x = this.xPos;
 					this.settings.standard.initialPos.y = this.yPos;
 					if (this.debugging) {
-						console.warn('aCamera Module [setSettings]: Invalid variable type passed for the %cpSettings', 'font-weight: bold', 'parameter. Reverted to default');
+						console.warn('Lens: Invalid variable type passed for the %cpSettings', 'font-weight: bold', 'parameter. Reverted to default');
 					}
 				}
 			} else {
@@ -1438,14 +1433,14 @@
 				this.settings.standard.initialPos.x = this.xPos;
 				this.settings.standard.initialPos.y = this.yPos;
 				if (this.debugging) {
-					console.warn('aCamera Module [setSettings]: No %cpSettings', 'font-weight: bold', 'parameter passed. Reverted to default');
+					console.warn('Lens: No %cpSettings', 'font-weight: bold', 'parameter passed. Reverted to default');
 				}
 			}
 		}
 
-		aCamera.spectate = function(pSettings) {
+		Lens.spectate = function(pSettings) {
 			if (this.settings.panning) {
-				console.error('aCamera Module [spectate]: Cannot spectate camera is currently %cpanning', 'font-weight: bold', '. Spectate failed');
+				console.error('Lens: Cannot spectate camera is currently %cpanning', 'font-weight: bold', '. Spectate failed');
 				return;
 			}
 			if (pSettings) {
@@ -1482,23 +1477,23 @@
 							}
 							this.following = pSettings.target;
 						} else {
-							console.error('aCamera Module [spectate]: Invalid variable type passed for the %cpSettings.target.xPos || pSettings.target.yPos || pSettings.target.mapName', 'font-weight: bold', 'property. Spectate failed');
+							console.error('Lens: Invalid variable type passed for the %cpSettings.target.xPos || pSettings.target.yPos || pSettings.target.mapName', 'font-weight: bold', 'property. Spectate failed');
 							return;
 						}
 					}
 				} else {
-					console.error('aCamera Module [spectate]: Invalid variable type passed for the %cpSettings', 'font-weight: bold', 'parameter. Spectate failed');
+					console.error('Lens: Invalid variable type passed for the %cpSettings', 'font-weight: bold', 'parameter. Spectate failed');
 					return;
 				}
 			} else {
-				console.error('aCamera Module [spectate]: No %cpSettings', 'font-weight: bold', 'parameter passed. Spectate failed');
+				console.error('Lens: No %cpSettings', 'font-weight: bold', 'parameter passed. Spectate failed');
 				return
 			}
 			this.settings.spectating = true;
 			this.isSpectating = true;
 		}
 
-		aCamera.cancelSpectate = function() {
+		Lens.cancelSpectate = function() {
 			if (this.settings.spectate.forcePos) {
 				this.setPos(this.settings.spectate.player.getTrueCenterPos().x, this.settings.spectate.player.getTrueCenterPos().y, this.settings.spectate.player.mapName);
 			}
@@ -1510,9 +1505,9 @@
 			this.reset('spectate');
 		}
 
-		aCamera.detach = function() {
+		Lens.detach = function() {
 			if (!this.attached) {
-				console.error('aCamera Module [detach]: aCamera is already %cdetached!', 'font-weight: bold');
+				console.error('Lens: Lens is already %cdetached!', 'font-weight: bold');
 				return;
 			}
 
@@ -1524,15 +1519,15 @@
 			VYLO.Client.setViewEye(this.following);
 		}
 
-		aCamera.attach = function(pDiob) {
+		Lens.attach = function(pDiob) {
 			if (typeof(pDiob) === 'object') {
 				if (pDiob.constructor !== Diob) {
-					console.error('aCamera Module [attach]: Nothing to %cattach', 'font-weight: bold', 'to. Attachment failed');
+					console.error('Lens: Nothing to %cattach', 'font-weight: bold', 'to. Attachment failed');
 					return;
 				}
 			}
 			if (this.attached) {
-				console.warn('aCamera Module [attach]: aCamera is already %cattached!', 'font-weight: bold');
+				console.warn('Lens: Lens is already %cattached!', 'font-weight: bold');
 			}
 			this.assignIconSize(pDiob);
 			this.following = pDiob;
@@ -1543,7 +1538,7 @@
 			VYLO.Client.setViewEye(this);
 		}
 
-		aCamera.shake = function(pIntensity, pDuration, pRotational=false, pCallback) {
+		Lens.shake = function(pIntensity, pDuration, pRotational=false, pCallback) {
 			const intensityValue = { 'x': 1, 'y': 1 };
 			const durationValue = { 'x': 1000, 'y': 1000 };
 			if (pIntensity) {
@@ -1553,12 +1548,12 @@
 							intensityValue.x = Math.clamp(pIntensity.x, 0, MAX_CAMERA_SHAKE_FORCE);
 						} else {
 							if (this.debugging) {
-								console.warn('aCamera Module [Shake]: Invalid variable type for %cpIntensity.x', 'font-weight: bold', 'property. Reverted to default');
+								console.warn('Lens: Invalid variable type for %cpIntensity.x', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					} else {
 						if (this.debugging) {
-							console.warn('aCamera Module [Shake]: No %cpIntensity.x', 'font-weight: bold', 'property value passed. Reverted to default');
+							console.warn('Lens: No %cpIntensity.x', 'font-weight: bold', 'property value passed. Reverted to default');
 						}
 					}
 
@@ -1567,12 +1562,12 @@
 							intensityValue.y = Math.clamp(pIntensity.y, 0, MAX_CAMERA_SHAKE_FORCE);
 						} else {
 							if (this.debugging) {
-								console.warn('aCamera Module [Shake]: Invalid variable type for %cpIntensity.y', 'font-weight: bold', 'property. Reverted to default');
+								console.warn('Lens: Invalid variable type for %cpIntensity.y', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					} else {
 						if (this.debugging) {
-							console.warn('aCamera Module [Shake]: No %cpIntensity.y', 'font-weight: bold', 'property value passed. Reverted to default');
+							console.warn('Lens: No %cpIntensity.y', 'font-weight: bold', 'property value passed. Reverted to default');
 						}
 					}
 
@@ -1580,13 +1575,13 @@
 					intensityValue.x = intensityValue.y = Math.clamp(pIntensity, 0, MAX_CAMERA_SHAKE_FORCE);
 				} else {
 					if (this.debugging) {
-						console.warn('aCamera Module [Shake]: Invalid variable type for %cpIntensity', 'font-weight: bold', 'parameter passed. Reverted to default');
+						console.warn('Lens: Invalid variable type for %cpIntensity', 'font-weight: bold', 'parameter passed. Reverted to default');
 					}
 				}
 
 			} else {
 				if (this.debugging) {
-					console.warn('aCamera Module [Shake]: No %cpIntensity', 'font-weight: bold', 'parameter passed. Reverted to default');
+					console.warn('Lens: No %cpIntensity', 'font-weight: bold', 'parameter passed. Reverted to default');
 				}
 			}
 
@@ -1597,12 +1592,12 @@
 							durationValue.x = pDuration.x;
 						} else {
 							if (this.debugging) {
-								console.warn('aCamera Module [Shake]: Invalid variable type for %cpDuration.x', 'font-weight: bold', 'property. Reverted to default');
+								console.warn('Lens: Invalid variable type for %cpDuration.x', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					} else {
 						if (this.debugging) {
-							console.warn('aCamera Module [Shake]: No %cpDuration.x', 'font-weight: bold', 'property value passed. Reverted to default');
+							console.warn('Lens: No %cpDuration.x', 'font-weight: bold', 'property value passed. Reverted to default');
 						}
 					}
 
@@ -1611,25 +1606,25 @@
 							durationValue.y = pDuration.y;
 						} else {
 							if (this.debugging) {
-								console.warn('aCamera Module [Shake]: Invalid variable type for %cpDuration.y', 'font-weight: bold', 'property. Reverted to default');
+								console.warn('Lens: Invalid variable type for %cpDuration.y', 'font-weight: bold', 'property. Reverted to default');
 							}
 						}
 					} else {
 						if (this.debugging) {
-							console.warn('aCamera Module [Shake]: No %cpDuration.y', 'font-weight: bold', 'property value passed. Reverted to default');
+							console.warn('Lens: No %cpDuration.y', 'font-weight: bold', 'property value passed. Reverted to default');
 						}
 					}
 				} else if (typeof(pDuration) === 'number') {
 					durationValue.x = durationValue.y = pDuration;
 				} else {
 					if (this.debugging) {
-						console.warn('aCamera Module [Shake]: Invalid variable type passed for the %cpDuration.x || pDuration.y', 'font-weight: bold', 'property. Reverted to default');
+						console.warn('Lens: Invalid variable type passed for the %cpDuration.x || pDuration.y', 'font-weight: bold', 'property. Reverted to default');
 					}
 				}
 				
 			} else {
 				if (this.debugging) {
-					console.warn('aCamera Module [Shake]: No %cpDuration ', 'font-weight: bold', 'parameter passed. Reverted to default');
+					console.warn('Lens: No %cpDuration ', 'font-weight: bold', 'parameter passed. Reverted to default');
 				}
 			}
 
@@ -1642,7 +1637,7 @@
 					this.settings.shake.callback = pCallback;
 				} else {
 					if (this.debugging) {
-						console.warn('aCamera Module [Shake]: Invalid variable type passed for the %cpCallback', 'font-weight: bold', 'property.');
+						console.warn('Lens: Invalid variable type passed for the %cpCallback', 'font-weight: bold', 'property.');
 					}
 				}
 			}
@@ -1686,7 +1681,7 @@
 			this.isShaking = true;
 		}
 
-		aCamera.onShakeEnd = function() {
+		Lens.onShakeEnd = function() {
 			if (this.settings.shake.callback) {
 				this.settings.shake.callback();
 				VYLO.Client.setViewEyeOffsets(0, 0);
@@ -1694,12 +1689,12 @@
 			this.reset('shake');
 		}
 
-		aCamera.toggleDebug = function() {
+		Lens.toggleDebug = function() {
 			this.debugging = (this.debugging ? false : true);
 			this.invisibility = (this.debugging ? 0 : 999999);
 		}
 
-		aCamera.destroy = function() {
+		Lens.destroy = function() {
 			this.init = false;
 			this.attached = false;
 			this.reset('spectate');
@@ -1708,7 +1703,7 @@
 			VYLO.Client.setViewEye(VYLO.Client.mob);
 		}
 
-		assignCamera(aCamera);
+		assignCamera(Lens);
 	}
 }
 )();
