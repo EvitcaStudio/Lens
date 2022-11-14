@@ -375,7 +375,7 @@
 		aCamera.custom = false;
 		 // who owns this camera
 		aCamera.owner = VYLO.Client;
-		aCamera.following;
+		aCamera.following = null;
 		// // debugging is whether this library is in debug mode. Extra warnings will be thrown in this mode to help explain any issues that may arise. if the camera is currently being debugged, (shows icon info for the camera)
 		aCamera.debugging = false;
 		aCamera.preventScreenRelayer = true;
@@ -413,7 +413,7 @@
 
 			'pan': { // allows separate dimension moving // when the camera moves from one object to another and then back to the starting object
 				'active': { 'x': false, 'y': false }, // if the camera is active or not
-				'time': { 'x': 0, 'y': 0, 'z': 0, 'y': null }, // the current time in the ease
+				'time': { 'x': 0, 'y': 0, 'z': 0 }, // the current time in the ease
 				'destination': { 'x': null, 'y': null }, // the end position the camera will go to
 				'ease': { 'x': 'easeOutCubic', 'y': 'easeOutCubic' }, // the ease in each axis the camera will use
 				'duration': { 'x': 1000, 'y': 1000 }, // how long in each axis the ease will take
@@ -1137,9 +1137,9 @@
 			}
 
 			// scroll
-			if (this.settings.scroll.active) {
-				// this.settings.scrolling = true;
-			}
+			// if (this.settings.scroll.active) {
+			// 	// this.settings.scrolling = true;
+			// }
 			
 			// shake
 			if (this.settings.shake.active.x || this.settings.shake.active.y) {
