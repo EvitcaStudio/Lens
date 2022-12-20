@@ -8,7 +8,6 @@
 	});
 	
 	const MAX_PLANE = 999999;
-	const MAX_DELTA_TIME = 0.033;
 	const TILE_SIZE = VYLO.World.getTileSize();
 
 	const validEase = [ 
@@ -60,7 +59,7 @@
 		
 		EListener.on(VYLO.Client, 'onScreenRender', function(pT) {
 			if (Lens.init) {
-				const now = Date.now();
+				const now = pT;
 				// Legacy code, will be removed
 				if (this.___EVITCA_aPause) {
 					if (aPause && aPause.paused) {
@@ -70,9 +69,8 @@
 				}
 				if (!Lens.settings.loop.lastTime) Lens.settings.loop.lastTime = now;
 				const elapsedMS = (now - Lens.settings.loop.lastTime);
-				let dt = (now - Lens.settings.loop.lastTime) / 1000;
+				let dt = elapsedMS / 1000;
 				Lens.settings.loop.elapsedMS = elapsedMS;
-				if (dt > MAX_DELTA_TIME) dt = MAX_DELTA_TIME;
 				Lens.settings.loop.deltaTime = dt;
 				// PINGABLE
 				// legacy code for aParallax plugin (will be removed)
