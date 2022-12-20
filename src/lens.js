@@ -48,13 +48,15 @@
 
 		// Another plugin that could be used while in tandem with this one already presets this information, so we check to make sure we don't set it again.
 		// If the other plugin is not used, then this is preset for use in positioning calculations.
-		if (!Diob.prototype.getTrueCenterPos) {
-			Diob.prototype.getTrueCenterPos = function() {
+		const protoDiob = VYLO.newDiob();
+		if (!protoDiob.__proto__.constructor.prototype.getTrueCenterPos) {
+			protoDiob.__proto__.constructor.prototype.getTrueCenterPos = function() {
 				const tileSize = VYLO.World.getTileSize();
 				const position = { x: Math.round(this.x + (this.aIconInfo ? this.aIconInfo.halfWidth : tileSize.width) + this.xIconOffset), y: Math.round(this.y + (this.aIconInfo ? this.aIconInfo.halfHeight : tileSize.height) + this.yIconOffset) };
 				return position;
 			};
 		}
+		VYLO.delDiob(protoDiob);
 		
 		EListener.on(VYLO.Client, 'onScreenRender', function(pT) {
 			if (Lens.init) {
