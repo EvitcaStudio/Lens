@@ -771,7 +771,8 @@
 				const settingsProps = Object.keys(pSettings);
 				if (settingsProps.includes('target')) {
 					// target
-					if (typeof(pSettings.target) === 'object' && pSettings.target.constructor === Diob) {
+					// Check if its a diob
+					if (typeof(pSettings.target) === 'object' && pSettings.target.baseType) {
 						if (typeof(pSettings.target.xPos) === 'number' && typeof(pSettings.target.yPos) === 'number' && typeof(pSettings.target.mapName) === 'string') {
 							if (pSettings.target === this.following) {
 								console.error('Lens: You %ccannot', 'font-weight: bold', 'pan to yourself. Pan failed');
@@ -998,7 +999,8 @@
 			}
 			if (this.settings.pan.attach) {
 				if (this.settings.pan.target && typeof(this.settings.pan.target) === 'object') {
-					if (this.settings.pan.target.constructor === Diob) {
+					// Check if its a diob
+					if (this.settings.pan.target.baseType) {
 						VYLO.Client.toggleMacroCapture(true);
 						this.following = this.settings.pan.target;
 						this.reset('pan');
@@ -1549,7 +1551,8 @@
 
 		Lens.attach = function(pDiob) {
 			if (typeof(pDiob) === 'object') {
-				if (pDiob.constructor !== Diob) {
+				const protoDiob = VYLO.newDiob();
+				if (pDiob.constructor !== protoDiob.__proto__.constructor) {
 					console.error('Lens: Nothing to %cattach', 'font-weight: bold', 'to. Attachment failed');
 					return;
 				}
