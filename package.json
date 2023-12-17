@@ -1,0 +1,24 @@
+{
+  "name": "lens",
+  "description": "A powerful plugin that will allow you to attach a camera to your player and use its rich API for some cool effects.",
+  "main": "lens.mjs",
+  "directories": {
+    "doc": "docs"
+  },
+  "version": "1.0.0",
+  "devDependencies": {
+    "esdoc": "^1.1.0",
+    "esdoc-ecmascript-proposal-plugin": "^1.0.0",
+    "esdoc-standard-plugin": "^1.0.0",
+    "uglify-js": "^3.17.4",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-dist": "npx webpack && uglifyjs dist/lens.min.mjs -m -c --comments -o dist/lens.min.mjs && node version-handler.js && esdoc -c esdoc.json",
+    "update-version-major": "npm version major && npm run build-dist",
+    "update-version-minor": "npm version minor && npm run build-dist",
+    "update-version-patch": "npm version patch && npm run build-dist"
+  }
+}

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">src/vendor/tween.min.mjs | Lens</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="A powerful plugin that will allow you to attach a camera to your player and use its rich API for some cool effects."><meta property="twitter:card" content="summary"><meta property="twitter:title" content="Lens"><meta property="twitter:description" content="A powerful plugin that will allow you to attach a camera to your player and use its rich API for some cool effects."><meta property="twitter:image" content="./evitcastudio_round_branding.png"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./" style="display: flex; align-items: center;"><img src="./image/brand_logo.png" style="width:34px;"></a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/EvitcaStudio/Lens"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html">LensComponent</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Lens">Lens</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#vendor">vendor</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/vendor/tween.min.mjs~Tween.html">Tween</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/vendor/tween.min.mjs</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/**
+* Class for creating a tweening animation
+* @class Tween  
+* @license Tween does not have a license at this time. For licensing contact the author
+* @author https://github.com/doubleactii
+* Copyright (c) 2023 Evitca Studio
+*/
+class Tween{constructor({start:t={},end:e={},duration:s=1e3,easing:a=Tween.linear}={}){this._build(t,e,s,a)}static linear(t,e,s,a){return s*t/a+e}static easeInQuad(t,e,s,a){return s*(t/=a)*t+e}static easeOutQuad(t,e,s,a){return-s*(t/=a)*(t-2)+e}static easeInOutQuad(t,e,s,a){return(t/=a/2)&lt;1?s/2*t*t+e:-s/2*(--t*(t-2)-1)+e}static easeInSine(t,e,s,a){return-s*Math.cos(t/a*(Math.PI/2))+s+e}static easeOutSine(t,e,s,a){return s*Math.sin(t/a*(Math.PI/2))+e}static easeInOutSine(t,e,s,a){return-s/2*(Math.cos(Math.PI*t/a)-1)+e}static easeInExpo(t,e,s,a){return 0==t?e:s*Math.pow(2,10*(t/a-1))+e}static easeOutExpo(t,e,s,a){return t==a?e+s:s*(1-Math.pow(2,-10*t/a))+e}static easeInOutExpo(t,e,s,a){return 0==t?e:t==a?e+s:(t/=a/2)&lt;1?s/2*Math.pow(2,10*(t-1))+e:s/2*(2-Math.pow(2,-10*--t))+e}static easeInCirc(t,e,s,a){return-s*(Math.sqrt(1-(t/=a)*t)-1)+e}static easeOutCirc(t,e,s,a){return s*Math.sqrt(1-(t=t/a-1)*t)+e}static easeInOutCirc(t,e,s,a){return(t/=a/2)&lt;1?-s/2*(Math.sqrt(1-t*t)-1)+e:s/2*(Math.sqrt(1-(t-=2)*t)+1)+e}static easeInCubic(t,e,s,a){return s*(t/=a)*t*t+e}static easeOutCubic(t,e,s,a){return s*((t=t/a-1)*t*t+1)+e}static easeInOutCubic(t,e,s,a){return(t/=a/2)&lt;1?s/2*t*t*t+e:s/2*((t-=2)*t*t+2)+e}static easeInQuart(t,e,s,a){return s*(t/=a)*t*t*t+e}static easeOutQuart(t,e,s,a){return-s*((t=t/a-1)*t*t*t-1)+e}static easeInOutQuart(t,e,s,a){return(t/=a/2)&lt;1?s/2*t*t*t*t+e:-s/2*((t-=2)*t*t*t-2)+e}static easeInQuint(t,e,s,a){return s*(t/=a)*t*t*t*t+e}static easeOutQuint(t,e,s,a){return s*((t=t/a-1)*t*t*t*t+1)+e}static easeInOutQuint(t,e,s,a){return(t/=a/2)&lt;1?s/2*t*t*t*t*t+e:s/2*((t-=2)*t*t*t*t+2)+e}static easeInElastic(t,e,s,a){var i=1.70158,n=0,r=s;return 0==t?e:1==(t/=a)?e+s:(n=n||.3*a,i=r&lt;Math.abs(s)?(r=s,n/4):0===s&amp;&amp;0===r?n/(2*Math.PI)*Math.asin(1):n/(2*Math.PI)*Math.asin(s/r),-(r*Math.pow(2,10*--t)*Math.sin((t*a-i)*(2*Math.PI)/n))+e)}static easeOutElastic(t,e,s,a){var i=1.70158,n=0,r=s;return 0==t?e:1==(t/=a)?e+s:(n=n||.3*a,i=r&lt;Math.abs(s)?(r=s,n/4):0===s&amp;&amp;0===r?n/(2*Math.PI)*Math.asin(1):n/(2*Math.PI)*Math.asin(s/r),r*Math.pow(2,-10*t)*Math.sin((t*a-i)*(2*Math.PI)/n)+s+e)}static easeInOutElastic(t,e,s,a){var i=1.70158,n=0,r=s;return 0==t?e:2==(t/=a/2)?e+s:(n=n||a*(.3*1.5),i=r&lt;Math.abs(s)?(r=s,n/4):0===s&amp;&amp;0===r?n/(2*Math.PI)*Math.asin(1):n/(2*Math.PI)*Math.asin(s/r),t&lt;1?r*Math.pow(2,10*--t)*Math.sin((t*a-i)*(2*Math.PI)/n)*-.5+e:r*Math.pow(2,-10*--t)*Math.sin((t*a-i)*(2*Math.PI)/n)*.5+s+e)}static easeInBack(t,e,s,a){return s*(t/=a)*t*(2.70158*t-1.70158)+e}static easeOutBack(t,e,s,a){return s*((t=t/a-1)*t*(2.70158*t+1.70158)+1)+e}static easeInOutBack(t,e,s,a){var i=1.70158;return(t/=a/2)&lt;1?s/2*(t*t*((1+(i*=1.525))*t-i))+e:s/2*((t-=2)*t*((1+(i*=1.525))*t+i)+2)+e}static easeInBounce(t,e,s,a){return s-this.easeOutBounce(a-t,0,s,a)+e}static easeOutBounce(t,e,s,a){return(t/=a)&lt;1/2.75?7.5625*s*t*t+e:t&lt;2/2.75?s*(7.5625*(t-=1.5/2.75)*t+.75)+e:t&lt;2.5/2.75?s*(7.5625*(t-=2.25/2.75)*t+.9375)+e:s*(7.5625*(t-=2.625/2.75)*t+.984375)+e}static easeInOutBounce(t,e,s,a){return t&lt;.5*a?.5*this.easeInBounce(2*t,0,s,a)+e:.5*this.easeOutBounce(2*t-a,0,s,a)+.5*s+e}static _clamp(t,e=0,s=1){return Math.max(e,Math.min(t,s))}static _hexToRgb(t){return t=(t=3===(t=t.replace(&quot;#&quot;,&quot;&quot;)).length?t.replace(new RegExp(&quot;(.)&quot;,&quot;g&quot;),&quot;$1$1&quot;):t).match(new RegExp(&quot;..&quot;,&quot;g&quot;)),[Tween._clamp(parseInt(t[0],16),0,255),Tween._clamp(parseInt(t[1],16),0,255),Tween._clamp(parseInt(t[2],16),0,255)]}static _rgbToHex(t){if(Array.isArray(t))return&quot;#&quot;+t.map(t=&gt;Math.abs(Math.round(t)).toString(16).padStart(2,&quot;0&quot;)).join(&quot;&quot;)}_build(t,e,s,a){this.start=t,this.end=e,this.duration=s,this.easing=&quot;function&quot;==typeof a?a:Tween.linear,this.events={},this.exportedValues={},this.tweening=!1,this.update=null,this.paused=!1,this.lastTime=0,this.elapsed=0}build({start:t={},end:e={},duration:s=1e3,easing:a=Tween.linear}={}){return this._build(t,e,s,a),this}on(t,e){if(&quot;function&quot;==typeof e)switch(t){case&quot;start&quot;:case&quot;end&quot;:case&quot;pause&quot;:case&quot;resume&quot;:this.events[t]=e;break;default:console.error(`The event &quot;${t}&quot; is not supported.`)}else console.error(`The callback for event &quot;${t}&quot; is not a function.`);return this}animationFrame=()=&gt;{if(this.tweening&amp;&amp;!this.paused){var a,i,t=Date.now();this.lastTime||(this.lastTime=t),this.elapsed+=t-this.lastTime;let s=this.elapsed/this.duration;for(a in 1&lt;(s=this.oscillating?(1-Math.cos(s*Math.PI))/2:s)&amp;&amp;(s=1),this.end){let t=this.start[a],e=this.end[a];&quot;string&quot;==typeof t&amp;&amp;(3===t.length||6===t.length)||4===t.length||7===t.length?(t=Tween._hexToRgb(t),e=Tween._hexToRgb(e),i=[this.easing(s,t[0],e[0]-t[0],1),this.easing(s,t[1],e[1]-t[1],1),this.easing(s,t[2],e[2]-t[2],1)],this.exportedValues[a]=Tween._rgbToHex(i)):this.exportedValues[a]=this.easing(s,t,e-t,1)}this.update(this.exportedValues),1!==s||this.oscillating?requestAnimationFrame(this.animationFrame):(this.stop(),this.events.end&amp;&amp;this.events.end()),this.lastTime=t}};animate(t,s=!1){if(&quot;function&quot;!=typeof t)console.error(&quot;The pUpdate parameter passed to animate is not a function.&quot;);else if(!this.tweening){var a=Object.keys(this.start);let e=Object.keys(this.end);if(a.length&amp;&amp;e.length){if(a.every(t=&gt;e.includes(t)))return this.update=t,this.tweening=!0,this.elapsed=0,this.oscillating=s,this.events.start&amp;&amp;this.events.start(),requestAnimationFrame(this.animationFrame),this;console.error(&quot;The end object is missing properties that the start object has.&quot;)}else console.error(&quot;The start object or the end object has no properties.&quot;)}}resume(){return this.paused&amp;&amp;(this.lastTime=Date.now(),this.paused=!1,this.events.resume&amp;&amp;this.events.resume(),requestAnimationFrame(this.animationFrame)),this}pause(){return this.paused||(this.paused=!0,this.events.pause&amp;&amp;this.events.pause()),this}stop(){this.tweening=!1,this.oscillating=!1,this.update=null,this.elapsed=0,this.lastTime=0,this.paused=!1;for(const t in this.exportedValues)this.exportedValues.hasOwnProperty(t)&amp;&amp;delete this.exportedValues[t]}}export{Tween};</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
