@@ -44,10 +44,8 @@ import { Logger } from &apos;./vendor/logger.min.mjs&apos;;
 /**
 * A powerful plugin that will allow you to attach a camera to your player and use its rich API for some cool effects.
 * @class Lens
-* @version __VERSION__
 * @license Lens is free software, available under the terms of a MIT style License.
 * @author https://github.com/doubleactii
-* Copyright (c) 2023 Evitca Studio
 */
 class LensComponent {
 	/**
@@ -62,6 +60,10 @@ class LensComponent {
 	 * @type {number}
 	 */
 	static MAX_CAMERA_SHAKE_FORCE = 100;
+	/**
+	 * The version of the module.
+	 */
+	version = &quot;VERSION_REPLACE_ME&quot;;
 	/**
 	 * Shorthand for zooming to 1 scale
 	 * @type {number}
@@ -258,7 +260,6 @@ class LensComponent {
          */
         this.logger = new Logger();
         this.logger.registerType(&apos;Lens-Module&apos;, &apos;#ff6600&apos;);
-        this.logger.prefix(&apos;Lens-Module&apos;).log(`&#x2705;@v__VERSION__`);
 
 		// Prep the client
 		VYLO.Client.mapView.anchor = { &apos;x&apos;: 0.5, &apos;y&apos;: 0.5 };

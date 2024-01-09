@@ -5,28 +5,28 @@
     "index": "./README.md",
     "excludes": ["logger.min.mjs", "pulse.min.mjs", "utils.min.mjs", "tween.min.mjs"],
     "plugins": [
-    {
-      "name": "esdoc-standard-plugin",
-      "option": {
-        "lint": {"enable": false},
-        "coverage": {"enable": false},
-        "accessor": {"access": ["public", "protected", "private"], "autoPrivate": true},
-        "undocumentIdentifier": {"enable": true},
-        "unexportedIdentifier": {"enable": true},
-        "typeInference": {"enable": true},
-        "brand": {
-          "logo": "./evitcastudio_round_branding.png",
-          "title": "Lens",
-          "description": "A powerful plugin that will allow you to attach a camera to your player and use its rich API for some cool effects.",
-          "repository": "https://github.com/EvitcaStudio/Lens",
-          "author": "https://github.com/doubleactii",
-          "image": "./evitcastudio_round_branding.png"
+      {
+        "name": "esdoc-standard-plugin",
+        "option": {
+          "lint": {"enable": false},
+          "coverage": {"enable": false},
+          "accessor": {"access": ["public", "protected", "private"], "autoPrivate": true},
+          "undocumentIdentifier": {"enable": true},
+          "unexportedIdentifier": {"enable": true},
+          "typeInference": {"enable": true},
+          "brand": {
+            "logo": "./evitcastudio_round_branding.png",
+            "title": "Lens",
+            "description": "A powerful plugin that will allow you to attach a camera to your player and use its rich API for some cool effects.",
+            "repository": "https://github.com/EvitcaStudio/Lens",
+            "author": "https://github.com/doubleactii",
+            "image": "./evitcastudio_round_branding.png"
+          }
         }
+      },
+      {
+          "name": "esdoc-ecmascript-proposal-plugin", 
+          "option": {"all": true}
       }
-    },
-    {
-        "name": "esdoc-ecmascript-proposal-plugin", 
-        "option": {"all": true}
-    }
     ] 
   }

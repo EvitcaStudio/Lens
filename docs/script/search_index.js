@@ -528,6 +528,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/lens.mjs~lenscomponent#version",
+    "class/src/lens.mjs~LensComponent.html#instance-member-version",
+    "src/lens.mjs~LensComponent#version",
+    "member"
+  ],
+  [
     "src/lens.mjs~lenscomponent#zoom",
     "class/src/lens.mjs~LensComponent.html#instance-method-zoom",
     "src/lens.mjs~LensComponent#zoom",
