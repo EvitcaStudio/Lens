@@ -450,6 +450,12 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/lens.mjs~lenscomponent#mapviewinit",
+    "class/src/lens.mjs~LensComponent.html#instance-member-mapViewInit",
+    "src/lens.mjs~LensComponent#mapViewInit",
+    "member"
+  ],
+  [
     "src/lens.mjs~lenscomponent#oldfollowingpos",
     "class/src/lens.mjs~LensComponent.html#instance-member-oldFollowingPos",
     "src/lens.mjs~LensComponent#oldFollowingPos",

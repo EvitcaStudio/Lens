@@ -214,6 +214,12 @@ class LensComponent {
 	 * @type {WeakMap}
 	 */
 	instanceWeakMap = new WeakMap();
+    /**
+     * Whether the mapview has been initialized.
+     * @private
+     * @type {boolean}
+     */
+	mapViewInit = false
 
 	constructor() {
         /** The logger module this module uses to log errors / logs.
@@ -223,9 +229,6 @@ class LensComponent {
         this.logger = new Logger();
         this.logger.registerType('Lens-Module', '#ff6600');
 
-		// Prep the client
-		VYLO.Client.mapView.anchor = { 'x': 0.5, 'y': 0.5 };
-		VYLO.Client.setMapView(VYLO.Client.mapView);
 		Pulse.on(VYLO.Client, 'onScreenRender', (pT) => {
 			if (this.init) {
 				const now = pT;
@@ -1316,6 +1319,18 @@ class LensComponent {
 				this.logger.prefix('Lens-Module').error('Nothing to attach to. Attachment failed');
 				return;
 			}
+		}
+        // Initialize the mapView object
+		if (!this.mapViewInit) {
+            // Prep the client's mapview object
+            if (VYLO.Client.mapView) {
+                VYLO.Client.mapView.anchor = { 'x': 0.5, 'y': 0.5 };
+            } else {
+                VYLO.Client.mapView = { 'anchor': { 'x': 0.5, 'y': 0.5 } };
+            }
+            this.logger.prefix('Lens-Module').log('Client.mapview.anchor may have been changed. This module requires the mapview anchor to be 0.5');
+            VYLO.Client.setMapView(VYLO.Client.mapView);
+			this.mapViewInit = true;
 		}
 		// Assign the settings to the camera
 		if (pSettings) {
