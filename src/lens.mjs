@@ -220,6 +220,12 @@ class LensComponent {
      * @type {boolean}
      */
 	mapViewInit = false
+	/**
+	 * A callback to be called when the camera is updated.
+	 * @param {number} - pDiffX - The difference in position between the camera's old x position and it's new position.
+	 * @param {number} - pDiffY - The difference in position between the camera's old y position and it's new position.
+	 */
+	updateWithCamera;
 
 	constructor() {
         /** The logger module this module uses to log errors / logs.
@@ -237,11 +243,11 @@ class LensComponent {
 				let dt = elapsedMS / 1000;
 				this.settings.loop.elapsedMS = elapsedMS;
 				this.settings.loop.deltaTime = dt;
-				/**
-				 * @todo 
-				 * Allow a callback to be called here so that things can update with camera
-				 */
 				this.update(this.settings.loop.elapsedMS, this.settings.loop.deltaTime);
+				// Call callback to update with camera
+				if (this.attached && this.updateWithCamera) {
+					this.updateWithCamera(dt);
+				}
 				this.settings.loop.lastTime = now;
 			}
 		});
@@ -1312,13 +1318,17 @@ class LensComponent {
 	 * @param {Object} pSettings.ease - An object that holds settings for how the canera will behave.
 	 * @param {string} pSettings.ease.x - The ease to use in the x dimension.
 	 * @param {string} pSettings.ease.y - The ease to use in the y dimension.
+	 * @param {Function} pUpdateFunc - A callback that will be called when the camera is updated. pDiffX and pDiffY params are the difference in position between the last tick.
 	 */
-	attach(pDiob, pSettings) {
+	attach(pDiob, pSettings, pUpdateFunc) {
 		if (typeof(pDiob) === 'object') {
 			if (!pDiob.baseType) {
 				this.logger.prefix('Lens-Module').error('Nothing to attach to. Attachment failed');
 				return;
 			}
+		}
+		if (typeof(pUpdateFunc) === 'function') {
+			this.updateWithCamera = pUpdateFunc;
 		}
         // Initialize the mapView object
 		if (!this.mapViewInit) {

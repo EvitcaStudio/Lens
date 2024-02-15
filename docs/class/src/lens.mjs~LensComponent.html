@@ -430,6 +430,35 @@
           
           
           
+          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-updateWithCamera">updateWithCamera</a></span></span><span class="code" data-ice="signature">(-: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, -: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span>*</span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>A callback to be called when the camera is updated.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
           <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-version">version</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
         </p>
       </div>
@@ -878,7 +907,7 @@
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-method-attach">attach</a></span></span><span class="code" data-ice="signature">(pDiob: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>, pSettings: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>)</span>
+          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-method-attach">attach</a></span></span><span class="code" data-ice="signature">(pDiob: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>, pSettings: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>, pUpdateFunc: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">Function</a></span>)</span>
         </p>
       </div>
       <div>
@@ -1573,7 +1602,7 @@
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber224">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber230">source</a></span></span>
     </span>
   </h3>
 
@@ -1891,6 +1920,50 @@
   
   
   <div data-ice="description"><p>The camera that lens controls.</p>
+</div>
+
+  
+
+  <div data-ice="properties">
+</div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-member-updateWithCamera">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">updateWithCamera</span><span class="code" data-ice="signature">(-: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, -: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span>*</span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber228">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>A callback to be called when the camera is updated.</p>
 </div>
 
   
@@ -2413,7 +2486,7 @@
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber229">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber235">source</a></span></span>
     </span>
   </h3>
 
@@ -2588,11 +2661,11 @@
     
     
     
-    <span class="code" data-ice="name">attach</span><span class="code" data-ice="signature">(pDiob: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>, pSettings: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>)</span>
+    <span class="code" data-ice="name">attach</span><span class="code" data-ice="signature">(pDiob: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>, pSettings: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>, pUpdateFunc: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">Function</a></span>)</span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1316">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1323">source</a></span></span>
     </span>
   </h3>
 
@@ -2668,6 +2741,13 @@
       <td data-ice="description"><p>The ease to use in the y dimension.</p>
 </td>
     </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">pUpdateFunc</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">Function</a></span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"><p>A callback that will be called when the camera is updated. pDiffX and pDiffY params are the difference in position between the last tick.</p>
+</td>
+    </tr>
 </tbody>
   </table>
 </div>
@@ -2702,7 +2782,7 @@
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1292">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1298">source</a></span></span>
     </span>
   </h3>
 
@@ -2748,7 +2828,7 @@ If the setting <code>preventMovement</code> was set. Then movement will be resto
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1350">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1360">source</a></span></span>
     </span>
   </h3>
 
@@ -2792,7 +2872,7 @@ If the setting <code>preventMovement</code> was set. Then movement will be resto
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber551">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber557">source</a></span></span>
     </span>
   </h3>
 
@@ -2979,7 +3059,7 @@ If the setting <code>preventMovement</code> was set. Then movement will be resto
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1153">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1159">source</a></span></span>
     </span>
   </h3>
 
@@ -3082,7 +3162,7 @@ If the setting <code>preventMovement</code> was set. Then movement will be resto
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1370">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1380">source</a></span></span>
     </span>
   </h3>
 
@@ -3164,7 +3244,7 @@ If the setting <code>preventMovement</code> was set. Then movement will be resto
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1234">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1240">source</a></span></span>
     </span>
   </h3>
 
@@ -3247,7 +3327,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1004">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1010">source</a></span></span>
     </span>
   </h3>
 
@@ -3359,7 +3439,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber810">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber816">source</a></span></span>
     </span>
   </h3>
 
@@ -3434,7 +3514,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber283">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber289">source</a></span></span>
     </span>
   </h3>
 
@@ -3508,7 +3588,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber255">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber261">source</a></span></span>
     </span>
   </h3>
 
@@ -3552,7 +3632,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber788">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber794">source</a></span></span>
     </span>
   </h3>
 
@@ -3595,7 +3675,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber752">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber758">source</a></span></span>
     </span>
   </h3>
 
@@ -3638,7 +3718,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1463">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1473">source</a></span></span>
     </span>
   </h3>
 
@@ -3681,7 +3761,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1134">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1140">source</a></span></span>
     </span>
   </h3>
 
@@ -3724,7 +3804,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber301">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber307">source</a></span></span>
     </span>
   </h3>
 
@@ -3785,7 +3865,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber478">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber484">source</a></span></span>
     </span>
   </h3>
 
@@ -3853,7 +3933,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber932">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber938">source</a></span></span>
     </span>
   </h3>
 
@@ -3921,7 +4001,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber443">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber449">source</a></span></span>
     </span>
   </h3>
 

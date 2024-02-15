@@ -534,6 +534,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/lens.mjs~lenscomponent#updatewithcamera",
+    "class/src/lens.mjs~LensComponent.html#instance-member-updateWithCamera",
+    "src/lens.mjs~LensComponent#updateWithCamera",
+    "member"
+  ],
+  [
     "src/lens.mjs~lenscomponent#version",
     "class/src/lens.mjs~LensComponent.html#instance-member-version",
     "src/lens.mjs~LensComponent#version",
