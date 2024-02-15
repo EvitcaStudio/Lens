@@ -1,0 +1,6 @@
+/**
+* A powerful plugin that will allow you to attach a camera to your player and use its rich API for some cool effects.
+* @class Lens
+* @license Lens is free software, available under the terms of a MIT style License.
+* @author https://github.com/doubleactii
+*/
