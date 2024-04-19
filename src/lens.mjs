@@ -131,6 +131,8 @@ class LensComponent {
 			'target': null, // the panTo instance
 			'storedDir': null, // the direction that is stored so it can be given back to the instance when the pan is over
 			'returning': null, // if the pan is on the `returning` stage
+			'xNeedsUpdate': false, // If this axis needs to be updated via the configured camera mode. Because the other axis is not finished yet.
+			'yNeedsUpdate': false, // If this axis needs to be updated via the configured camera mode. Because the other axis is not finished yet.
 			'forceDirChange': true, // if the panning forces the person the camera is attached to to change direction in the direction of the pan. This also disables movement.
 			'pauseDuration': 0, // how long to stay at the object you've panned to before continuing to pan back
 			'attach': false, // if when panning to the object, the object now becomes the target that the camera is following
@@ -314,11 +316,13 @@ class LensComponent {
 			case 'panX':
 				this.settings.pan.active.x = false;
 				this.settings.pan.time.x = 0;
+				this.settings.pan.xNeedsUpdate = true;
 				break;
 
 			case 'panY':
 				this.settings.pan.active.y = false;
 				this.settings.pan.time.y = 0;
+				this.settings.pan.yNeedsUpdate = true;
 				break;
 
 			case 'pan':
@@ -330,6 +334,8 @@ class LensComponent {
 				this.settings.pan.panToCallback = null;
 				this.settings.pan.panBackCallback = null;
 				this.settings.pan.pauseDuration = 0;
+				this.settings.pan.xNeedsUpdate = false;
+				this.settings.pan.yNeedsUpdate = false;
 				this.settings.pan.time.x = this.settings.pan.time.y = 0;
 				this.settings.pan.initialPos.x = this.settings.pan.initialPos.y = null;
 				this.settings.pan.panBackDuration.x = this.settings.pan.panBackDuration.y = null;
@@ -766,6 +772,8 @@ class LensComponent {
 		this.settings.pan.duration.y = this.settings.pan.panBackDuration.y;
 		this.settings.pan.ease.x = this.settings.pan.panBackEase.x;
 		this.settings.pan.ease.y = this.settings.pan.panBackEase.y;
+		this.settings.pan.xNeedsUpdate = false;
+		this.settings.pan.yNeedsUpdate = false;
 		this.settings.pan.returning = true;
 	}
 	/**
@@ -789,24 +797,24 @@ class LensComponent {
 	 * @param {Object} pPosition - The centered position of the target.
 	 * @param {string} pMethod - The method the camera is using to follow.
 	 * @param {number} pElapsedMS - The elapsed time since the last tick.
-	 * @param {Object} pSettings - The method's settings object.
 	 */
-	followLogic(pAxis, pPosition, pMethod, pElapsedMS, pSettings) {
+	followLogic(pAxis, pPosition, pMethod, pElapsedMS) {
+		const settings = this.settings[pMethod];
 		// If this axis is active
-		if (pSettings.active[pAxis]) {
+		if (settings.active[pAxis]) {
 			// Get the destination position in each axis.
-			pSettings.destination[pAxis] = pPosition[pAxis];
+			settings.destination[pAxis] = pPosition[pAxis];
 			// Set the time elapsed.
-			pSettings.time[pAxis] = Math.min(pSettings.time[pAxis] + pElapsedMS, pSettings.duration[pAxis]);
+			settings.time[pAxis] = Math.min(settings.time[pAxis] + pElapsedMS, settings.duration[pAxis]);
 			// Get the distance between the start and end in this axis.
-			const distance = pSettings.destination[pAxis] - pSettings.initialPos[pAxis];
+			const distance = settings.destination[pAxis] - settings.initialPos[pAxis];
 			// Get the position the camera should go to next.
-			const pos = Tween[pSettings.ease[pAxis]](pSettings.time[pAxis], pSettings.initialPos[pAxis], distance, pSettings.duration[pAxis]);
+			const pos = Tween[settings.ease[pAxis]](settings.time[pAxis], settings.initialPos[pAxis], distance, settings.duration[pAxis]);
 			// Add the stepSize to the camera's position in this axis to move closer to the destination.
 			this.camera[pAxis] += pos - this.camera[pAxis];
 
 			// When the animation is over.
-			if (pSettings.time[pAxis] === pSettings.duration[pAxis]) {
+			if (settings.time[pAxis] === settings.duration[pAxis]) {
 				// Get the proper reset API for each method.
 				const resetAPI = `${pMethod}${pAxis.toUpperCase()}`;
 				// The animation is over, so we force set the end position.
@@ -832,6 +840,8 @@ class LensComponent {
 		const target = (pMethod === 'pan') ? settings.target : this.following;
 		// Get the center of the target position.
 		const centerPositionOfTarget = this.getTrueCenterPos(target);
+		// swappedMethod
+		let swappedMethod = pMethod;
 
 		if (pMethod === 'pan') {
 			// Now check to see if there is a paused duration you want the camera to stay at the panned object for before moving back
@@ -840,19 +850,29 @@ class LensComponent {
 					settings.pauseDuration = Math.max(settings.pauseDuration - pElapsedMS, 0);
 					if (settings.pauseDuration > 0) return;
 				}
-				if (this.camera.x !== centerPositionOfTarget.x) {
-					settings.active.x = true;
-				}
 
-				if (this.camera.y !== centerPositionOfTarget.y) {
-					settings.active.y = true;
+				for (const axis of LensComponent.AXIS) {
+					// xNeedsUpdate | yNeedsUpdate is set when the axis is reset. This is in the event the axis is not finished panning but the other axis is.
+					// The axis is updated with the `standard` or `custom` setting based on what is configured.
+					if (!this.settings.pan[`${axis}NeedsUpdate`]) {
+						if (this.camera[axis] !== centerPositionOfTarget[axis]) {
+							settings.active[axis] = true;
+						}
+					} else {
+						// We swap methods from pan to the configured camera mode, to finish animating the camera in the axis that is finished panning.
+						swappedMethod = this.custom ? 'custom' : 'standard';
+						this.settings[swappedMethod].active[axis] = (this.camera[axis] !== centerPositionOfTarget[axis] ? true : false);
+						this.settings[swappedMethod].time[axis] = 0;
+						this.settings[swappedMethod].initialPos[axis] = this.camera[axis];
+						this.followLogic(axis, centerPositionOfTarget, swappedMethod, pElapsedMS);
+					}
 				}
 			}
 		}
 
 		// Call the follow logic in each axis
 		for (const axis of LensComponent.AXIS) {
-			this.followLogic(axis, centerPositionOfTarget, pMethod, pElapsedMS, settings);
+			this.followLogic(axis, centerPositionOfTarget, pMethod, pElapsedMS);
 		}
 
 		// To ensure that the camera is always on the same map as the target.
@@ -895,11 +915,10 @@ class LensComponent {
 			const cameraFollowMode = this.custom ? 'custom' : 'standard';
 
 			// Pan
-			if (this.settings.pan.active.x || this.settings.pan.active.y || this.settings.pan.returning) {
+			if (this.settings.panning) {
 				this.follow('pan', pElapsedMS);
-			}
 			// Camera moving after whatever its following
-			if (!this.settings.panning && this.following) {
+			} else if (this.following) {
 				// Get the center position of the target
 				const centerPositionOfFollowing = this.getTrueCenterPos(this.following);
 				const xFollowingPos = centerPositionOfFollowing.x;
