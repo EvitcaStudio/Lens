@@ -854,17 +854,17 @@ class LensComponent {
 				for (const axis of LensComponent.AXIS) {
 					// xNeedsUpdate | yNeedsUpdate is set when the axis is reset. This is in the event the axis is not finished panning but the other axis is.
 					// The axis is updated with the `standard` or `custom` setting based on what is configured.
-					if (!this.settings.pan[`${axis}NeedsUpdate`]) {
-						if (this.camera[axis] !== centerPositionOfTarget[axis]) {
-							settings.active[axis] = true;
-						}
-					} else {
+					if (this.settings.pan[`${axis}NeedsUpdate`]) {
 						// We swap methods from pan to the configured camera mode, to finish animating the camera in the axis that is finished panning.
 						swappedMethod = this.custom ? 'custom' : 'standard';
 						this.settings[swappedMethod].active[axis] = (this.camera[axis] !== centerPositionOfTarget[axis] ? true : false);
 						this.settings[swappedMethod].time[axis] = 0;
 						this.settings[swappedMethod].initialPos[axis] = this.camera[axis];
 						this.followLogic(axis, centerPositionOfTarget, swappedMethod, pElapsedMS);
+					} else {
+						if (this.camera[axis] !== centerPositionOfTarget[axis]) {
+							settings.active[axis] = true;
+						}
 					}
 				}
 			}
