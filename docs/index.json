@@ -567,7 +567,7 @@
     "__docId__": 48,
     "kind": "file",
     "name": "src/lens.mjs",
-    "content": "import { Tween } from './vendor/tween.min.mjs';\r\nimport { Pulse } from './vendor/pulse.min.mjs';\r\nimport { Utils } from './vendor/utils.min.mjs';\r\nimport { Logger } from './vendor/logger.min.mjs';\r\n\r\n/**\r\n * @todo Create test project\r\n * @todo Mention in README that this module expects VYLO to be a global variable.\r\n * @todo handle delta time\r\n * @private\r\n */\r\nclass LensComponent {\r\n\t/**\r\n\t * The max display an instance can be displayed at.\r\n\t * @private\r\n\t * @type {number}\r\n\t */\r\n\tstatic MAX_DISPLAY = 999999;\r\n\t/**\r\n\t * The max force the camera can shake at.\r\n\t * @private\r\n\t * @type {number}\r\n\t */\r\n\t/**\r\n\t * The max amount of delta time between ticks. If this limit is passed, it will be clamped to this value.\r\n\t * @private\r\n\t * @type {number}\r\n\t */\r\n\tstatic MAX_DELTA_TIME = 0.03333333333;\r\n\t/**\r\n\t * The default tile size of the Vylocity Game Engine.\r\n\t * @private\r\n\t * @type {number}\r\n\t */\r\n\tstatic DEFAULT_TILE_SIZE = 32;\r\n\t/**\r\n\t * An array of axis.\r\n\t * @private\r\n\t * @type {Array}\r\n\t */\r\n\tstatic AXIS = [ 'x', 'y' ];\r\n\t/**\r\n\t * The version of the module.\r\n\t */\r\n\tversion = \"VERSION_REPLACE_ME\";\r\n\t/**\r\n\t * An array of valid ease names.\r\n\t * @private\r\n\t * @type {Array}\r\n\t */\r\n\tstatic validEase = [\r\n\t\t'linear', 'easeInQuad', 'easeOutQuad', 'easeInOutQuad', 'easeInSine', 'easeOutSine', 'easeInOutSine', 'easeInExpo', \r\n\t\t'easeOutExpo', 'easeInOutExpo', 'easeInCirc', 'easeOutCirc', 'easeInOutCirc', 'easeInCubic', 'easeOutCubic', 'easeInOutCubic', \r\n\t\t'easeInQuart', 'easeOutQuart', 'easeInOutQuart','easeInQuint', 'easeOutQuint', 'easeInOutQuint', 'easeInElastic', 'easeOutElastic', \r\n\t\t'easeInOutElastic', 'easeInBack', 'easeOutBack', 'easeInOutBack', 'easeInBounce', 'easeOutBounce', 'easeInOutBounce'\r\n\t];\r\n\t/**\r\n\t * The camera that lens controls.\r\n\t * @type {Object}\r\n\t */\r\n\tcamera = null;\r\n\t/** \r\n\t * Whether the camera has been created and is ready for use or not.\r\n\t * @private\r\n\t * @type {boolean}\r\n\t */\r\n\tinitialized = false;\r\n\t/**\r\n\t * Whether the camera is attached to something and will follow it.\r\n\t * @private\r\n\t * @type {boolean}\r\n\t */\r\n\tattached = false;\r\n\t/**\r\n\t * If this camera is using custom settings currently.\r\n\t * @private\r\n\t * @type {boolean}\r\n\t */\r\n\tcustom = false;\r\n\t/**\r\n\t * The current instance this camera is following.\r\n\t * @private\r\n\t * @type {Object}\r\n\t */\r\n\tfollowing = null;\r\n\t/**\r\n\t * The old position that the camera was following in the last tick.\r\n\t * @private\r\n\t * @type {Object}\r\n\t */\r\n\toldFollowingPos = { 'x': 0, 'y': 0 };\r\n\t/**\r\n\t * The settings this camera uses to operate.\r\n\t * @private\r\n\t * @type {Object}\r\n\t */\r\n\tsettings = {\r\n\t\t// Allows separate dimension zooming\r\n\t\t'zoom': {\r\n\t\t\t'active': { 'x': false, 'y': false },\r\n\t\t\t'time': { 'x': 0, 'y': 0 },\r\n\t\t\t'duration': { 'x': 1000 , 'y': 1000 },\r\n\t\t\t'initialLevel': { 'x': null, 'y': null },\r\n\t\t\t'currentLevel': { 'x': null , 'y': null },\r\n\t\t\t'destinationLevel': { 'x': null, 'y': null },\r\n\t\t\t'differenceLevel': { 'x': null, 'y': null },\r\n\t\t\t'ease': { 'x': 'easeOutCubic', 'y': 'easeOutCubic' },\r\n\t\t\t'callback': null\r\n\t\t},\r\n\t\t// Allows separate dimension shaking\r\n\t\t'shake': {\r\n\t\t\t'active': { 'x': false, 'y': false },\r\n\t\t\t'time': { 'x': 0, 'y': 0 },\r\n\t\t\t'duration': { 'x': 1000, 'y': 1000 },\r\n\t\t\t'intensity': { 'x': 1, 'y': 1 },\r\n\t\t\t'rotational': false, // if the camera tilts while shaking.\r\n\t\t\t'callback': null\r\n\t\t},\r\n\t\t// Allows separate dimension moving \r\n\t\t// When the camera moves from one object to another and then back to the starting object\r\n\t\t'pan': {\r\n\t\t\t'active': { 'x': false, 'y': false }, // if the camera is active or not\r\n\t\t\t'time': { 'x': 0, 'y': 0, 'z': 0 }, // the current time in the ease\r\n\t\t\t'destination': { 'x': null, 'y': null }, // the end position the camera will go to\r\n\t\t\t'ease': { 'x': 'easeOutCubic', 'y': 'easeOutCubic' }, // the ease in each axis the camera will use\r\n\t\t\t'duration': { 'x': 1000, 'y': 1000 }, // how long in each axis the ease will take\r\n\t\t\t'target': null, // the panTo instance\r\n\t\t\t'storedDir': null, // the direction that is stored so it can be given back to the instance when the pan is over\r\n\t\t\t'returning': null, // if the pan is on the `returning` stage\r\n\t\t\t'forceDirChange': true, // if the panning forces the person the camera is attached to to change direction in the direction of the pan. This also disables movement.\r\n\t\t\t'pauseDuration': 0, // how long to stay at the object you've panned to before continuing to pan back\r\n\t\t\t'attach': false, // if when panning to the object, the object now becomes the target that the camera is following\r\n\t\t\t'initialPos': { 'x': null, 'y': null }, // the initial position of the camera\r\n\t\t\t'panBackDuration': { 'x': 1000, 'y': 1000 }, // when the camera is panning back to whatever it panned from\r\n\t\t\t'panBackEase': { 'x': 'easeOutCubic', 'y': 'easeOutCubic' }, // the ease used to pan back\r\n\t\t\t'panToCallback': null, // when you reach the object, this callback is called.\r\n\t\t\t'panBackCallback': null // when the camera pans back to the initiator, this callback is called.\r\n\t\t},\r\n\t\t// Default camera movement settings, \r\n\t\t// Allows separate dimension moving\r\n\t\t'standard': {\r\n\t\t\t'active': { 'x': false, 'y': false },\r\n\t\t\t'time': { 'x': 0, 'y': 0 },\r\n\t\t\t'duration': { 'x': 1000, 'y': 1000 },\r\n\t\t\t'destination': { 'x': null, 'y': null },\r\n\t\t\t'initialPos': { 'x': null, 'y': null },\r\n\t\t\t'ease': { 'x': 'easeOutCubic', 'y': 'easeOutCubic' }\r\n\t\t},\r\n\t\t// Custom applied camera movement settings, \r\n\t\t// Allows separate dimension moving\r\n\t\t'custom': {\r\n\t\t\t'active': { 'x': false, 'y': false },\r\n\t\t\t'time': { 'x': 0, 'y': 0 },\r\n\t\t\t'duration': { 'x': 1000, 'y': 1000 },\r\n\t\t\t'destination': { 'x': null, 'y': null },\r\n\t\t\t'initialPos': { 'x': null, 'y': null },\r\n\t\t\t'ease': { 'x': 'easeOutCubic', 'y': 'easeOutCubic' }\r\n\t\t},\r\n\t\t// Spectate options\r\n\t\t'spectate': {\r\n\t\t\t'forcePos': true,\r\n\t\t\t'player': null\r\n\t\t},\r\n\t\t// Render loop data\r\n\t\t'loop': {\r\n\t\t\t'lastTime': 0\r\n\t\t},\r\n\t\t// States of the camera\r\n\t\t'zooming': false,\r\n\t\t'panning': false,\r\n\t\t'spectating': false,\r\n\t\t'shaking': false,\r\n\t\t'moving': false\r\n\t};\r\n\t/**\r\n\t * Weakmap to track data belonging to instances used in this module.\r\n\t * @private\r\n\t * @type {WeakMap}\r\n\t */\r\n\tinstanceWeakMap = new WeakMap();\r\n    /**\r\n     * Whether the mapview has been initialized.\r\n     * @private\r\n     * @type {boolean}\r\n     */\r\n\tmapViewInitialized = false\r\n\t/**\r\n\t * A callback to be called when the camera is updated.\r\n\t * @param {number} - pDiffX - The difference in position between the camera's old x position and it's new position.\r\n\t * @param {number} - pDiffY - The difference in position between the camera's old y position and it's new position.\r\n\t * @type {Function|undefined}\r\n\t */\r\n\tupdateWithCamera;\r\n\t/** The logger module this module uses to log errors / logs.\r\n\t * @private\r\n\t * @type {Object}\r\n\t */\t\r\n\tlogger = new Logger();\r\n\t/**\r\n\t * @private\r\n\t */\r\n\tconstructor() {\r\n\t\t// Register the logger type\r\n        this.logger.registerType('Lens-Module', '#ff6600');\r\n\r\n\t\t// Set up the update loop for the camera.\r\n\t\tPulse.on(VYLO.Client, 'onScreenRender', (pT) => {\r\n\t\t\tif (this.initialized) {\r\n\t\t\t\tconst now = pT;\r\n\t\t\t\tif (!this.settings.loop.lastTime) this.settings.loop.lastTime = now;\r\n\t\t\t\tconst elapsedMS = now - this.settings.loop.lastTime;\r\n\t\t\t\t/**\r\n\t\t\t\t * The delta time between ticks.\r\n\t\t\t\t * @type {number}\r\n\t\t\t\t */\r\n\t\t\t\tlet deltaTime = elapsedMS / 1000;\r\n\t\t\t\t// If the delta is too big then we clamp it to the max delta time.\r\n\t\t\t\tif (deltaTime >= LensComponent.MAX_DELTA_TIME) {\r\n\t\t\t\t\tdeltaTime = LensComponent.MAX_DELTA_TIME;\r\n\t\t\t\t}\r\n\t\t\t\tthis.update(elapsedMS, deltaTime);\r\n\t\t\t\t// Call callback to update with camera\r\n\t\t\t\tif (this.attached && this.updateWithCamera) {\r\n\t\t\t\t\tthis.updateWithCamera(deltaTime);\r\n\t\t\t\t}\r\n\t\t\t\tthis.settings.loop.lastTime = now;\r\n\t\t\t}\r\n\t\t});\r\n\t\t// Init the camera\r\n\t\tthis.initCamera();\r\n\t}\r\n\t/**\r\n\t * Builds and initiates the camera and assigns some presets to it\r\n\t * @private\r\n\t */\r\n\tinitCamera() {\r\n\t\tif (this.initialized) return;\r\n\t\t// Define the camera type\r\n\t\tconst cameraType = `MapObject/Lens-${Utils.generateID()}`;\r\n\t\tVYLO.setType(cameraType, {\r\n\t\t\towner: this,\r\n\t\t\tatlasName: '',\r\n\t\t\twidth: 1,\r\n\t\t\theight: 1,\r\n\t\t\t// Remove all touch / mouse events\r\n\t\t\tmouseOpacity: 0,\r\n\t\t\ttouchOpacity: 0,\r\n\t\t\t// Do not allow this instance to interact with the environment\r\n\t\t\tdensity: false,\r\n\t\t\tplane: LensComponent.MAX_DISPLAY,\r\n\t\t\tlayer: LensComponent.MAX_DISPLAY,\r\n\t\t\tinvisibility: LensComponent.MAX_DISPLAY,\r\n\t\t\tpreventScreenRelayer: true,\r\n\t\t\tpreventInterpolation: true\r\n\t\t});\r\n\t\t// Create the camera\r\n\t\tthis.camera = VYLO.newDiob(cameraType);\r\n\t\tthis.initialized = true;\r\n\t}\r\n\t/**\r\n\t * Returns the true center position by using the x and y position and adding half of the icon's width / height. If no icon is found, we instead use the half of the default tileSize.\r\n\t * @private\r\n\t * @param {Object} pInstance - The instance to get the true center position of.\r\n\t * @returns {Object} Object containing the true center position of the instance.\r\n\t */\r\n\tgetTrueCenterPos(pInstance) {\r\n\t\tconst instanceIconWidthHalf = pInstance.icon ? pInstance.icon.width / 2 : LensComponent.DEFAULT_TILE_SIZE / 2;\r\n\t\tconst instanceIconHeightHalf = pInstance.icon ? pInstance.icon.height / 2 : LensComponent.DEFAULT_TILE_SIZE / 2;\r\n\t\tlet centerObject = this.instanceWeakMap.get(pInstance);\r\n\t\t// If it can pull any data it means no data was ever set, so we need to set the data and then grab it\r\n\t\tif (!centerObject) {\r\n\t\t\tthis.instanceWeakMap.set(pInstance, { 'x': 0, 'y': 0 });\r\n\t\t\tcenterObject = this.instanceWeakMap.get(pInstance);\r\n\t\t}\r\n\t\tcenterObject.x = pInstance.x + instanceIconWidthHalf;\r\n\t\tcenterObject.y = pInstance.y + instanceIconHeightHalf;\r\n\t\treturn centerObject;\r\n\t}\r\n\t/**\r\n\t * Resets the camera based on the method passed.\r\n\t * @private\r\n\t * @param {string} pMethod - The method to reset.\r\n\t */\r\n\treset(pMethod) {\r\n\t\tswitch (pMethod) {\r\n\t\t\tcase 'zoomX':\r\n\t\t\t\tthis.settings.zoom.active.x = false;\r\n\t\t\t\tthis.settings.zoom.time.x = 0;\r\n\t\t\t\tthis.settings.zoom.ease.x = 'easeOutCirc';\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'zoomY':\r\n\t\t\t\tthis.settings.zoom.active.y = false;\r\n\t\t\t\tthis.settings.zoom.time.y = 0;\r\n\t\t\t\tthis.settings.zoom.ease.y = 'easeOutCirc';\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'zoom':\r\n\t\t\t\tthis.settings.zoom.callback = null;\r\n\t\t\t\tthis.settings.zoom.time.x = this.settings.zoom.time.y = 0;\r\n\t\t\t\tthis.settings.zoom.active.x = this.settings.zoom.active.y = false;\r\n\t\t\t\tthis.settings.zoom.initialLevel.x = this.settings.zoom.initialLevel.y = null;\r\n\t\t\t\tthis.settings.zoom.destinationLevel.x = this.settings.zoom.destinationLevel.y = null;\r\n\t\t\t\tthis.settings.zoom.differenceLevel.x = this.settings.zoom.differenceLevel.y = null;\r\n\t\t\t\tthis.settings.zoom.duration.x = this.settings.zoom.duration.y = null;\t\r\n\t\t\t\tthis.settings.zoom.ease.x = this.settings.zoom.ease.y = null;\r\n\t\t\t\tthis.settings.zooming = false;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'panX':\r\n\t\t\t\tthis.settings.pan.active.x = false;\r\n\t\t\t\tthis.settings.pan.time.x = 0;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'panY':\r\n\t\t\t\tthis.settings.pan.active.y = false;\r\n\t\t\t\tthis.settings.pan.time.y = 0;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'pan':\r\n\t\t\t\tthis.settings.pan.returning = false;\r\n\t\t\t\tthis.settings.pan.attach = false;\r\n\t\t\t\tthis.settings.pan.forceDirChange = true;\r\n\t\t\t\tthis.settings.pan.target = null;\r\n\t\t\t\tthis.settings.pan.storedDir = null;\r\n\t\t\t\tthis.settings.pan.panToCallback = null;\r\n\t\t\t\tthis.settings.pan.panBackCallback = null;\r\n\t\t\t\tthis.settings.pan.pauseDuration = 0;\r\n\t\t\t\tthis.settings.pan.time.x = this.settings.pan.time.y = 0;\r\n\t\t\t\tthis.settings.pan.initialPos.x = this.settings.pan.initialPos.y = null;\r\n\t\t\t\tthis.settings.pan.panBackDuration.x = this.settings.pan.panBackDuration.y = null;\r\n\t\t\t\tthis.settings.pan.ease.x = this.settings.pan.ease.y = null;\r\n\t\t\t\tthis.settings.pan.panBackEase.x = this.settings.pan.panBackEase.y = null;\r\n\t\t\t\tthis.settings.pan.active.x = this.settings.pan.active.y = false;\r\n\t\t\t\tthis.settings.pan.duration.x = this.settings.pan.duration.y = null;\r\n\t\t\t\tthis.settings.pan.destination.x = this.settings.pan.destination.y = null;\r\n\t\t\t\tthis.settings.panning = false;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'standardX':\r\n\t\t\t\tthis.settings.standard.active.x = false;\r\n\t\t\t\tthis.settings.standard.time.x = 0;\r\n\t\t\t\tthis.settings.standard.initialPos.x = this.camera.x;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'standardY':\r\n\t\t\t\tthis.settings.standard.active.y = false;\r\n\t\t\t\tthis.settings.standard.time.y = 0;\r\n\t\t\t\tthis.settings.standard.initialPos.y = this.camera.y;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'standard':\r\n\t\t\t\tthis.settings.standard.active.x = this.settings.standard.active.y = false;\r\n\t\t\t\tthis.settings.standard.time.x = this.settings.standard.time.y = 0;\r\n\r\n\t\t\t\tthis.settings.standard.initialPos.x = this.camera.x;\r\n\t\t\t\tthis.settings.standard.initialPos.y = this.camera.y;\r\n\t\t\t\tthis.settings.moving = false;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'customX':\r\n\t\t\t\tthis.settings.custom.active.x = false;\r\n\t\t\t\tthis.settings.custom.time.x = 0;\r\n\t\t\t\tthis.settings.custom.initialPos.x = this.camera.x;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'customY':\r\n\t\t\t\tthis.settings.custom.active.y = false;\r\n\t\t\t\tthis.settings.custom.time.y = 0;\r\n\t\t\t\tthis.settings.custom.initialPos.y = this.camera.y;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'custom':\r\n\t\t\t\tthis.settings.custom.active.x = this.settings.custom.active.y = false;\r\n\t\t\t\tthis.settings.custom.time.x = this.settings.custom.time.y = 0;\r\n\r\n\t\t\t\tthis.settings.custom.initialPos.x = this.camera.x;\r\n\t\t\t\tthis.settings.custom.initialPos.y = this.camera.y;\r\n\t\t\t\tthis.settings.moving = false;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'shakeX':\r\n\t\t\t\tthis.settings.shake.time.x = 0;\r\n\t\t\t\tthis.settings.shake.active.x = false;\r\n\t\t\t\tVYLO.Client.setViewEyeOffsets(0, VYLO.Client.getViewEyeOffsets().y)\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'shakeY':\r\n\t\t\t\tthis.settings.shake.time.y = 0;\r\n\t\t\t\tthis.settings.shake.active.y = false;\r\n\t\t\t\tVYLO.Client.setViewEyeOffsets(VYLO.Client.getViewEyeOffsets().x, 0)\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'shake':\r\n\t\t\t\tthis.settings.shake.callback = null;\r\n\t\t\t\tthis.settings.shake.rotational = false;\r\n\t\t\t\tthis.settings.shake.time.x = this.settings.shake.time.y = 0;\r\n\t\t\t\tthis.settings.shake.active.x = this.settings.shake.active.y = false;\r\n\t\t\t\tthis.settings.shake.duration.x = this.settings.shake.duration.y = 0;\r\n\t\t\t\tthis.settings.shake.intensity.x = this.settings.shake.intensity.y = 0;\r\n\t\t\t\tVYLO.Client.setViewEyeOffsets(0, 0);\r\n\t\t\t\tVYLO.Client.mapView.angle = 0;\r\n\t\t\t\tthis.settings.shaking = false;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'spectate':\r\n\t\t\t\tthis.settings.spectate.priorFollowedPlayer = null;\r\n\t\t\t\tthis.settings.spectate.forcePos = false;\r\n\t\t\t\tthis.settings.spectating = false;\r\n\t\t\t\tbreak;\r\n\t\t}\r\n\t}\r\n\t/**\r\n\t * The method to update the zoom when it is active.\r\n\t * @private\r\n\t * @param {number} pElapsedMS - The amount of ms that has passed since the last tick.\r\n\t * @param {number} pDeltaTime - The delta time between ticks.\r\n\t */\r\n\tzoomUpdate(pElapsedMS, pDeltaTime) {\r\n\t\t/**\r\n\t\t * The new x zoom to move the mapView to. Defaulted to the current zoom x in the event no changes are needed.\r\n\t\t * @type {number}\r\n\t\t */\r\n\t\tlet newZoomX = VYLO.Client.mapView.zoom.x;\r\n\t\t/**\r\n\t\t * The new y zoom to move the mapView to. Defaulted to the current zoom y in the event no changes are needed.\r\n\t\t * @type {number}\r\n\t\t */\r\n\t\tlet newZoomY = VYLO.Client.mapView.zoom.y;\r\n\r\n\t\tif (this.settings.zoom.active.x) {\r\n\t\t\tthis.settings.zoom.time.x = Math.min(this.settings.zoom.time.x + pElapsedMS, this.settings.zoom.duration.x);\r\n\t\t\tthis.settings.zoom.currentLevel.x = Tween[this.settings.zoom.ease.x](this.settings.zoom.time.x, this.settings.zoom.initialLevel.x, this.settings.zoom.differenceLevel.x, this.settings.zoom.duration.x);\r\n\t\t\tconst stepSizeX = (this.settings.zoom.currentLevel.x - VYLO.Client.mapView.zoom.x);\r\n\t\t\tnewZoomX = VYLO.Client.mapView.zoom.x + stepSizeX;\r\n\t\t}\r\n\r\n\t\tif (this.settings.zoom.active.y) {\r\n\t\t\tthis.settings.zoom.time.y = Math.min(this.settings.zoom.time.y + pElapsedMS, this.settings.zoom.duration.y);\r\n\t\t\tthis.settings.zoom.currentLevel.y = Tween[this.settings.zoom.ease.y](this.settings.zoom.time.y, this.settings.zoom.initialLevel.y, this.settings.zoom.differenceLevel.y, this.settings.zoom.duration.y);\r\n\t\t\tconst stepSizeY = (this.settings.zoom.currentLevel.y - VYLO.Client.mapView.zoom.y);\t\r\n\t\t\tnewZoomY = VYLO.Client.mapView.zoom.y + stepSizeY;\r\n\t\t}\r\n\r\n\t\t// Update the mapView with the new zoom\r\n\t\tVYLO.Client.mapView.setZoom(newZoomX, newZoomY);\r\n\r\n\t\tif (this.settings.zoom.time.x === this.settings.zoom.duration.x) {\r\n\t\t\tthis.reset('zoomX');\r\n\t\t}\r\n\r\n\t\tif (this.settings.zoom.time.y === this.settings.zoom.duration.y) {\r\n\t\t\tthis.reset('zoomY');\r\n\t\t}\r\n\r\n\t\tif (!this.settings.zoom.active.x && !this.settings.zoom.active.y) {\r\n\t\t\tthis.onZoomEnd();\r\n\t\t}\r\n\t}\r\n\t/**\r\n\t * The method to update shaking when it is active.\r\n\t * @private\r\n\t * @param {number} pElapsedMS - The amount of ms that has passed since the last tick.\r\n\t * @param {number} pDeltaTime - The delta time between ticks.\r\n\t */\r\n\tshakeUpdate(pElapsedMS, pDeltaTime) {\r\n\t\tlet angle;\r\n\t\tlet xForce = 0;\r\n\t\tlet yForce = 0;\r\n\r\n\t\tif (this.settings.shake.rotational) {\r\n\t\t\tlet seed;\r\n\t\t\tlet seed2;\r\n\t\t\tif (this.settings.shake.active.x && this.settings.shake.active.y) {\r\n\t\t\t\tseed = this.settings.shake.intensity.x;\r\n\t\t\t\tseed2 = this.settings.shake.intensity.y;\r\n\t\t\t} else if (this.settings.shake.active.x) {\r\n\t\t\t\tseed = this.settings.shake.intensity.x;\r\n\t\t\t\tseed2 = seed*0.5;\t\t\t\t\r\n\t\t\t} else if (this.settings.shake.active.y) {\r\n\t\t\t\tseed = this.settings.shake.intensity.y;\r\n\t\t\t\tseed2 = seed*0.5;\t\r\n\t\t\t}\r\n\r\n\t\t\tangle = Utils.decimalRand(-Utils.decimalRand(seed, seed2) / 200, Utils.decimalRand(seed, seed2) / 200);\r\n\t\t\tVYLO.Client.mapView.angle = angle;\r\n\t\t}\r\n\r\n\t\tif (this.settings.shake.active.x) {\r\n\t\t\tconst seed = this.settings.shake.intensity.x;\r\n\t\t\tconst seed2 = seed*0.5;\r\n\t\t\txForce = Utils.decimalRand(-Utils.decimalRand(seed, seed2), Utils.decimalRand(seed, seed2));\r\n\t\t\tthis.settings.shake.time.x = Math.min(this.settings.shake.time.x + pElapsedMS, this.settings.shake.duration.x);\r\n\t\t}\r\n\r\n\t\tif (this.settings.shake.active.y) {\r\n\t\t\tconst seed = this.settings.shake.intensity.y;\r\n\t\t\tconst seed2 = seed*0.5;\r\n\t\t\tyForce = Utils.decimalRand(-Utils.decimalRand(seed, seed2), Utils.decimalRand(seed, seed2));\r\n\t\t\tthis.settings.shake.time.y = Math.min(this.settings.shake.time.y + pElapsedMS, this.settings.shake.duration.y);\r\n\t\t}\r\n\r\n\t\tVYLO.Client.setViewEyeOffsets(xForce, yForce);\r\n\r\n\t\tif (this.settings.shake.time.x === this.settings.shake.duration.x) {\r\n\t\t\tthis.reset('shakeX');\r\n\t\t}\r\n\r\n\t\tif (this.settings.shake.time.y === this.settings.shake.duration.y) {\r\n\t\t\tthis.reset('shakeY');\r\n\t\t}\r\n\r\n\t\tif (!this.settings.shake.active.x && !this.settings.shake.active.y) {\r\n\t\t\tthis.onShakeEnd();\r\n\t\t}\r\n\t}\r\n\t/**\r\n\t * Pans the camera from one view to another view. This pan can be customized in both axis. This pan has callbacks and settings that allow further customization.\r\n\t * @param {Object} pSettings - A Object holding settings that control this pan.\r\n\t * @param {Object} pSettings.target - A Object holding settings that control this pan.\r\n\t * @param {Object} pSettings.ease - A Object holding settings that control this pan.\r\n\t * @param {string} pSettings.ease.x - A Object holding settings that control this pan.\r\n\t * @param {string} pSettings.ease.y - A Object holding settings that control this pan.\r\n\t * @param {Object} pSettings.panBackEase - A Object holding settings that control this pan.\r\n\t * @param {string} pSettings.panBackEase.x - A Object holding settings that control this pan.\r\n\t * @param {string} pSettings.panBackEase.y - A Object holding settings that control this pan.\r\n\t * @param {Object} pSettings.duration - A Object holding settings that control this pan.\r\n\t * @param {number} pSettings.duration.x - A Object holding settings that control this pan.\r\n\t * @param {number} pSettings.duration.y - A Object holding settings that control this pan.\r\n\t * @param {Object} pSettings.panBackDuration - A Object holding settings that control the duration of the pan.\r\n\t * @param {number} pSettings.panBackDuration.x - The duration of the ease in the x dimension.\r\n\t * @param {number} pSettings.panBackDuration.y - The duration of the ease in the y dimension.\r\n\t * @param {number} pSettings.pauseDuration - How long the camera will stay at the target after panning to it before completing the pan.\r\n\t * @param {boolean} pSettings.attach - Whether or not to attach the camera to the target when the pan to it is completed. This automatically forfeits the panBack nature of this and no panBack callback will be called.\r\n\t * @param {boolean} pSettings.forceDirChange - Whether panning to a target changes your direction to face the target.\r\n\t * @param {Function} pSettings.panToCallback - Callback function to be called when the pan to the target is completed.\r\n\t * @param {Function} pSettings.panBackCallback - Callback function to be called when the pan from the target back to the camera's target is completed.\r\n\t */\r\n\tpan(pSettings) {\r\n\t\tif (this.settings.panning && !this.settings.pan.returning) {\r\n\t\t\tthis.logger.prefix('Lens-Module').error('You are already panning. Pan failed');\r\n\t\t\treturn;\r\n\t\t}\r\n\t\tif (this.settings.spectating) {\r\n\t\t\tthis.logger.prefix('Lens-Module').error('You are spectating and cannot pan right now. Pan failed');\r\n\t\t\treturn;\r\n\t\t}\r\n\t\tif (typeof(pSettings) === 'object' && pSettings.constructor === Object) {\r\n\t\t\tconst settingsProps = Object.keys(pSettings);\r\n\t\t\tif (settingsProps.includes('target')) {\r\n\t\t\t\t// Target\r\n\t\t\t\t// Check if its a valid instance to assign to a target\r\n\t\t\t\tif (typeof(pSettings.target) === 'object' && pSettings.target.baseType) {\r\n\t\t\t\t\tif (typeof(pSettings.target.x) === 'number' && typeof(pSettings.target.y) === 'number' && typeof(pSettings.target.mapName) === 'string') {\r\n\t\t\t\t\t\tif (pSettings.target === this.following) {\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').error('You cannot pan to yourself. Pan failed');\r\n\t\t\t\t\t\t\treturn;\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\tthis.settings.pan.target = pSettings.target;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').error('Invalid variable type passed for the pSettings.target.x || pSettings.target.y || *pSettings.target.mapName parameter. Pan failed');\r\n\t\t\t\t\t\treturn;\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').error('Invalid variable type passed for the pSettings.target property. Pan failed');\r\n\t\t\t\t\treturn;\r\n\t\t\t\t}\r\n\r\n\t\t\t\t// ease\r\n\t\t\t\tif (pSettings.ease) {\r\n\t\t\t\t\tif (typeof(pSettings.ease) === 'object' && pSettings.ease.constructor === Object) {\r\n\t\t\t\t\t\tif (typeof(pSettings.ease.x) === 'string' && typeof(pSettings.ease.y) === 'string') {\r\n\t\t\t\t\t\t\tif (LensComponent.validEase.includes(pSettings.ease.x) && LensComponent.validEase.includes(pSettings.ease.y)) {\r\n\t\t\t\t\t\t\t\tthis.settings.pan.ease.x = pSettings.ease.x;\r\n\t\t\t\t\t\t\t\tthis.settings.pan.ease.y = pSettings.ease.y;\r\n\t\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\t\tthis.settings.pan.ease.x = this.settings.pan.ease.y = 'easeOutCubic';\r\n\t\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid ease name passed for pSettings.ease.x || pSettings.ease.y. Reverted to default');\r\n\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\tthis.settings.pan.ease.x = this.settings.pan.ease.y = 'easeOutCubic';\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.ease.x || pSettings.ease.y parameter. Reverted to default');\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t} else if (typeof(pSettings.ease) === 'string') {\r\n\t\t\t\t\t\tif (LensComponent.validEase.includes(pSettings.ease)) {\r\n\t\t\t\t\t\t\tthis.settings.pan.ease.x = this.settings.pan.ease.y = pSettings.ease;\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\tthis.settings.pan.ease.x = this.settings.pan.ease.y = 'easeOutCubic';\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid ease name passed for pSettings.ease.x || pSettings.ease.y. Reverted to default');\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.pan.ease.x = this.settings.pan.ease.y = 'easeOutCubic';\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.ease property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.pan.ease.x = this.settings.pan.ease.y = 'easeOutCubic';\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('No ease property included inside of the pSettings parameter. Reverted to default');\r\n\t\t\t\t}\r\n\r\n\t\t\t\t// panBackEase\r\n\t\t\t\tif (pSettings.panBackEase) {\r\n\t\t\t\t\tif (typeof(pSettings.panBackEase) === 'object' && pSettings.panBackEase.constructor === Object) {\r\n\t\t\t\t\t\tif (typeof(pSettings.panBackEase.x) === 'string' && typeof(pSettings.panBackEase.y) === 'string') {\r\n\t\t\t\t\t\t\tif (LensComponent.validEase.includes(pSettings.panBackEase.x) && LensComponent.validEase.includes(pSettings.panBackEase.y)) {\r\n\t\t\t\t\t\t\t\tthis.settings.pan.panBackEase.x = pSettings.panBackEase.x;\r\n\t\t\t\t\t\t\t\tthis.settings.pan.panBackEase.y = pSettings.panBackEase.y;\r\n\t\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\t\tthis.settings.pan.panBackEase.x = this.settings.pan.panBackEase.y = 'easeOutCubic';\r\n\t\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid ease name passed for pSettings.panBackEase.x || pSettings.panBackEase.y. Reverted to default');\r\n\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\tthis.settings.pan.panBackEase.x = this.settings.pan.panBackEase.y = 'easeOutCubic';\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.panBackEase.x || pSettings.panBackEase.y parameter. Reverted to default');\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t} else if (typeof(pSettings.panBackEase) === 'string') {\r\n\t\t\t\t\t\tif (LensComponent.validEase.includes(pSettings.panBackEase)) {\r\n\t\t\t\t\t\t\tthis.settings.pan.panBackEase.x = this.settings.pan.panBackEase.y = pSettings.panBackEase;\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\tthis.settings.pan.panBackEase.x = this.settings.pan.panBackEase.y = 'easeOutCubic';\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid ease name passed for pSettings.panBackEase.x || pSettings.panBackEase.y. Reverted to default');\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.pan.panBackEase.x = this.settings.pan.panBackEase.y = 'easeOutCubic';\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.panBackEase property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.pan.panBackEase.x = this.settings.pan.panBackEase.y = 'easeOutCubic';\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('No panBackEase property included inside of the pSettings parameter. Reverted to default');\r\n\t\t\t\t}\r\n\r\n\t\t\t\t// Duration\r\n\t\t\t\tif (pSettings.duration) {\r\n\t\t\t\t\tif (typeof(pSettings.duration) === 'object' && pSettings.duration.constructor === Object) {\r\n\t\t\t\t\t\tif (typeof(pSettings.duration.x) === 'number' && typeof(pSettings.duration.y) === 'number') {\r\n\t\t\t\t\t\t\tthis.settings.pan.duration.x = pSettings.duration.x;\r\n\t\t\t\t\t\t\tthis.settings.pan.duration.y = pSettings.duration.y;\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\tthis.settings.pan.duration.x = this.settings.pan.duration.y = 2000;\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.duration.x || pSettings.duration.y parameter. Reverted to default');\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t} else if (typeof(pSettings.duration) === 'number') {\r\n\t\t\t\t\t\t\tthis.settings.pan.duration.x = this.settings.pan.duration.y = pSettings.duration;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.pan.duration.x = this.settings.pan.duration.y = 2000;\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.duration property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.pan.duration.x = this.settings.pan.duration.y = 2000;\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('No duration property included inside of the pSettings parameter. Reverted to default');\r\n\t\t\t\t}\r\n\r\n\t\t\t\t// panBackDuration\r\n\t\t\t\tif (pSettings.panBackDuration) {\r\n\t\t\t\t\tif (typeof(pSettings.panBackDuration) === 'object' && pSettings.panBackDuration.constructor === Object) {\r\n\t\t\t\t\t\tif (typeof(pSettings.panBackDuration.x) === 'number' && typeof(pSettings.panBackDuration.y) === 'number') {\r\n\t\t\t\t\t\t\tthis.settings.pan.panBackDuration.x = pSettings.panBackDuration.x;\r\n\t\t\t\t\t\t\tthis.settings.pan.panBackDuration.y = pSettings.panBackDuration.y;\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\tthis.settings.pan.panBackDuration.x = this.settings.pan.panBackDuration.y = 2000;\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.panBackDuration.x || pSettings.panBackDuration.y parameter. Reverted to default');\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t} else if (typeof(pSettings.panBackDuration) === 'number') {\r\n\t\t\t\t\t\t\tthis.settings.pan.panBackDuration.x = this.settings.pan.panBackDuration.y = pSettings.panBackDuration;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.pan.panBackDuration.x = this.settings.pan.panBackDuration.y = 2000;\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.panBackDuration property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.pan.panBackDuration.x = this.settings.pan.panBackDuration.y = 2000;\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('No panBackDuration property included inside of the pSettings parameter. Reverted to default');\r\n\t\t\t\t}\r\n\r\n\t\t\t\t// pauseDuration\r\n\t\t\t\tif (pSettings.pauseDuration) {\r\n\t\t\t\t\tif (typeof(pSettings.pauseDuration) === 'number') {\r\n\t\t\t\t\t\tthis.settings.pan.pauseDuration = pSettings.pauseDuration;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.pan.pauseDuration = 0;\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.pauseDuration property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\r\n\t\t\t\t// Attach\r\n\t\t\t\tthis.settings.pan.attach = pSettings.attach;\r\n\t\t\t\t// forceDirChange\r\n\t\t\t\tthis.settings.pan.forceDirChange = pSettings.forceDirChange;\r\n\t\t\t\t// initialPos\r\n\t\t\t\tthis.settings.pan.initialPos.x = this.camera.x;\r\n\t\t\t\tthis.settings.pan.initialPos.y = this.camera.y;\r\n\r\n\t\t\t\tif (this.settings.pan.forceDirChange) {\r\n\t\t\t\t\t/**\r\n\t\t\t\t\t * @info Should there be a setting to disable movement here?\r\n\t\t\t\t\t */\r\n\t\t\t\t\tthis.settings.pan.storedDir = this.following.dir;\r\n\t\t\t\t\tthis.following.dir = Utils.getDirection(Utils.convertRaWAngleToVyloCoords(Utils.getAngle(this.following, this.settings.pan.target)));\r\n\t\t\t\t}\r\n\t\t\t\t// panToCallback\r\n\t\t\t\tif (pSettings.panToCallback) {\r\n\t\t\t\t\tif (typeof(pSettings.panToCallback) === 'function') {\r\n\t\t\t\t\t\tthis.settings.pan.panToCallback = pSettings.panToCallback;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.panToCallback property.');\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\r\n\t\t\t\t// panBackCallback\r\n\t\t\t\tif (pSettings.panBackCallback) {\r\n\t\t\t\t\tif (typeof(pSettings.panBackCallback) === 'function') {\r\n\t\t\t\t\t\tthis.settings.pan.panBackCallback = pSettings.panBackCallback;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.panBackCallback property.');\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\r\n\t\t\t\tif (this.camera.x !== this.settings.pan.target.x) {\r\n\t\t\t\t\tthis.settings.pan.active.x = true;\r\n\t\t\t\t}\r\n\r\n\t\t\t\tif (this.camera.y !== this.settings.pan.target.y) {\r\n\t\t\t\t\tthis.settings.pan.active.y = true;\r\n\t\t\t\t}\r\n\r\n\t\t\t} else {\r\n\t\t\t\tthis.logger.prefix('Lens-Module').error('No target property included inside of the pSettings parameter. Pan failed');\r\n\t\t\t}\r\n\r\n\t\t} else {\r\n\t\t\tthis.logger.prefix('Lens-Module').error('Invalid variable type passed for the pSettings parameter. Pan failed');\r\n\t\t}\r\n\t\tthis.settings.panning = true;\r\n\t}\r\n\t/**\r\n\t * Event handler for when the first part of the pan completes.\r\n\t * @private\r\n\t */\r\n\tonPanned() {\r\n\t\tif (this.settings.pan.panToCallback) {\r\n\t\t\tthis.settings.pan.panToCallback();\r\n\t\t\tthis.settings.pan.panToCallback = null;\r\n\t\t}\r\n\t\tif (this.settings.pan.attach) {\r\n\t\t\tif (typeof(this.settings.pan.target) === 'object') {\r\n\t\t\t\t// Check if its a instance\r\n\t\t\t\tif (this.settings.pan.target.baseType) {\r\n\t\t\t\t\tthis.following = this.settings.pan.target;\r\n\t\t\t\t\tthis.reset('pan');\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Cannot attach to a non MapObject | Diob type. Attachment failed');\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t} else {\r\n\t\t\tthis.settings.pan.target = this.following;\r\n\t\t\tthis.settings.pan.initialPos.x = this.camera.x;\r\n\t\t\tthis.settings.pan.initialPos.y = this.camera.y;\r\n\t\t\tthis.settings.pan.time.x = this.settings.pan.time.y = 0;\r\n\t\t\tthis.settings.pan.duration.x = this.settings.pan.panBackDuration.x;\r\n\t\t\tthis.settings.pan.duration.y = this.settings.pan.panBackDuration.y;\r\n\t\t\tthis.settings.pan.ease.x = this.settings.pan.panBackEase.x;\r\n\t\t\tthis.settings.pan.ease.y = this.settings.pan.panBackEase.y;\r\n\t\t\tthis.settings.pan.returning = true;\r\n\t\t}\r\n\t}\r\n\t/**\r\n\t * Event handler for when the second part of the pan completes.\r\n\t * @private\r\n\t */\r\n\tonPanFinish() {\r\n\t\tif (this.settings.pan.forceDirChange) {\r\n\t\t\tthis.following.dir = this.settings.pan.storedDir;\r\n\t\t}\r\n\t\tif (this.settings.pan.panBackCallback) {\r\n\t\t\tthis.settings.pan.panBackCallback();\r\n\t\t\tthis.settings.pan.panBackCallback = null;\r\n\t\t}\r\n\t\tthis.reset('pan');\r\n\t}\r\n\t/**\r\n\t * The logic for following instances via the camera.\r\n\t * @private\r\n\t * @param {string} pAxis - 'x' | 'y'. The axis to handle the logic in.\r\n\t * @param {Object} pPosition - The centered position of the target.\r\n\t * @param {string} pMethod - The method the camera is using to follow.\r\n\t * @param {number} pElapsedMS - The elapsed time since the last tick.\r\n\t * @param {Object} pSettings - The method's settings object.\r\n\t */\r\n\tfollowLogic(pAxis, pPosition, pMethod, pElapsedMS, pSettings) {\r\n\t\t// If this axis is active\r\n\t\tif (pSettings.active[pAxis]) {\r\n\t\t\t// Get the destination position in each axis.\r\n\t\t\tpSettings.destination[pAxis] = pPosition[pAxis];\r\n\t\t\t// Set the time elapsed.\r\n\t\t\tpSettings.time[pAxis] = Math.min(pSettings.time[pAxis] + pElapsedMS, pSettings.duration[pAxis]);\r\n\t\t\t// Get the distance between the start and end in this axis.\r\n\t\t\tconst distance = pSettings.destination[pAxis] - pSettings.initialPos[pAxis];\r\n\t\t\t// Get the position the camera should go to next.\r\n\t\t\tconst pos = Tween[pSettings.ease[pAxis]](pSettings.time[pAxis], pSettings.initialPos[pAxis], distance, pSettings.duration[pAxis]);\r\n\t\t\t// Add the stepSize to the camera's position in this axis to move closer to the destination.\r\n\t\t\tthis.camera[pAxis] += pos - this.camera[pAxis];\r\n\r\n\t\t\t// When the animation is over.\r\n\t\t\tif (pSettings.time[pAxis] === pSettings.duration[pAxis]) {\r\n\t\t\t\t// Get the proper reset API for each method.\r\n\t\t\t\tconst resetAPI = `${pMethod}${pAxis.toUpperCase()}`;\r\n\t\t\t\t// The animation is over, so we force set the end position.\r\n\t\t\t\tthis.camera[pAxis] = pPosition[pAxis];\r\n\t\t\t\t// Reset the method\r\n\t\t\t\tthis.reset(resetAPI);\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n\t/**\r\n\t * Method to follow the target of the camera.\r\n\t * @private\r\n\t * @param {string} pMethod - The method in which the camera is following.\r\n\t * @param {number} pElapsedMS - The amount of ms that has passed since the last tick.\r\n\t */\r\n\tfollow(pMethod, pElapsedMS) {\r\n\t\t// Extract relevant settings.\r\n\t\tconst settings = this.settings[pMethod];\r\n\t\t/**\r\n\t\t * The target to follow.\r\n\t\t * @type {Object}\r\n\t\t */\r\n\t\tconst target = (pMethod === 'pan') ? settings.target : this.following;\r\n\t\t// Get the center of the target position.\r\n\t\tconst centerPositionOfTarget = this.getTrueCenterPos(target);\r\n\r\n\t\tif (pMethod === 'pan') {\r\n\t\t\t// Now check to see if there is a paused duration you want the camera to stay at the panned object for before moving back\r\n\t\t\tif (settings.returning) {\r\n\t\t\t\tif (settings.pauseDuration) {\r\n\t\t\t\t\tsettings.pauseDuration = Math.max(settings.pauseDuration - pElapsedMS, 0);\r\n\t\t\t\t\tif (settings.pauseDuration > 0) return;\r\n\t\t\t\t}\r\n\t\t\t\tif (this.x !== centerPositionOfTarget.x) {\r\n\t\t\t\t\tsettings.active.x = true;\r\n\t\t\t\t}\r\n\r\n\t\t\t\tif (this.y !== centerPositionOfTarget.y) {\r\n\t\t\t\t\tsettings.active.y = true;\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t}\r\n\r\n\t\t// Call the follow logic in each axis\r\n\t\tfor (const axis of LensComponent.AXIS) {\r\n\t\t\tthis.followLogic(axis, centerPositionOfTarget, pMethod, pElapsedMS, settings);\r\n\t\t}\r\n\r\n\t\t// To ensure that the camera is always on the same map as the target.\r\n\t\tthis.camera.mapName = target.mapName;\r\n\r\n\t\tif (pMethod === 'standard' || pMethod === 'custom') {\r\n\t\t\tif (!settings.active.x && !settings.active.y) {\r\n\t\t\t\tthis.reset(pMethod);\r\n\t\t\t}\r\n\t\t} else if (pMethod === 'pan') {\r\n\t\t\tif (!settings.active.x && !settings.active.y) {\r\n\t\t\t\tif (settings.returning) {\r\n\t\t\t\t\t// You have panned on every axis and now can call the pan return callback\r\n\t\t\t\t\tthis.onPanFinish();\r\n\t\t\t\t} else {\r\n\t\t\t\t\t// You have panned on every axis and now can call the pan callback\r\n\t\t\t\t\tthis.onPanned();\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n\t/**\r\n\t * Update handler that is called each tick to update the camera's state\r\n\t * @private\r\n\t * @param {number} pElapsedMS - The amount of ms that has passed since the last tick\r\n\t * @param {number} pDeltaTime - The delta time between ticks.\r\n\t */\r\n\tupdate(pElapsedMS, pDeltaTime) {\r\n\t\t// Zoom\r\n\t\tif (this.settings.zoom.active.x || this.settings.zoom.active.y) {\r\n\t\t\tthis.zoomUpdate(pElapsedMS, pDeltaTime);\r\n\t\t}\r\n\t\t\r\n\t\t// Shake\r\n\t\tif (this.settings.shake.active.x || this.settings.shake.active.y) {\r\n\t\t\tthis.shakeUpdate(pElapsedMS, pDeltaTime);\r\n\t\t}\r\n\r\n\t\tif (this.attached) {\r\n\t\t\t// Get the camera follow mode.\r\n\t\t\tconst cameraFollowMode = this.custom ? 'custom' : 'standard';\r\n\r\n\t\t\t// Pan\r\n\t\t\tif (this.settings.pan.active.x || this.settings.pan.active.y || this.settings.pan.returning) {\r\n\t\t\t\tthis.follow('pan', pElapsedMS);\r\n\t\t\t}\r\n\t\t\t// Camera moving after whatever its following\r\n\t\t\tif (!this.settings.panning && this.following) {\r\n\t\t\t\t// Get the center position of the target\r\n\t\t\t\tconst centerPositionOfFollowing = this.getTrueCenterPos(this.following);\r\n\t\t\t\tconst xFollowingPos = centerPositionOfFollowing.x;\r\n\t\t\t\tconst yFollowingPos = centerPositionOfFollowing.y;\r\n\t\t\t\tif (this.following.isMoving || this.oldFollowingPos.x !== xFollowingPos || this.oldFollowingPos.y !== yFollowingPos) {\r\n\t\t\t\t\tthis.settings.moving = true;\r\n\t\t\t\t\tthis.settings[cameraFollowMode].time.x = 0;\r\n\t\t\t\t\tthis.settings[cameraFollowMode].active.x = (this.camera.x !== xFollowingPos ? true : false);\r\n\t\t\t\t\tthis.settings[cameraFollowMode].initialPos.x = this.camera.x;\r\n\r\n\t\t\t\t\tthis.settings[cameraFollowMode].time.y = 0;\r\n\t\t\t\t\tthis.settings[cameraFollowMode].active.y = (this.camera.y !== yFollowingPos ? true : false);\r\n\t\t\t\t\tthis.settings[cameraFollowMode].initialPos.y = this.camera.y;\r\n\t\t\t\t}\r\n\r\n\t\t\t\tif (this.settings[cameraFollowMode].active.x || this.settings[cameraFollowMode].active.y) {\r\n\t\t\t\t\tthis.follow(cameraFollowMode, pElapsedMS);\r\n\t\t\t\t}\r\n\t\t\t\tthis.oldFollowingPos.x = xFollowingPos;\r\n\t\t\t\tthis.oldFollowingPos.y = yFollowingPos;\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n\t/**\r\n\t * Zooms the camera in via the passed in arguments.\r\n\t * @param {Object} pDestinationLevel - An object containing the zoom level information.\r\n\t * @param {number} pDestinationLevel.x - The x scale to zoom to.\r\n\t * @param {number} pDestinationLevel.y - The y scale to zoom to.\r\n\t * @param {number} pDuration - The duration of the zoom.\r\n\t * @param {Object} pEase - An object containing the ease information for how the zoom will be performed.\r\n\t * @param {string} pEase.x - The ease to use for the x scale zooming.\r\n\t * @param {string} pEase.y - The ease to use for the y scale zooming.\r\n\t * @param {Function} pCallback - The callback to call after the zoom ends.\r\n\t * @returns \r\n\t */\r\n\tzoom(pDestinationLevel={'x': 1, 'y': 1}, pDuration={'x': 1000, 'y': 1000}, pEase={'x': 'easeOutCirc', 'y': 'easeOutCirc'}, pCallback) {\r\n\t\tif (this.settings.zoom.active.x || this.settings.zoom.active.y) {\r\n\t\t\treturn;\r\n\t\t}\r\n\t\t// Preset the cameras current zoom level with info from the client if it isn't already set\r\n\t\tif (!this.settings.zoom.currentLevel.x) {\r\n\t\t\tthis.settings.zoom.currentLevel.x = VYLO.Client.mapView.zoom.x;\r\n\t\t}\r\n\t\tif (!this.settings.zoom.currentLevel.x) {\r\n\t\t\tthis.settings.zoom.currentLevel.y = VYLO.Client.mapView.zoom.y;\r\n\t\t}\r\n\t\t// Destination level\r\n\t\tlet destinationX;\r\n\t\tlet destinationY;\r\n\t\tif (pDestinationLevel || pDestinationLevel === 0) {\r\n\t\t\tif (typeof(pDestinationLevel) !== 'object') {\r\n\t\t\t\tif (typeof(pDestinationLevel) === 'number') {\r\n\t\t\t\t\tdestinationX = destinationY = pDestinationLevel;\r\n\t\t\t\t} else {\r\n\t\t\t\t\tdestinationX = destinationY = 1;\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pDestinationLevel parameter. Reverted to default');\t\t\t\t\t\t\t\r\n\t\t\t\t}\r\n\t\t\t} else {\r\n\t\t\t\tif (typeof(pDestinationLevel.x) === 'number' && typeof(pDestinationLevel.y) === 'number') {\r\n\t\t\t\t\tdestinationX = pDestinationLevel.x;\r\n\t\t\t\t\tdestinationY = pDestinationLevel.y;\r\n\t\t\t\t} else {\r\n\t\t\t\t\tdestinationX = destinationY = 1;\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pDestinationLevel.x || pDestinationLevel.y parameter. Reverted to default');\t\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t} else {\r\n\t\t\tdestinationX = destinationY = 1;\r\n\t\t\tthis.logger.prefix('Lens-Module').warn('No pDestinationLevel parameter passed. Reverted to default');\r\n\t\t}\r\n\r\n\t\tif (this.settings.zoom.destinationLevel.x !== destinationX) {\r\n\t\t\tif (this.settings.zoom.active.x) {\r\n\t\t\t\tthis.reset('zoomX');\r\n\t\t\t}\r\n\t\t\tthis.settings.zoom.active.x = true;\r\n\t\t\tthis.settings.zoom.destinationLevel.x = destinationX;\r\n\t\t\tthis.settings.zoom.initialLevel.x = VYLO.Client.mapView.zoom.x;\r\n\t\t\tthis.settings.zoom.differenceLevel.x = Math.round((this.settings.zoom.destinationLevel.x - this.settings.zoom.initialLevel.x) * 10) / 10;\r\n\t\t}\r\n\r\n\t\tif (this.settings.zoom.destinationLevel.y !== destinationY) {\r\n\t\t\tif (this.settings.zoom.active.y) {\r\n\t\t\t\tthis.reset('zoomY');\r\n\t\t\t}\r\n\t\t\tthis.settings.zoom.active.y = true;\r\n\t\t\tthis.settings.zoom.destinationLevel.y = destinationY;\r\n\t\t\tthis.settings.zoom.initialLevel.y = VYLO.Client.mapView.zoom.y;\r\n\t\t\tthis.settings.zoom.differenceLevel.y = Math.round((this.settings.zoom.destinationLevel.y - this.settings.zoom.initialLevel.y) * 10) / 10;\r\n\t\t}\r\n\r\n\t\t// Duration\r\n\t\tif (pDuration) {\r\n\t\t\tif (typeof(pDuration) !== 'object') {\r\n\t\t\t\tif (typeof(pDuration) === 'number') {\r\n\t\t\t\t\tthis.settings.zoom.duration.x = pDuration;\r\n\t\t\t\t\tthis.settings.zoom.duration.y = pDuration;\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.settings.zoom.duration.x = this.settings.zoom.duration.y = 1000;\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pDuration parameter. Reverted to default');\r\n\t\t\t\t}\r\n\t\t\t} else {\r\n\t\t\t\tif (typeof(pDuration) === 'object') {\r\n\t\t\t\t\tif (typeof(pDuration.x) === 'number' && typeof(pDuration.y) === 'number') {\r\n\t\t\t\t\t\tthis.settings.zoom.duration = pDuration;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.zoom.duration.x = this.settings.zoom.duration.y = 1000;\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pDuration.x || pDuration.y parameter. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t} else {\r\n\t\t\tthis.settings.zoom.duration.x = this.settings.zoom.duration.y = 1000;\r\n\t\t\tthis.logger.prefix('Lens-Module').warn('No pDuration parameter passed. Reverted to default');\r\n\t\t}\r\n\r\n\t\t// Ease \r\n\t\tif (pEase) {\r\n\t\t\tif (typeof(pEase) !== 'object') {\r\n\t\t\t\tif (typeof(pEase) === 'string') {\r\n\t\t\t\t\tif (LensComponent.validEase.includes(pEase)) {\r\n\t\t\t\t\t\tthis.settings.zoom.ease.x = this.settings.zoom.ease.y = pEase;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid pEase name passed. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pEase parameter. Reverted to default');\r\n\t\t\t\t}\r\n\r\n\t\t\t} else {\r\n\t\t\t\tif (typeof(pEase) === 'object') {\r\n\t\t\t\t\tif (typeof(pEase.x) === 'string' && typeof(pEase.y) === 'string') {\r\n\t\t\t\t\t\tif (LensComponent.validEase.includes(pEase.x) && LensComponent.validEase.includes(pEase.y)) {\r\n\t\t\t\t\t\t\tthis.settings.zoom.ease = pEase;\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\tthis.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid pEase name passed for pEase.x || pEase.y. Reverted to default');\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\t\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pEase.x || pEase.y parameter. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t}\t\t\t\t\r\n\t\t\t}\r\n\t\t} else {\r\n\t\t\tthis.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';\r\n\t\t\tthis.logger.prefix('Lens-Module').warn('No pEase parameter passed. Reverted to default');\t\r\n\t\t}\r\n\r\n\t\t// Callback\r\n\t\tif (pCallback && typeof(pCallback) === 'function') {\r\n\t\t\tthis.settings.zoom.callback = pCallback;\r\n\t\t} else {\r\n\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pCallback property.');\r\n\t\t}\r\n\t\tthis.settings.zooming = true;\r\n\t}\r\n\t/**\r\n\t * @private\r\n\t * Event handler for when the zoom is finished\r\n\t */\r\n\tonZoomEnd() {\r\n\t\tif (this.settings.zoom.callback) {\r\n\t\t\tthis.settings.zoom.callback();\r\n\t\t}\r\n\t\tVYLO.Client.mapView.zoom.x = Math.round(this.settings.zoom.destinationLevel.x * 10) / 10;\r\n\t\tVYLO.Client.mapView.zoom.y = Math.round(this.settings.zoom.destinationLevel.y * 10) / 10;\r\n\t\tthis.reset('zoom');\r\n\t}\r\n\t/**\r\n\t * Sets the camera to operate using these user defined settings.\r\n\t * @param {Object} pSettings - An object that holds settings for how the canera will behave.\r\n\t * @param {Object} pSettings.duration - An object that holds settings for how the canera will behave.\r\n\t * @param {number} pSettings.duration.x - The duration of the ease in the x dimension.\r\n\t * @param {number} pSettings.duration.y - The duration of the ease in the y dimension.\r\n\t * @param {Object} pSettings.ease - An object that holds settings for how the canera will behave.\r\n\t * @param {string} pSettings.ease.x - The ease to use in the x dimension.\r\n\t * @param {string} pSettings.ease.y - The ease to use in the y dimension.\r\n\t */\r\n\tsetSettings(pSettings) {\r\n\t\tif (pSettings) {\r\n\t\t\tif (typeof(pSettings) === 'object' && pSettings.constructor === Object) {\r\n\t\t\t\tif (pSettings.duration) {\r\n\t\t\t\t\tif (typeof(pSettings.duration) === 'object' && pSettings.duration.constructor === Object) {\r\n\t\t\t\t\t\tif (typeof(pSettings.duration.x) === 'number' && typeof(pSettings.duration.y) === 'number') {\r\n\t\t\t\t\t\t\tthis.settings.custom.duration.x = pSettings.duration.x;\r\n\t\t\t\t\t\t\tthis.settings.custom.duration.y = pSettings.duration.y;\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\tthis.settings.custom.duration.x = this.settings.custom.duration.y = 1000;\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.duration.x || pSettings.duration.y property. Reverted to default');\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t} else if (typeof(pSettings.duration === 'number')) {\r\n\t\t\t\t\t\tthis.settings.custom.duration.x = this.settings.custom.duration.y = pSettings.duration;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.custom.duration.x = this.settings.custom.duration.y = 1000;\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.duration property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.settings.custom.duration.x = this.settings.custom.duration.y = 1000;\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('No pSettings.duration parameter passed. Reverted to default');\r\n\t\t\t\t}\r\n\r\n\t\t\t\tif (pSettings.ease) {\r\n\t\t\t\t\tif (typeof(pSettings.ease) === 'object' && pSettings.ease.constructor === Object) {\r\n\t\t\t\t\t\tif (typeof(pSettings.ease.x) === 'string' && typeof(pSettings.ease.y) === 'string') {\r\n\t\t\t\t\t\t\tif (LensComponent.validEase.includes(pSettings.ease.x) && LensComponent.validEase.includes(pSettings.ease.y)) {\r\n\t\t\t\t\t\t\t\tthis.settings.custom.ease.x = pSettings.ease.x;\r\n\t\t\t\t\t\t\t\tthis.settings.custom.ease.y = pSettings.ease.y;\r\n\t\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\t\tthis.settings.custom.ease.x = this.settings.custom.ease.y = 'easeOutCubic';\r\n\t\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid ease name passed for pSettings.ease.x || pSettings.ease.y. Reverted to default');\r\n\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\tthis.settings.custom.ease.x = this.settings.custom.ease.y = 'easeOutCubic';\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.ease.x || pSettings.ease.y property. Reverted to default');\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t} else if (typeof(pSettings.ease === 'string')) {\r\n\t\t\t\t\t\tif (LensComponent.validEase.includes(pSettings.ease)) {\r\n\t\t\t\t\t\t\tthis.settings.custom.ease.x = this.settings.custom.ease.y = pSettings.ease;\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\tthis.settings.custom.ease.x = this.settings.custom.ease.y = 'easeOutCubic';\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid ease name passed for pSettings.ease. Reverted to default');\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.custom.ease.x = this.settings.custom.ease.y = 'easeOutCubic';\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.ease property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.settings.custom.ease.x = this.settings.custom.ease.y = 'easeOutCubic';\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('No pSettings.ease parameter passed. Reverted to default');\r\n\t\t\t\t}\r\n\r\n\t\t\t\tthis.reset('standard');\r\n\t\t\t\tthis.custom = true;\r\n\t\t\t\tthis.settings.custom.initialPos.x = this.camera.x;\r\n\t\t\t\tthis.settings.custom.initialPos.y = this.camera.y;\r\n\t\t\t} else {\r\n\t\t\t\tthis.reset('custom');\r\n\t\t\t\tthis.custom = false;\r\n\t\t\t\tthis.settings.standard.initialPos.x = this.camera.x;\r\n\t\t\t\tthis.settings.standard.initialPos.y = this.camera.y;\r\n\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings parameter. Reverted to default');\r\n\t\t\t}\r\n\t\t} else {\r\n\t\t\tthis.reset('custom');\r\n\t\t\tthis.custom = false;\r\n\t\t\tthis.settings.standard.initialPos.x = this.camera.x;\r\n\t\t\tthis.settings.standard.initialPos.y = this.camera.y;\r\n\t\t\tthis.logger.prefix('Lens-Module').warn('No pSettings parameter passed. Reverted to default');\r\n\t\t}\r\n\t}\r\n\t/**\r\n\t * Spectates another instance with the camera using the passed settings. If the location is over 1000m(pixels) away then the camera will automatically jump to that position no matter if `forcePos` is toggled or not.\r\n\t * @todo Allow pSettings.target to also be a coordinate position, this will send the camera to that space and spectate that position.\r\n\t * @param {Object} pSettings - Settings to control the spectate\r\n\t * @param {Object} pSettings.target - The instance to spectate\r\n\t * @param {boolean} pSettings.forcePos - If the camera should spectate instantly without easing to the location. \r\n\t */\r\n\tspectate(pSettings) {\r\n\t\tif (this.settings.panning) {\r\n\t\t\tthis.logger.prefix('Lens-Module').error('Cannot spectate camera is currently panning. Spectate failed');\r\n\t\t\treturn;\r\n\t\t}\r\n\t\tif (pSettings) {\r\n\t\t\tif (typeof(pSettings) === 'object' && pSettings.constructor === Object) {\r\n\t\t\t\tif (typeof(pSettings.target) === 'object' && pSettings.target.baseType) {\r\n\t\t\t\t\tif (typeof(pSettings.target.x) === 'number' && typeof(pSettings.target.y) === 'number' && typeof(pSettings.target.mapName) === 'string') {\r\n\t\t\t\t\t\tthis.settings.spectate.forcePos = false;\r\n\t\t\t\t\t\t// Get the center position of the target\r\n\t\t\t\t\t\tconst centerPositionOfTarget = this.getTrueCenterPos(pSettings.target);\r\n\t\t\t\t\t\t// Doesn't ease to the spectatee\r\n\t\t\t\t\t\tif (pSettings.forcePos) {\r\n\t\t\t\t\t\t\tthis.settings.spectate.forcePos = pSettings.forcePos;\r\n\t\t\t\t\t\t\tthis.camera.setPos(centerPositionOfTarget.x, centerPositionOfTarget.y, pSettings.target.mapName);\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\t// If the distance is too far, then just force the position\r\n\t\t\t\t\t\t\tif (Utils.getDistance(this.following, pSettings.target) > 1000) {\r\n\t\t\t\t\t\t\t\tthis.settings.spectate.forcePos = true;\r\n\t\t\t\t\t\t\t\tthis.camera.setPos(centerPositionOfTarget.x, centerPositionOfTarget.y, pSettings.target.mapName);\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\t// Store the original instance the camera was following, so we can go back to it when spectating is done.\r\n\t\t\t\t\t\tif (!this.settings.spectate.priorFollowedPlayer) {\r\n\t\t\t\t\t\t\tthis.settings.spectate.priorFollowedPlayer = this.following;\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\tthis.following = pSettings.target;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').error('Invalid variable type passed for the pSettings.target.x || pSettings.target.y || pSettings.target.mapName property. Spectate failed');\r\n\t\t\t\t\t\treturn;\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').error('Invalid variable type passed for the pSettings.target property. Pan failed');\r\n\t\t\t\t\treturn;\r\n\t\t\t\t}\r\n\t\t\t} else {\r\n\t\t\t\tthis.logger.prefix('Lens-Module').error('Invalid variable type passed for the pSettings parameter. Spectate failed');\r\n\t\t\t\treturn;\r\n\t\t\t}\r\n\t\t} else {\r\n\t\t\tthis.logger.prefix('Lens-Module').error('No pSettings parameter passed. Spectate failed');\r\n\t\t\treturn;\r\n\t\t}\r\n\t\tthis.settings.spectating = true;\r\n\t}\r\n\t/**\r\n\t * Stops spectating. \r\n\t * If the setting 'forcePos' was set. Then the camera will immedietly jump to the original camera target.\r\n\t */\r\n\tcancelSpectate() {\r\n\t\tif (this.settings.spectating) {\r\n\t\t\tif (this.settings.spectate.forcePos) {\r\n\t\t\t\tconst centerPositionOfFollowing = this.getTrueCenterPos(this.settings.spectate.priorFollowedPlayer);\r\n\t\t\t\tthis.camera.setPos(centerPositionOfFollowing.x, centerPositionOfFollowing.y, this.settings.spectate.priorFollowedPlayer.mapName);\r\n\t\t\t}\r\n\t\t\t// We check if this reference is still good to reattach to. \r\n\t\t\t// As if not we will need to detach the camera.\r\n\t\t\tif (this.settings.spectate.priorFollowedPlayer.mapName) {\r\n\t\t\t\tthis.following = this.settings.spectate.priorFollowedPlayer;\r\n\t\t\t} else {\r\n\t\t\t\tthis.detach();\r\n\t\t\t\tthis.logger.prefix('Lens-Module').error('Forced Detach! Could not return to previous target.');\r\n\t\t\t}\r\n\t\t\tthis.reset('spectate');\r\n\t\t}\r\n\t}\r\n\t/**\r\n\t * Attaches the camera to the passed instance.\r\n\t * @param {Object} pInstance - The instance to attach the camera to\r\n\t * @param {Object} pSettings - An object that holds settings for how the canera will behave.\r\n\t * @param {Object} pSettings.duration - An object that holds settings for how the canera will behave.\r\n\t * @param {number} pSettings.duration.x - The duration of the ease in the x dimension.\r\n\t * @param {number} pSettings.duration.y - The duration of the ease in the y dimension.\r\n\t * @param {Object} pSettings.ease - An object that holds settings for how the canera will behave.\r\n\t * @param {string} pSettings.ease.x - The ease to use in the x dimension.\r\n\t * @param {string} pSettings.ease.y - The ease to use in the y dimension.\r\n\t * @param {Function} pUpdateFunc - A callback that will be called when the camera is updated. pDiffX and pDiffY params are the difference in position between the last tick.\r\n\t */\r\n\tattach(pInstance, pSettings, pUpdateFunc) {\r\n\t\tif (typeof(pInstance) === 'object') {\r\n\t\t\tif (!pInstance.baseType) {\r\n\t\t\t\tthis.logger.prefix('Lens-Module').error('Nothing to attach to. Attachment failed.');\r\n\t\t\t\treturn;\r\n\t\t\t}\r\n\t\t}\r\n\t\tif (typeof(pUpdateFunc) === 'function') {\r\n\t\t\tthis.updateWithCamera = pUpdateFunc;\r\n\t\t}\r\n        // Initialize the mapView object\r\n\t\tif (!this.mapViewInitialized) {\r\n            // Prep the client's mapview object\r\n            VYLO.Client.mapView.anchor = { 'x': 0.5, 'y': 0.5 };\r\n            this.logger.prefix('Lens-Module').log('Client.mapview.anchor may have been changed. This module requires the mapview anchor to be 0.5');\r\n\t\t\tthis.mapViewInitialized = true;\r\n\t\t}\r\n\t\t// Assign the settings to the camera\r\n\t\tif (pSettings) {\r\n\t\t\tthis.setSettings(pSettings);\r\n\t\t}\r\n\r\n\t\tthis.following = pInstance;\r\n\t\tthis.oldFollowingPos = { 'x': this.following.x + this.following.xIconOffset, 'y': this.following.y + this.following.yIconOffset };\r\n\t\tconst centerPositionOfFollowing = this.getTrueCenterPos(this.following);\r\n\t\tthis.camera.setPos(centerPositionOfFollowing.x, centerPositionOfFollowing.y, this.following.mapName);\r\n\t\tthis.attached = true;\r\n\t\tVYLO.Client.setViewEye(this.camera);\r\n\t}\r\n\t/**\r\n\t * Detaches the camera. The camera is no longer the view eye.\r\n\t */\r\n\tdetach() {\r\n\t\tif (!this.attached) {\r\n\t\t\tthis.logger.prefix('Lens-Module').error('Camera is already detached!');\r\n\t\t\treturn;\r\n\t\t}\r\n\r\n\t\tthis.reset('spectate');\r\n\t\tthis.following = VYLO.Client.mob;\r\n\t\tthis.setSettings();\r\n\t\tthis.attached = false;\r\n\t\tthis.camera.setLoc();\r\n\t\tVYLO.Client.setViewEye(this.following);\r\n\t}\r\n\t/**\r\n\t * Shakes the camera with the passed settings.\r\n\t * @param {number} pIntensity - The intensity of the shaking effect. 0 - 100\r\n\t * @param {number} pDuration - The duration of the shaking effect in ms.\r\n\t * @param {boolean} pRotational - Whether the shaking consists of rotational shaking as well.\r\n\t * @param {Function} pCallback - Callback function to call when the shaking is completed.\r\n\t */\r\n\tshake(pIntensity, pDuration, pRotational=false, pCallback) {\r\n\t\tconst intensityValue = { 'x': 1, 'y': 1 };\r\n\t\tconst durationValue = { 'x': 1000, 'y': 1000 };\r\n\t\tif (pIntensity) {\r\n\t\t\tif (typeof(pIntensity) === 'object' && pIntensity.constructor === Object) {\r\n\t\t\t\tif (pIntensity.x || pIntensity.x === 0) {\r\n\t\t\t\t\tif (typeof(pIntensity.x) === 'number') {\r\n\t\t\t\t\t\tintensityValue.x = Utils.clamp(pIntensity.x, 0, LensComponent.MAX_CAMERA_SHAKE_FORCE);\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type for pIntensity.x property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('No pIntensity.x property value passed. Reverted to default');\r\n\t\t\t\t}\r\n\r\n\t\t\t\tif (pIntensity.y || pIntensity.y === 0) {\r\n\t\t\t\t\tif (typeof(pIntensity.y) === 'number') {\r\n\t\t\t\t\t\tintensityValue.y = Utils.clamp(pIntensity.y, 0, LensComponent.MAX_CAMERA_SHAKE_FORCE);\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type for pIntensity.y property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('No pIntensity.y property value passed. Reverted to default');\r\n\t\t\t\t}\r\n\r\n\t\t\t} else if (typeof(pIntensity) === 'number') {\r\n\t\t\t\tintensityValue.x = intensityValue.y = Utils.clamp(pIntensity, 0, LensComponent.MAX_CAMERA_SHAKE_FORCE);\r\n\t\t\t} else {\r\n\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type for pIntensity parameter passed. Reverted to default');\r\n\t\t\t}\r\n\r\n\t\t} else {\r\n\t\t\tthis.logger.prefix('Lens-Module').warn('No pIntensity parameter passed. Reverted to default');\r\n\t\t}\r\n\r\n\t\tif (pDuration) {\r\n\t\t\tif (typeof(pDuration) === 'object' && pDuration.constructor === Object) {\r\n\t\t\t\tif (pDuration.x || pDuration.x === 0) {\r\n\t\t\t\t\tif (typeof(pDuration.x) === 'number') {\r\n\t\t\t\t\t\tdurationValue.x = pDuration.x;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type for pDuration.x property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('No pDuration.x property value passed. Reverted to default');\r\n\t\t\t\t}\r\n\r\n\t\t\t\tif (pDuration.y || pDuration.y === 0) {\r\n\t\t\t\t\tif (typeof(pDuration.y) === 'number') {\r\n\t\t\t\t\t\tdurationValue.y = pDuration.y;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type for pDuration.y property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('No pDuration.y property value passed. Reverted to default');\r\n\t\t\t\t}\r\n\t\t\t} else if (typeof(pDuration) === 'number') {\r\n\t\t\t\tdurationValue.x = durationValue.y = pDuration;\r\n\t\t\t} else {\r\n\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pDuration.x || pDuration.y property. Reverted to default');\r\n\t\t\t}\r\n\t\t\t\r\n\t\t} else {\r\n\t\t\tthis.logger.prefix('Lens-Module').warn('No pDuration parameter passed. Reverted to default');\r\n\t\t}\r\n\r\n\t\tif (pRotational) {\r\n\t\t\tthis.settings.shake.rotational = true;\r\n\t\t}\r\n\r\n\t\tif (typeof(pCallback) === 'function') {\r\n\t\t\tthis.settings.shake.callback = pCallback;\r\n\t\t} else if (pCallback !== undefined) {\r\n\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pCallback property.');\r\n\t\t}\r\n\r\n\t\tif (intensityValue.x && durationValue.x) {\r\n\t\t\tthis.settings.shake.intensity.x = intensityValue.x;\r\n\t\t\tthis.settings.shake.duration.x = durationValue.x;\r\n\t\t\tthis.settings.shake.active.x = true;\r\n\t\t}\r\n\r\n\t\tif (intensityValue.y && durationValue.y) {\r\n\t\t\tthis.settings.shake.intensity.y = intensityValue.y;\r\n\t\t\tthis.settings.shake.duration.y = durationValue.y;\r\n\t\t\tthis.settings.shake.active.y = true;\r\n\t\t}\r\n\t\tthis.settings.shaking = true;\r\n\t}\r\n\t/**\r\n\t * @private\r\n\t * Event handler for when the camera is done shaking.\r\n\t */\r\n\tonShakeEnd() {\r\n\t\tif (this.settings.shake.callback) {\r\n\t\t\tthis.settings.shake.callback();\r\n\t\t\t// Reset the view eye offsets\r\n\t\t\tVYLO.Client.setViewEyeOffsets(0, 0);\r\n\t\t}\r\n\t\tthis.reset('shake');\r\n\t}\r\n\t/**\r\n\t * Check if the camera is currently shaking.\r\n\t * @returns {boolean} True if shaking, false otherwise.\r\n\t */\r\n\tisShaking() {\r\n\t\treturn this.settings.shaking;\r\n\t}\r\n\t/**\r\n\t * Check if the camera is currently spectating.\r\n\t * @returns {boolean} True if spectating, false otherwise.\r\n\t */\r\n\tisSpectating() {\r\n\t\treturn this.settings.spectating;\r\n\t}\r\n\t/**\r\n\t * Check if the camera is currently zooming.\r\n\t * @returns {boolean} True if zooming, false otherwise.\r\n\t */\r\n\tisZooming() {\r\n\t\treturn this.settings.zooming;\r\n\t}\r\n\t/**\r\n\t * Check if the camera is currently panning.\r\n\t * @returns {boolean} True if panning, false otherwise.\r\n\t */\r\n\tisPanning() {\r\n\t\treturn this.settings.panning;\r\n\t}\r\n\t/**\r\n\t * Check if the camera is currently moving.\r\n\t * @returns {boolean} True if panning, false otherwise.\r\n\t */\r\n\tisMoving() {\r\n\t\treturn this.settings.moving;\r\n\t}\r\n}\r\n\r\nexport const Lens = new LensComponent();\r\n",
+    "content": "import { Tween } from './vendor/tween.min.mjs';\r\nimport { Pulse } from './vendor/pulse.min.mjs';\r\nimport { Utils } from './vendor/utils.min.mjs';\r\nimport { Logger } from './vendor/logger.min.mjs';\r\n\r\n/**\r\n * @todo Create test project\r\n * @private\r\n */\r\nclass LensComponent {\r\n\t/**\r\n\t * The max display an instance can be displayed at.\r\n\t * @private\r\n\t * @type {number}\r\n\t */\r\n\tstatic MAX_DISPLAY = 999999;\r\n\t/**\r\n\t * The max force the camera can shake at.\r\n\t * @private\r\n\t * @type {number}\r\n\t */\r\n\t/**\r\n\t * The max amount of delta time between ticks. If this limit is passed, it will be clamped to this value.\r\n\t * @private\r\n\t * @type {number}\r\n\t */\r\n\tstatic MAX_DELTA_TIME = 0.03333333333;\r\n\t/**\r\n\t * The default tile size of the Vylocity Game Engine.\r\n\t * @private\r\n\t * @type {number}\r\n\t */\r\n\tstatic DEFAULT_TILE_SIZE = 32;\r\n\t/**\r\n\t * The default pan duration. Used as default.\r\n\t * @private\r\n\t * @type {number}\r\n\t */\r\n\tstatic DEFAULT_PAN_DURATION = 2000;\r\n\t/**\r\n\t * An array of axis.\r\n\t * @private\r\n\t * @type {Array}\r\n\t */\r\n\tstatic AXIS = [ 'x', 'y' ];\r\n\t/**\r\n\t * The version of the module.\r\n\t */\r\n\tversion = \"VERSION_REPLACE_ME\";\r\n\t/**\r\n\t * An array of valid ease names.\r\n\t * @private\r\n\t * @type {Array}\r\n\t */\r\n\tstatic validEase = [\r\n\t\t'linear', 'easeInQuad', 'easeOutQuad', 'easeInOutQuad', 'easeInSine', 'easeOutSine', 'easeInOutSine', 'easeInExpo', \r\n\t\t'easeOutExpo', 'easeInOutExpo', 'easeInCirc', 'easeOutCirc', 'easeInOutCirc', 'easeInCubic', 'easeOutCubic', 'easeInOutCubic', \r\n\t\t'easeInQuart', 'easeOutQuart', 'easeInOutQuart','easeInQuint', 'easeOutQuint', 'easeInOutQuint', 'easeInElastic', 'easeOutElastic', \r\n\t\t'easeInOutElastic', 'easeInBack', 'easeOutBack', 'easeInOutBack', 'easeInBounce', 'easeOutBounce', 'easeInOutBounce'\r\n\t];\r\n\t/**\r\n\t * The camera that lens controls.\r\n\t * @type {Object}\r\n\t */\r\n\tcamera = null;\r\n\t/** \r\n\t * Whether the camera has been created and is ready for use or not.\r\n\t * @private\r\n\t * @type {boolean}\r\n\t */\r\n\tinitialized = false;\r\n\t/**\r\n\t * Whether the camera is attached to something and will follow it.\r\n\t * @private\r\n\t * @type {boolean}\r\n\t */\r\n\tattached = false;\r\n\t/**\r\n\t * If this camera is using custom settings currently.\r\n\t * @private\r\n\t * @type {boolean}\r\n\t */\r\n\tcustom = false;\r\n\t/**\r\n\t * The current instance this camera is following.\r\n\t * @private\r\n\t * @type {Object}\r\n\t */\r\n\tfollowing = null;\r\n\t/**\r\n\t * The old position that the camera was following in the last tick.\r\n\t * @private\r\n\t * @type {Object}\r\n\t */\r\n\toldFollowingPos = { 'x': 0, 'y': 0 };\r\n\t/**\r\n\t * The settings this camera uses to operate.\r\n\t * @private\r\n\t * @type {Object}\r\n\t */\r\n\tsettings = {\r\n\t\t// Allows separate dimension zooming\r\n\t\t'zoom': {\r\n\t\t\t'active': { 'x': false, 'y': false },\r\n\t\t\t'time': { 'x': 0, 'y': 0 },\r\n\t\t\t'duration': { 'x': 1000 , 'y': 1000 },\r\n\t\t\t'initialLevel': { 'x': null, 'y': null },\r\n\t\t\t'currentLevel': { 'x': null , 'y': null },\r\n\t\t\t'destinationLevel': { 'x': null, 'y': null },\r\n\t\t\t'differenceLevel': { 'x': null, 'y': null },\r\n\t\t\t'ease': { 'x': 'easeOutCubic', 'y': 'easeOutCubic' },\r\n\t\t\t'callback': null\r\n\t\t},\r\n\t\t// Allows separate dimension shaking\r\n\t\t'shake': {\r\n\t\t\t'active': { 'x': false, 'y': false },\r\n\t\t\t'time': { 'x': 0, 'y': 0 },\r\n\t\t\t'duration': { 'x': 1000, 'y': 1000 },\r\n\t\t\t'intensity': { 'x': 1, 'y': 1 },\r\n\t\t\t'rotational': false, // if the camera tilts while shaking.\r\n\t\t\t'callback': null\r\n\t\t},\r\n\t\t// Allows separate dimension moving \r\n\t\t// When the camera moves from one object to another and then back to the starting object\r\n\t\t'pan': {\r\n\t\t\t'active': { 'x': false, 'y': false }, // if the camera is active or not\r\n\t\t\t'time': { 'x': 0, 'y': 0, 'z': 0 }, // the current time in the ease\r\n\t\t\t'destination': { 'x': null, 'y': null }, // the end position the camera will go to\r\n\t\t\t'ease': { 'x': 'easeOutCubic', 'y': 'easeOutCubic' }, // the ease in each axis the camera will use\r\n\t\t\t'duration': { 'x': 1000, 'y': 1000 }, // how long in each axis the ease will take\r\n\t\t\t'target': null, // the panTo instance\r\n\t\t\t'storedDir': null, // the direction that is stored so it can be given back to the instance when the pan is over\r\n\t\t\t'returning': null, // if the pan is on the `returning` stage\r\n\t\t\t'forceDirChange': true, // if the panning forces the person the camera is attached to to change direction in the direction of the pan. This also disables movement.\r\n\t\t\t'pauseDuration': 0, // how long to stay at the object you've panned to before continuing to pan back\r\n\t\t\t'attach': false, // if when panning to the object, the object now becomes the target that the camera is following\r\n\t\t\t'initialPos': { 'x': null, 'y': null }, // the initial position of the camera\r\n\t\t\t'panBackDuration': { 'x': 1000, 'y': 1000 }, // when the camera is panning back to whatever it panned from\r\n\t\t\t'panBackEase': { 'x': 'easeOutCubic', 'y': 'easeOutCubic' }, // the ease used to pan back\r\n\t\t\t'panToCallback': null, // when you reach the object, this callback is called.\r\n\t\t\t'panBackCallback': null // when the camera pans back to the initiator, this callback is called.\r\n\t\t},\r\n\t\t// Default camera movement settings, \r\n\t\t// Allows separate dimension moving\r\n\t\t'standard': {\r\n\t\t\t'active': { 'x': false, 'y': false },\r\n\t\t\t'time': { 'x': 0, 'y': 0 },\r\n\t\t\t'duration': { 'x': 1000, 'y': 1000 },\r\n\t\t\t'destination': { 'x': null, 'y': null },\r\n\t\t\t'initialPos': { 'x': null, 'y': null },\r\n\t\t\t'ease': { 'x': 'easeOutCubic', 'y': 'easeOutCubic' }\r\n\t\t},\r\n\t\t// Custom applied camera movement settings, \r\n\t\t// Allows separate dimension moving\r\n\t\t'custom': {\r\n\t\t\t'active': { 'x': false, 'y': false },\r\n\t\t\t'time': { 'x': 0, 'y': 0 },\r\n\t\t\t'duration': { 'x': 1000, 'y': 1000 },\r\n\t\t\t'destination': { 'x': null, 'y': null },\r\n\t\t\t'initialPos': { 'x': null, 'y': null },\r\n\t\t\t'ease': { 'x': 'easeOutCubic', 'y': 'easeOutCubic' }\r\n\t\t},\r\n\t\t// Spectate options\r\n\t\t'spectate': {\r\n\t\t\t'forcePos': true,\r\n\t\t\t'player': null\r\n\t\t},\r\n\t\t// Render loop data\r\n\t\t'loop': {\r\n\t\t\t'lastTime': 0\r\n\t\t},\r\n\t\t// States of the camera\r\n\t\t'zooming': false,\r\n\t\t'panning': false,\r\n\t\t'spectating': false,\r\n\t\t'shaking': false,\r\n\t\t'moving': false\r\n\t};\r\n\t/**\r\n\t * Weakmap to track data belonging to instances used in this module.\r\n\t * @private\r\n\t * @type {WeakMap}\r\n\t */\r\n\tinstanceWeakMap = new WeakMap();\r\n    /**\r\n     * Whether the mapview has been initialized.\r\n     * @private\r\n     * @type {boolean}\r\n     */\r\n\tmapViewInitialized = false\r\n\t/**\r\n\t * A callback to be called when the camera is updated.\r\n\t * @param {number} - pDiffX - The difference in position between the camera's old x position and it's new position.\r\n\t * @param {number} - pDiffY - The difference in position between the camera's old y position and it's new position.\r\n\t * @type {Function|undefined}\r\n\t */\r\n\tupdateWithCamera;\r\n\t/** The logger module this module uses to log errors / logs.\r\n\t * @private\r\n\t * @type {Object}\r\n\t */\t\r\n\tlogger = new Logger();\r\n\t/**\r\n\t * @private\r\n\t */\r\n\tconstructor() {\r\n\t\t// Register the logger type\r\n        this.logger.registerType('Lens-Module', '#ff6600');\r\n\r\n\t\t// Set up the update loop for the camera.\r\n\t\tPulse.on(VYLO.Client, 'onScreenRender', (pT) => {\r\n\t\t\tif (this.initialized) {\r\n\t\t\t\tconst now = pT;\r\n\t\t\t\tif (!this.settings.loop.lastTime) this.settings.loop.lastTime = now;\r\n\t\t\t\tconst elapsedMS = now - this.settings.loop.lastTime;\r\n\t\t\t\t/**\r\n\t\t\t\t * The delta time between ticks.\r\n\t\t\t\t * @type {number}\r\n\t\t\t\t */\r\n\t\t\t\tlet deltaTime = elapsedMS / 1000;\r\n\t\t\t\t// If the delta is too big then we clamp it to the max delta time.\r\n\t\t\t\tif (deltaTime >= LensComponent.MAX_DELTA_TIME) {\r\n\t\t\t\t\tdeltaTime = LensComponent.MAX_DELTA_TIME;\r\n\t\t\t\t}\r\n\t\t\t\tthis.update(elapsedMS);\r\n\t\t\t\t// Call callback to update with camera\r\n\t\t\t\tif (this.attached && this.updateWithCamera) {\r\n\t\t\t\t\tthis.updateWithCamera(deltaTime);\r\n\t\t\t\t}\r\n\t\t\t\tthis.settings.loop.lastTime = now;\r\n\t\t\t}\r\n\t\t});\r\n\t\t// Init the camera\r\n\t\tthis.initCamera();\r\n\t}\r\n\t/**\r\n\t * Builds and initiates the camera and assigns some presets to it\r\n\t * @private\r\n\t */\r\n\tinitCamera() {\r\n\t\tif (this.initialized) return;\r\n\t\t// Define the camera type\r\n\t\tconst cameraType = `MapObject/Lens-${Utils.generateID()}`;\r\n\t\tVYLO.setType(cameraType, {\r\n\t\t\towner: this,\r\n\t\t\tatlasName: '',\r\n\t\t\twidth: 1,\r\n\t\t\theight: 1,\r\n\t\t\t// Remove all touch / mouse events\r\n\t\t\tmouseOpacity: 0,\r\n\t\t\ttouchOpacity: 0,\r\n\t\t\t// Do not allow this instance to interact with the environment\r\n\t\t\tdensity: false,\r\n\t\t\tplane: LensComponent.MAX_DISPLAY,\r\n\t\t\tlayer: LensComponent.MAX_DISPLAY,\r\n\t\t\tinvisibility: LensComponent.MAX_DISPLAY,\r\n\t\t\tpreventScreenRelayer: true,\r\n\t\t\tpreventInterpolation: true\r\n\t\t});\r\n\t\t// Create the camera\r\n\t\tthis.camera = VYLO.newDiob(cameraType);\r\n\t\tthis.initialized = true;\r\n\t}\r\n\t/**\r\n\t * Returns the true center position by using the x and y position and adding half of the icon's width / height. If no icon is found, we instead use the half of the default tileSize.\r\n\t * @private\r\n\t * @param {Object} pInstance - The instance to get the true center position of.\r\n\t * @returns {Object} Object containing the true center position of the instance.\r\n\t */\r\n\tgetTrueCenterPos(pInstance) {\r\n\t\tconst instanceIconWidthHalf = pInstance.icon ? pInstance.icon.width / 2 : LensComponent.DEFAULT_TILE_SIZE / 2;\r\n\t\tconst instanceIconHeightHalf = pInstance.icon ? pInstance.icon.height / 2 : LensComponent.DEFAULT_TILE_SIZE / 2;\r\n\t\tlet centerObject = this.instanceWeakMap.get(pInstance);\r\n\t\t// If it can pull any data it means no data was ever set, so we need to set the data and then grab it\r\n\t\tif (!centerObject) {\r\n\t\t\tthis.instanceWeakMap.set(pInstance, { 'x': 0, 'y': 0 });\r\n\t\t\tcenterObject = this.instanceWeakMap.get(pInstance);\r\n\t\t}\r\n\t\tcenterObject.x = pInstance.x + instanceIconWidthHalf;\r\n\t\tcenterObject.y = pInstance.y + instanceIconHeightHalf;\r\n\t\treturn centerObject;\r\n\t}\r\n\t/**\r\n\t * Resets the camera based on the method passed.\r\n\t * @private\r\n\t * @param {string} pMethod - The method to reset.\r\n\t */\r\n\treset(pMethod) {\r\n\t\tswitch (pMethod) {\r\n\t\t\tcase 'zoomX':\r\n\t\t\t\tthis.settings.zoom.active.x = false;\r\n\t\t\t\tthis.settings.zoom.time.x = 0;\r\n\t\t\t\tthis.settings.zoom.ease.x = 'easeOutCirc';\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'zoomY':\r\n\t\t\t\tthis.settings.zoom.active.y = false;\r\n\t\t\t\tthis.settings.zoom.time.y = 0;\r\n\t\t\t\tthis.settings.zoom.ease.y = 'easeOutCirc';\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'zoom':\r\n\t\t\t\tthis.settings.zoom.callback = null;\r\n\t\t\t\tthis.settings.zoom.time.x = this.settings.zoom.time.y = 0;\r\n\t\t\t\tthis.settings.zoom.active.x = this.settings.zoom.active.y = false;\r\n\t\t\t\tthis.settings.zoom.initialLevel.x = this.settings.zoom.initialLevel.y = null;\r\n\t\t\t\tthis.settings.zoom.destinationLevel.x = this.settings.zoom.destinationLevel.y = null;\r\n\t\t\t\tthis.settings.zoom.differenceLevel.x = this.settings.zoom.differenceLevel.y = null;\r\n\t\t\t\tthis.settings.zoom.duration.x = this.settings.zoom.duration.y = null;\t\r\n\t\t\t\tthis.settings.zoom.ease.x = this.settings.zoom.ease.y = null;\r\n\t\t\t\tthis.settings.zooming = false;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'panX':\r\n\t\t\t\tthis.settings.pan.active.x = false;\r\n\t\t\t\tthis.settings.pan.time.x = 0;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'panY':\r\n\t\t\t\tthis.settings.pan.active.y = false;\r\n\t\t\t\tthis.settings.pan.time.y = 0;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'pan':\r\n\t\t\t\tthis.settings.pan.returning = false;\r\n\t\t\t\tthis.settings.pan.attach = false;\r\n\t\t\t\tthis.settings.pan.forceDirChange = true;\r\n\t\t\t\tthis.settings.pan.target = null;\r\n\t\t\t\tthis.settings.pan.storedDir = null;\r\n\t\t\t\tthis.settings.pan.panToCallback = null;\r\n\t\t\t\tthis.settings.pan.panBackCallback = null;\r\n\t\t\t\tthis.settings.pan.pauseDuration = 0;\r\n\t\t\t\tthis.settings.pan.time.x = this.settings.pan.time.y = 0;\r\n\t\t\t\tthis.settings.pan.initialPos.x = this.settings.pan.initialPos.y = null;\r\n\t\t\t\tthis.settings.pan.panBackDuration.x = this.settings.pan.panBackDuration.y = null;\r\n\t\t\t\tthis.settings.pan.ease.x = this.settings.pan.ease.y = null;\r\n\t\t\t\tthis.settings.pan.panBackEase.x = this.settings.pan.panBackEase.y = null;\r\n\t\t\t\tthis.settings.pan.active.x = this.settings.pan.active.y = false;\r\n\t\t\t\tthis.settings.pan.duration.x = this.settings.pan.duration.y = null;\r\n\t\t\t\tthis.settings.pan.destination.x = this.settings.pan.destination.y = null;\r\n\t\t\t\tthis.settings.panning = false;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'standardX':\r\n\t\t\t\tthis.settings.standard.active.x = false;\r\n\t\t\t\tthis.settings.standard.time.x = 0;\r\n\t\t\t\tthis.settings.standard.initialPos.x = this.camera.x;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'standardY':\r\n\t\t\t\tthis.settings.standard.active.y = false;\r\n\t\t\t\tthis.settings.standard.time.y = 0;\r\n\t\t\t\tthis.settings.standard.initialPos.y = this.camera.y;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'standard':\r\n\t\t\t\tthis.settings.standard.active.x = this.settings.standard.active.y = false;\r\n\t\t\t\tthis.settings.standard.time.x = this.settings.standard.time.y = 0;\r\n\r\n\t\t\t\tthis.settings.standard.initialPos.x = this.camera.x;\r\n\t\t\t\tthis.settings.standard.initialPos.y = this.camera.y;\r\n\t\t\t\tthis.settings.moving = false;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'customX':\r\n\t\t\t\tthis.settings.custom.active.x = false;\r\n\t\t\t\tthis.settings.custom.time.x = 0;\r\n\t\t\t\tthis.settings.custom.initialPos.x = this.camera.x;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'customY':\r\n\t\t\t\tthis.settings.custom.active.y = false;\r\n\t\t\t\tthis.settings.custom.time.y = 0;\r\n\t\t\t\tthis.settings.custom.initialPos.y = this.camera.y;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'custom':\r\n\t\t\t\tthis.settings.custom.active.x = this.settings.custom.active.y = false;\r\n\t\t\t\tthis.settings.custom.time.x = this.settings.custom.time.y = 0;\r\n\r\n\t\t\t\tthis.settings.custom.initialPos.x = this.camera.x;\r\n\t\t\t\tthis.settings.custom.initialPos.y = this.camera.y;\r\n\t\t\t\tthis.settings.moving = false;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'shakeX':\r\n\t\t\t\tthis.settings.shake.time.x = 0;\r\n\t\t\t\tthis.settings.shake.active.x = false;\r\n\t\t\t\tVYLO.Client.setViewEyeOffsets(0, VYLO.Client.getViewEyeOffsets().y)\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'shakeY':\r\n\t\t\t\tthis.settings.shake.time.y = 0;\r\n\t\t\t\tthis.settings.shake.active.y = false;\r\n\t\t\t\tVYLO.Client.setViewEyeOffsets(VYLO.Client.getViewEyeOffsets().x, 0)\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'shake':\r\n\t\t\t\tthis.settings.shake.callback = null;\r\n\t\t\t\tthis.settings.shake.rotational = false;\r\n\t\t\t\tthis.settings.shake.time.x = this.settings.shake.time.y = 0;\r\n\t\t\t\tthis.settings.shake.active.x = this.settings.shake.active.y = false;\r\n\t\t\t\tthis.settings.shake.duration.x = this.settings.shake.duration.y = 0;\r\n\t\t\t\tthis.settings.shake.intensity.x = this.settings.shake.intensity.y = 0;\r\n\t\t\t\tVYLO.Client.setViewEyeOffsets(0, 0);\r\n\t\t\t\tVYLO.Client.mapView.angle = 0;\r\n\t\t\t\tthis.settings.shaking = false;\r\n\t\t\t\tbreak;\r\n\r\n\t\t\tcase 'spectate':\r\n\t\t\t\tthis.settings.spectate.priorFollowedPlayer = null;\r\n\t\t\t\tthis.settings.spectate.forcePos = false;\r\n\t\t\t\tthis.settings.spectating = false;\r\n\t\t\t\tbreak;\r\n\t\t}\r\n\t}\r\n\t/**\r\n\t * The method to update the zoom when it is active.\r\n\t * @private\r\n\t * @param {number} pElapsedMS - The amount of ms that has passed since the last tick.\r\n\t */\r\n\tzoomUpdate(pElapsedMS) {\r\n\t\t/**\r\n\t\t * The new x zoom to move the mapView to. Defaulted to the current zoom x in the event no changes are needed.\r\n\t\t * @type {number}\r\n\t\t */\r\n\t\tlet newZoomX = VYLO.Client.mapView.zoom.x;\r\n\t\t/**\r\n\t\t * The new y zoom to move the mapView to. Defaulted to the current zoom y in the event no changes are needed.\r\n\t\t * @type {number}\r\n\t\t */\r\n\t\tlet newZoomY = VYLO.Client.mapView.zoom.y;\r\n\r\n\t\tif (this.settings.zoom.active.x) {\r\n\t\t\tthis.settings.zoom.time.x = Math.min(this.settings.zoom.time.x + pElapsedMS, this.settings.zoom.duration.x);\r\n\t\t\tthis.settings.zoom.currentLevel.x = Tween[this.settings.zoom.ease.x](this.settings.zoom.time.x, this.settings.zoom.initialLevel.x, this.settings.zoom.differenceLevel.x, this.settings.zoom.duration.x);\r\n\t\t\tconst stepSizeX = (this.settings.zoom.currentLevel.x - VYLO.Client.mapView.zoom.x);\r\n\t\t\tnewZoomX = VYLO.Client.mapView.zoom.x + stepSizeX;\r\n\t\t}\r\n\r\n\t\tif (this.settings.zoom.active.y) {\r\n\t\t\tthis.settings.zoom.time.y = Math.min(this.settings.zoom.time.y + pElapsedMS, this.settings.zoom.duration.y);\r\n\t\t\tthis.settings.zoom.currentLevel.y = Tween[this.settings.zoom.ease.y](this.settings.zoom.time.y, this.settings.zoom.initialLevel.y, this.settings.zoom.differenceLevel.y, this.settings.zoom.duration.y);\r\n\t\t\tconst stepSizeY = (this.settings.zoom.currentLevel.y - VYLO.Client.mapView.zoom.y);\t\r\n\t\t\tnewZoomY = VYLO.Client.mapView.zoom.y + stepSizeY;\r\n\t\t}\r\n\r\n\t\t// Update the mapView with the new zoom\r\n\t\tVYLO.Client.mapView.setZoom(newZoomX, newZoomY);\r\n\r\n\t\tif (this.settings.zoom.time.x === this.settings.zoom.duration.x) {\r\n\t\t\tthis.reset('zoomX');\r\n\t\t}\r\n\r\n\t\tif (this.settings.zoom.time.y === this.settings.zoom.duration.y) {\r\n\t\t\tthis.reset('zoomY');\r\n\t\t}\r\n\r\n\t\tif (!this.settings.zoom.active.x && !this.settings.zoom.active.y) {\r\n\t\t\tthis.onZoomEnd();\r\n\t\t}\r\n\t}\r\n\t/**\r\n\t * The method to update shaking when it is active.\r\n\t * @private\r\n\t * @param {number} pElapsedMS - The amount of ms that has passed since the last tick.\r\n\t */\r\n\tshakeUpdate(pElapsedMS) {\r\n\t\tlet angle;\r\n\t\tlet xForce = 0;\r\n\t\tlet yForce = 0;\r\n\r\n\t\t// This changes the angle of the mapView\r\n\t\tif (this.settings.shake.rotational) {\r\n\t\t\tlet seed;\r\n\t\t\tlet seed2;\r\n\t\t\tif (this.settings.shake.active.x && this.settings.shake.active.y) {\r\n\t\t\t\tseed = this.settings.shake.intensity.x;\r\n\t\t\t\tseed2 = this.settings.shake.intensity.y;\r\n\t\t\t} else if (this.settings.shake.active.x) {\r\n\t\t\t\tseed = this.settings.shake.intensity.x;\r\n\t\t\t\tseed2 = seed*0.5;\t\t\t\t\r\n\t\t\t} else if (this.settings.shake.active.y) {\r\n\t\t\t\tseed = this.settings.shake.intensity.y;\r\n\t\t\t\tseed2 = seed*0.5;\t\r\n\t\t\t}\r\n\r\n\t\t\tangle = Utils.decimalRand(-Utils.decimalRand(seed, seed2) / 200, Utils.decimalRand(seed, seed2) / 200);\r\n\t\t\tVYLO.Client.mapView.angle = angle;\r\n\t\t}\r\n\r\n\t\tif (this.settings.shake.active.x) {\r\n\t\t\tconst seed = this.settings.shake.intensity.x;\r\n\t\t\tconst seed2 = seed*0.5;\r\n\t\t\txForce = Utils.decimalRand(-Utils.decimalRand(seed, seed2), Utils.decimalRand(seed, seed2));\r\n\t\t\tthis.settings.shake.time.x = Math.min(this.settings.shake.time.x + pElapsedMS, this.settings.shake.duration.x);\r\n\t\t}\r\n\r\n\t\tif (this.settings.shake.active.y) {\r\n\t\t\tconst seed = this.settings.shake.intensity.y;\r\n\t\t\tconst seed2 = seed*0.5;\r\n\t\t\tyForce = Utils.decimalRand(-Utils.decimalRand(seed, seed2), Utils.decimalRand(seed, seed2));\r\n\t\t\tthis.settings.shake.time.y = Math.min(this.settings.shake.time.y + pElapsedMS, this.settings.shake.duration.y);\r\n\t\t}\r\n\r\n\t\tVYLO.Client.setViewEyeOffsets(xForce, yForce);\r\n\r\n\t\tif (this.settings.shake.time.x === this.settings.shake.duration.x) {\r\n\t\t\tthis.reset('shakeX');\r\n\t\t}\r\n\r\n\t\tif (this.settings.shake.time.y === this.settings.shake.duration.y) {\r\n\t\t\tthis.reset('shakeY');\r\n\t\t}\r\n\r\n\t\tif (!this.settings.shake.active.x && !this.settings.shake.active.y) {\r\n\t\t\tthis.onShakeEnd();\r\n\t\t}\r\n\t}\r\n\t/**\r\n\t * Pans the camera from one view to another view. This pan can be customized in both axis. This pan has callbacks and settings that allow further customization.\r\n\t * @param {Object} pSettings - A Object holding settings that control this pan.\r\n\t * @param {Object} pSettings.target - A Object holding settings that control this pan.\r\n\t * @param {Object} pSettings.ease - A Object holding settings that control this pan.\r\n\t * @param {string} pSettings.ease.x - A Object holding settings that control this pan.\r\n\t * @param {string} pSettings.ease.y - A Object holding settings that control this pan.\r\n\t * @param {Object} pSettings.panBackEase - A Object holding settings that control this pan.\r\n\t * @param {string} pSettings.panBackEase.x - A Object holding settings that control this pan.\r\n\t * @param {string} pSettings.panBackEase.y - A Object holding settings that control this pan.\r\n\t * @param {Object} pSettings.duration - A Object holding settings that control this pan.\r\n\t * @param {number} pSettings.duration.x - A Object holding settings that control this pan.\r\n\t * @param {number} pSettings.duration.y - A Object holding settings that control this pan.\r\n\t * @param {Object} pSettings.panBackDuration - A Object holding settings that control the duration of the pan.\r\n\t * @param {number} pSettings.panBackDuration.x - The duration of the ease in the x dimension.\r\n\t * @param {number} pSettings.panBackDuration.y - The duration of the ease in the y dimension.\r\n\t * @param {number} pSettings.pauseDuration - How long the camera will stay at the target after panning to it before completing the pan.\r\n\t * @param {boolean} pSettings.attach - Whether or not to attach the camera to the target when the pan to it is completed. This automatically forfeits the panBack nature of this and no panBack callback will be called.\r\n\t * @param {boolean} pSettings.forceDirChange - Whether panning to a target changes your direction to face the target.\r\n\t * @param {Function} pSettings.panToCallback - Callback function to be called when the pan to the target is completed.\r\n\t * @param {Function} pSettings.panBackCallback - Callback function to be called when the pan from the target back to the camera's target is completed.\r\n\t */\r\n\tpan(pSettings) {\r\n\t\tif (this.settings.panning && !this.settings.pan.returning) {\r\n\t\t\tthis.logger.prefix('Lens-Module').error('You are already panning. Pan failed');\r\n\t\t\treturn;\r\n\t\t}\r\n\t\tif (this.settings.spectating) {\r\n\t\t\tthis.logger.prefix('Lens-Module').error('You are spectating and cannot pan right now. Pan failed');\r\n\t\t\treturn;\r\n\t\t}\r\n\t\tif (typeof(pSettings) === 'object' && pSettings.constructor === Object) {\r\n\t\t\tconst settingsProps = Object.keys(pSettings);\r\n\t\t\tif (settingsProps.includes('target')) {\r\n\t\t\t\t// Target\r\n\t\t\t\t// Check if its a valid instance to assign to a target\r\n\t\t\t\tif (typeof(pSettings.target) === 'object' && pSettings.target.baseType) {\r\n\t\t\t\t\tif (typeof(pSettings.target.x) === 'number' && typeof(pSettings.target.y) === 'number' && typeof(pSettings.target.mapName) === 'string') {\r\n\t\t\t\t\t\tif (pSettings.target === this.following) {\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').error('You cannot pan to yourself. Pan failed');\r\n\t\t\t\t\t\t\treturn;\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\tthis.settings.pan.target = pSettings.target;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').error('Invalid variable type passed for the pSettings.target.x || pSettings.target.y || *pSettings.target.mapName parameter. Pan failed');\r\n\t\t\t\t\t\treturn;\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').error('Invalid variable type passed for the pSettings.target property. Pan failed');\r\n\t\t\t\t\treturn;\r\n\t\t\t\t}\r\n\r\n\t\t\t\t// ease\r\n\t\t\t\tif (pSettings.ease) {\r\n\t\t\t\t\tif (typeof(pSettings.ease) === 'object' && pSettings.ease.constructor === Object) {\r\n\t\t\t\t\t\tif (typeof(pSettings.ease.x) === 'string' && typeof(pSettings.ease.y) === 'string') {\r\n\t\t\t\t\t\t\tif (LensComponent.validEase.includes(pSettings.ease.x) && LensComponent.validEase.includes(pSettings.ease.y)) {\r\n\t\t\t\t\t\t\t\tthis.settings.pan.ease.x = pSettings.ease.x;\r\n\t\t\t\t\t\t\t\tthis.settings.pan.ease.y = pSettings.ease.y;\r\n\t\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\t\tthis.settings.pan.ease.x = this.settings.pan.ease.y = 'easeOutCubic';\r\n\t\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid ease name passed for pSettings.ease.x || pSettings.ease.y. Reverted to default');\r\n\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\tthis.settings.pan.ease.x = this.settings.pan.ease.y = 'easeOutCubic';\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.ease.x || pSettings.ease.y parameter. Reverted to default');\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t} else if (typeof(pSettings.ease) === 'string') {\r\n\t\t\t\t\t\tif (LensComponent.validEase.includes(pSettings.ease)) {\r\n\t\t\t\t\t\t\tthis.settings.pan.ease.x = this.settings.pan.ease.y = pSettings.ease;\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\tthis.settings.pan.ease.x = this.settings.pan.ease.y = 'easeOutCubic';\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid ease name passed for pSettings.ease.x || pSettings.ease.y. Reverted to default');\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.pan.ease.x = this.settings.pan.ease.y = 'easeOutCubic';\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.ease property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.pan.ease.x = this.settings.pan.ease.y = 'easeOutCubic';\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('No ease property included inside of the pSettings parameter. Reverted to default');\r\n\t\t\t\t}\r\n\r\n\t\t\t\t// panBackEase\r\n\t\t\t\tif (pSettings.panBackEase) {\r\n\t\t\t\t\tif (typeof(pSettings.panBackEase) === 'object' && pSettings.panBackEase.constructor === Object) {\r\n\t\t\t\t\t\tif (typeof(pSettings.panBackEase.x) === 'string' && typeof(pSettings.panBackEase.y) === 'string') {\r\n\t\t\t\t\t\t\tif (LensComponent.validEase.includes(pSettings.panBackEase.x) && LensComponent.validEase.includes(pSettings.panBackEase.y)) {\r\n\t\t\t\t\t\t\t\tthis.settings.pan.panBackEase.x = pSettings.panBackEase.x;\r\n\t\t\t\t\t\t\t\tthis.settings.pan.panBackEase.y = pSettings.panBackEase.y;\r\n\t\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\t\tthis.settings.pan.panBackEase.x = this.settings.pan.panBackEase.y = 'easeOutCubic';\r\n\t\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid ease name passed for pSettings.panBackEase.x || pSettings.panBackEase.y. Reverted to default');\r\n\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\tthis.settings.pan.panBackEase.x = this.settings.pan.panBackEase.y = 'easeOutCubic';\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.panBackEase.x || pSettings.panBackEase.y parameter. Reverted to default');\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t} else if (typeof(pSettings.panBackEase) === 'string') {\r\n\t\t\t\t\t\tif (LensComponent.validEase.includes(pSettings.panBackEase)) {\r\n\t\t\t\t\t\t\tthis.settings.pan.panBackEase.x = this.settings.pan.panBackEase.y = pSettings.panBackEase;\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\tthis.settings.pan.panBackEase.x = this.settings.pan.panBackEase.y = 'easeOutCubic';\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid ease name passed for pSettings.panBackEase.x || pSettings.panBackEase.y. Reverted to default');\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.pan.panBackEase.x = this.settings.pan.panBackEase.y = 'easeOutCubic';\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.panBackEase property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.pan.panBackEase.x = this.settings.pan.panBackEase.y = 'easeOutCubic';\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('No panBackEase property included inside of the pSettings parameter. Reverted to default');\r\n\t\t\t\t}\r\n\r\n\t\t\t\t// Duration\r\n\t\t\t\tif (pSettings.duration) {\r\n\t\t\t\t\tif (typeof(pSettings.duration) === 'object' && pSettings.duration.constructor === Object) {\r\n\t\t\t\t\t\tif (typeof(pSettings.duration.x) === 'number' && typeof(pSettings.duration.y) === 'number') {\r\n\t\t\t\t\t\t\tthis.settings.pan.duration.x = pSettings.duration.x;\r\n\t\t\t\t\t\t\tthis.settings.pan.duration.y = pSettings.duration.y;\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\tthis.settings.pan.duration.x = this.settings.pan.duration.y = LensComponent.DEFAULT_PAN_DURATION;\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.duration.x || pSettings.duration.y parameter. Reverted to default');\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t} else if (typeof(pSettings.duration) === 'number') {\r\n\t\t\t\t\t\t\tthis.settings.pan.duration.x = this.settings.pan.duration.y = pSettings.duration;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.pan.duration.x = this.settings.pan.duration.y = LensComponent.DEFAULT_PAN_DURATION;\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.duration property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.pan.duration.x = this.settings.pan.duration.y = LensComponent.DEFAULT_PAN_DURATION;\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('No duration property included inside of the pSettings parameter. Reverted to default');\r\n\t\t\t\t}\r\n\r\n\t\t\t\t// panBackDuration\r\n\t\t\t\tif (pSettings.panBackDuration) {\r\n\t\t\t\t\tif (typeof(pSettings.panBackDuration) === 'object' && pSettings.panBackDuration.constructor === Object) {\r\n\t\t\t\t\t\tif (typeof(pSettings.panBackDuration.x) === 'number' && typeof(pSettings.panBackDuration.y) === 'number') {\r\n\t\t\t\t\t\t\tthis.settings.pan.panBackDuration.x = pSettings.panBackDuration.x;\r\n\t\t\t\t\t\t\tthis.settings.pan.panBackDuration.y = pSettings.panBackDuration.y;\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\tthis.settings.pan.panBackDuration.x = this.settings.pan.panBackDuration.y = LensComponent.DEFAULT_PAN_DURATION;\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.panBackDuration.x || pSettings.panBackDuration.y parameter. Reverted to default');\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t} else if (typeof(pSettings.panBackDuration) === 'number') {\r\n\t\t\t\t\t\t\tthis.settings.pan.panBackDuration.x = this.settings.pan.panBackDuration.y = pSettings.panBackDuration;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.pan.panBackDuration.x = this.settings.pan.panBackDuration.y = LensComponent.DEFAULT_PAN_DURATION;\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.panBackDuration property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.pan.panBackDuration.x = this.settings.pan.panBackDuration.y = LensComponent.DEFAULT_PAN_DURATION;\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('No panBackDuration property included inside of the pSettings parameter. Reverted to default');\r\n\t\t\t\t}\r\n\r\n\t\t\t\t// pauseDuration\r\n\t\t\t\tif (pSettings.pauseDuration) {\r\n\t\t\t\t\tif (typeof(pSettings.pauseDuration) === 'number') {\r\n\t\t\t\t\t\tthis.settings.pan.pauseDuration = pSettings.pauseDuration;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.pan.pauseDuration = 0;\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.pauseDuration property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\r\n\t\t\t\t// Attach\r\n\t\t\t\tthis.settings.pan.attach = pSettings.attach;\r\n\t\t\t\t// forceDirChange\r\n\t\t\t\tthis.settings.pan.forceDirChange = pSettings.forceDirChange;\r\n\t\t\t\t// initialPos\r\n\t\t\t\tthis.settings.pan.initialPos.x = this.camera.x;\r\n\t\t\t\tthis.settings.pan.initialPos.y = this.camera.y;\r\n\r\n\t\t\t\tif (this.settings.pan.forceDirChange) {\r\n\t\t\t\t\t/**\r\n\t\t\t\t\t * @info Should there be a setting to disable movement here?\r\n\t\t\t\t\t */\r\n\t\t\t\t\tthis.settings.pan.storedDir = this.following.dir;\r\n\t\t\t\t\tthis.following.dir = Utils.getDirection(Utils.getAngle2(this.following, this.settings.pan.target));\r\n\t\t\t\t}\r\n\t\t\t\t// panToCallback\r\n\t\t\t\tif (pSettings.panToCallback) {\r\n\t\t\t\t\tif (typeof(pSettings.panToCallback) === 'function') {\r\n\t\t\t\t\t\tthis.settings.pan.panToCallback = pSettings.panToCallback;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.panToCallback property.');\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\r\n\t\t\t\t// panBackCallback\r\n\t\t\t\tif (pSettings.panBackCallback) {\r\n\t\t\t\t\tif (typeof(pSettings.panBackCallback) === 'function') {\r\n\t\t\t\t\t\tthis.settings.pan.panBackCallback = pSettings.panBackCallback;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.panBackCallback property.');\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\r\n\t\t\t\tif (this.camera.x !== this.settings.pan.target.x) {\r\n\t\t\t\t\tthis.settings.pan.active.x = true;\r\n\t\t\t\t}\r\n\r\n\t\t\t\tif (this.camera.y !== this.settings.pan.target.y) {\r\n\t\t\t\t\tthis.settings.pan.active.y = true;\r\n\t\t\t\t}\r\n\r\n\t\t\t} else {\r\n\t\t\t\tthis.logger.prefix('Lens-Module').error('No target property included inside of the pSettings parameter. Pan failed');\r\n\t\t\t}\r\n\r\n\t\t} else {\r\n\t\t\tthis.logger.prefix('Lens-Module').error('Invalid variable type passed for the pSettings parameter. Pan failed');\r\n\t\t}\r\n\t\tthis.settings.panning = true;\r\n\t}\r\n\t/**\r\n\t * Event handler for when the first part of the pan completes.\r\n\t * @private\r\n\t */\r\n\tonPanned() {\r\n\t\tif (this.settings.pan.panToCallback) {\r\n\t\t\tthis.settings.pan.panToCallback();\r\n\t\t\tthis.settings.pan.panToCallback = null;\r\n\t\t}\r\n\t\tif (this.settings.pan.attach) {\r\n\t\t\t// Check if its on the map\r\n\t\t\tif (this.settings.pan.target.mapName) {\r\n\t\t\t\tthis.following = this.settings.pan.target;\r\n\t\t\t\tthis.reset('pan');\r\n\t\t\t\treturn;\r\n\t\t\t}\r\n\t\t\tthis.logger.prefix('Lens-Module').error('Could not return to previous target.');\r\n\t\t}\r\n\r\n\t\t// If this is not a valid target to go back to. We have to force detach the camera.\r\n\t\tif (!this.following.mapName) {\r\n\t\t\tthis.logger.prefix('Lens-Module').error('Forced Detach! Could not return to previous target.');\r\n\t\t\tthis.detach();\r\n\t\t\treturn;\r\n\t\t}\r\n\t\tthis.settings.pan.target = this.following;\r\n\t\tthis.settings.pan.initialPos.x = this.camera.x;\r\n\t\tthis.settings.pan.initialPos.y = this.camera.y;\r\n\t\tthis.settings.pan.time.x = this.settings.pan.time.y = 0;\r\n\t\tthis.settings.pan.duration.x = this.settings.pan.panBackDuration.x;\r\n\t\tthis.settings.pan.duration.y = this.settings.pan.panBackDuration.y;\r\n\t\tthis.settings.pan.ease.x = this.settings.pan.panBackEase.x;\r\n\t\tthis.settings.pan.ease.y = this.settings.pan.panBackEase.y;\r\n\t\tthis.settings.pan.returning = true;\r\n\t}\r\n\t/**\r\n\t * Event handler for when the second part of the pan completes.\r\n\t * @private\r\n\t */\r\n\tonPanFinish() {\r\n\t\tif (this.settings.pan.forceDirChange) {\r\n\t\t\tthis.following.dir = this.settings.pan.storedDir;\r\n\t\t}\r\n\t\tif (this.settings.pan.panBackCallback) {\r\n\t\t\tthis.settings.pan.panBackCallback();\r\n\t\t\tthis.settings.pan.panBackCallback = null;\r\n\t\t}\r\n\t\tthis.reset('pan');\r\n\t}\r\n\t/**\r\n\t * The logic for following instances via the camera.\r\n\t * @private\r\n\t * @param {string} pAxis - 'x' | 'y'. The axis to handle the logic in.\r\n\t * @param {Object} pPosition - The centered position of the target.\r\n\t * @param {string} pMethod - The method the camera is using to follow.\r\n\t * @param {number} pElapsedMS - The elapsed time since the last tick.\r\n\t * @param {Object} pSettings - The method's settings object.\r\n\t */\r\n\tfollowLogic(pAxis, pPosition, pMethod, pElapsedMS, pSettings) {\r\n\t\t// If this axis is active\r\n\t\tif (pSettings.active[pAxis]) {\r\n\t\t\t// Get the destination position in each axis.\r\n\t\t\tpSettings.destination[pAxis] = pPosition[pAxis];\r\n\t\t\t// Set the time elapsed.\r\n\t\t\tpSettings.time[pAxis] = Math.min(pSettings.time[pAxis] + pElapsedMS, pSettings.duration[pAxis]);\r\n\t\t\t// Get the distance between the start and end in this axis.\r\n\t\t\tconst distance = pSettings.destination[pAxis] - pSettings.initialPos[pAxis];\r\n\t\t\t// Get the position the camera should go to next.\r\n\t\t\tconst pos = Tween[pSettings.ease[pAxis]](pSettings.time[pAxis], pSettings.initialPos[pAxis], distance, pSettings.duration[pAxis]);\r\n\t\t\t// Add the stepSize to the camera's position in this axis to move closer to the destination.\r\n\t\t\tthis.camera[pAxis] += pos - this.camera[pAxis];\r\n\r\n\t\t\t// When the animation is over.\r\n\t\t\tif (pSettings.time[pAxis] === pSettings.duration[pAxis]) {\r\n\t\t\t\t// Get the proper reset API for each method.\r\n\t\t\t\tconst resetAPI = `${pMethod}${pAxis.toUpperCase()}`;\r\n\t\t\t\t// The animation is over, so we force set the end position.\r\n\t\t\t\tthis.camera[pAxis] = pPosition[pAxis];\r\n\t\t\t\t// Reset the method\r\n\t\t\t\tthis.reset(resetAPI);\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n\t/**\r\n\t * Method to follow the target of the camera.\r\n\t * @private\r\n\t * @param {string} pMethod - The method in which the camera is following.\r\n\t * @param {number} pElapsedMS - The amount of ms that has passed since the last tick.\r\n\t */\r\n\tfollow(pMethod, pElapsedMS) {\r\n\t\t// Extract relevant settings.\r\n\t\tconst settings = this.settings[pMethod];\r\n\t\t/**\r\n\t\t * The target to follow.\r\n\t\t * @type {Object}\r\n\t\t */\r\n\t\tconst target = (pMethod === 'pan') ? settings.target : this.following;\r\n\t\t// Get the center of the target position.\r\n\t\tconst centerPositionOfTarget = this.getTrueCenterPos(target);\r\n\r\n\t\tif (pMethod === 'pan') {\r\n\t\t\t// Now check to see if there is a paused duration you want the camera to stay at the panned object for before moving back\r\n\t\t\tif (settings.returning) {\r\n\t\t\t\tif (settings.pauseDuration) {\r\n\t\t\t\t\tsettings.pauseDuration = Math.max(settings.pauseDuration - pElapsedMS, 0);\r\n\t\t\t\t\tif (settings.pauseDuration > 0) return;\r\n\t\t\t\t}\r\n\t\t\t\tif (this.camera.x !== centerPositionOfTarget.x) {\r\n\t\t\t\t\tsettings.active.x = true;\r\n\t\t\t\t}\r\n\r\n\t\t\t\tif (this.camera.y !== centerPositionOfTarget.y) {\r\n\t\t\t\t\tsettings.active.y = true;\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t}\r\n\r\n\t\t// Call the follow logic in each axis\r\n\t\tfor (const axis of LensComponent.AXIS) {\r\n\t\t\tthis.followLogic(axis, centerPositionOfTarget, pMethod, pElapsedMS, settings);\r\n\t\t}\r\n\r\n\t\t// To ensure that the camera is always on the same map as the target.\r\n\t\tthis.camera.mapName = target.mapName;\r\n\r\n\t\tif (pMethod === 'standard' || pMethod === 'custom') {\r\n\t\t\tif (!settings.active.x && !settings.active.y) {\r\n\t\t\t\tthis.reset(pMethod);\r\n\t\t\t}\r\n\t\t} else if (pMethod === 'pan') {\r\n\t\t\tif (!settings.active.x && !settings.active.y) {\r\n\t\t\t\tif (settings.returning) {\r\n\t\t\t\t\t// You have panned on every axis and now can call the pan return callback\r\n\t\t\t\t\tthis.onPanFinish();\r\n\t\t\t\t} else {\r\n\t\t\t\t\t// You have panned on every axis and now can call the pan callback\r\n\t\t\t\t\tthis.onPanned();\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n\t/**\r\n\t * Update handler that is called each tick to update the camera's state\r\n\t * @private\r\n\t * @param {number} pElapsedMS - The amount of ms that has passed since the last tick\r\n\t */\r\n\tupdate(pElapsedMS) {\r\n\t\t// Zoom\r\n\t\tif (this.settings.zoom.active.x || this.settings.zoom.active.y) {\r\n\t\t\tthis.zoomUpdate(pElapsedMS);\r\n\t\t}\r\n\t\t\r\n\t\t// Shake\r\n\t\tif (this.settings.shake.active.x || this.settings.shake.active.y) {\r\n\t\t\tthis.shakeUpdate(pElapsedMS);\r\n\t\t}\r\n\r\n\t\tif (this.attached) {\r\n\t\t\t// Get the camera follow mode.\r\n\t\t\tconst cameraFollowMode = this.custom ? 'custom' : 'standard';\r\n\r\n\t\t\t// Pan\r\n\t\t\tif (this.settings.pan.active.x || this.settings.pan.active.y || this.settings.pan.returning) {\r\n\t\t\t\tthis.follow('pan', pElapsedMS);\r\n\t\t\t}\r\n\t\t\t// Camera moving after whatever its following\r\n\t\t\tif (!this.settings.panning && this.following) {\r\n\t\t\t\t// Get the center position of the target\r\n\t\t\t\tconst centerPositionOfFollowing = this.getTrueCenterPos(this.following);\r\n\t\t\t\tconst xFollowingPos = centerPositionOfFollowing.x;\r\n\t\t\t\tconst yFollowingPos = centerPositionOfFollowing.y;\r\n\t\t\t\tif (this.following.isMoving || this.oldFollowingPos.x !== xFollowingPos || this.oldFollowingPos.y !== yFollowingPos) {\r\n\t\t\t\t\tthis.settings[cameraFollowMode].time.x = 0;\r\n\t\t\t\t\tthis.settings[cameraFollowMode].active.x = (this.camera.x !== xFollowingPos ? true : false);\r\n\t\t\t\t\tthis.settings[cameraFollowMode].initialPos.x = this.camera.x;\r\n\r\n\t\t\t\t\tthis.settings[cameraFollowMode].time.y = 0;\r\n\t\t\t\t\tthis.settings[cameraFollowMode].active.y = (this.camera.y !== yFollowingPos ? true : false);\r\n\t\t\t\t\tthis.settings[cameraFollowMode].initialPos.y = this.camera.y;\r\n\t\t\t\t}\r\n\r\n\t\t\t\tif (this.settings[cameraFollowMode].active.x || this.settings[cameraFollowMode].active.y) {\r\n\t\t\t\t\tthis.settings.moving = true;\r\n\t\t\t\t\tthis.follow(cameraFollowMode, pElapsedMS);\r\n\t\t\t\t}\r\n\t\t\t\tthis.oldFollowingPos.x = xFollowingPos;\r\n\t\t\t\tthis.oldFollowingPos.y = yFollowingPos;\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n\t/**\r\n\t * Zooms the camera in via the passed in arguments.\r\n\t * @param {Object} pDestinationLevel - An object containing the zoom level information.\r\n\t * @param {number} pDestinationLevel.x - The x scale to zoom to.\r\n\t * @param {number} pDestinationLevel.y - The y scale to zoom to.\r\n\t * @param {number} pDuration - The duration of the zoom.\r\n\t * @param {Object} pEase - An object containing the ease information for how the zoom will be performed.\r\n\t * @param {string} pEase.x - The ease to use for the x scale zooming.\r\n\t * @param {string} pEase.y - The ease to use for the y scale zooming.\r\n\t * @param {Function} pCallback - The callback to call after the zoom ends.\r\n\t * @returns \r\n\t */\r\n\tzoom(pDestinationLevel={'x': 1, 'y': 1}, pDuration={'x': 1000, 'y': 1000}, pEase={'x': 'easeOutCirc', 'y': 'easeOutCirc'}, pCallback) {\r\n\t\tif (this.settings.zoom.active.x || this.settings.zoom.active.y) {\r\n\t\t\treturn;\r\n\t\t}\r\n\t\t// Preset the cameras current zoom level with info from the client if it isn't already set\r\n\t\tif (!this.settings.zoom.currentLevel.x) {\r\n\t\t\tthis.settings.zoom.currentLevel.x = VYLO.Client.mapView.zoom.x;\r\n\t\t}\r\n\t\tif (!this.settings.zoom.currentLevel.x) {\r\n\t\t\tthis.settings.zoom.currentLevel.y = VYLO.Client.mapView.zoom.y;\r\n\t\t}\r\n\t\t// Destination level\r\n\t\tlet destinationX;\r\n\t\tlet destinationY;\r\n\t\tif (pDestinationLevel || pDestinationLevel === 0) {\r\n\t\t\tif (typeof(pDestinationLevel) !== 'object') {\r\n\t\t\t\tif (typeof(pDestinationLevel) === 'number') {\r\n\t\t\t\t\tdestinationX = destinationY = pDestinationLevel;\r\n\t\t\t\t} else {\r\n\t\t\t\t\tdestinationX = destinationY = 1;\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pDestinationLevel parameter. Reverted to default');\t\t\t\t\t\t\t\r\n\t\t\t\t}\r\n\t\t\t} else {\r\n\t\t\t\tif (typeof(pDestinationLevel.x) === 'number' && typeof(pDestinationLevel.y) === 'number') {\r\n\t\t\t\t\tdestinationX = pDestinationLevel.x;\r\n\t\t\t\t\tdestinationY = pDestinationLevel.y;\r\n\t\t\t\t} else {\r\n\t\t\t\t\tdestinationX = destinationY = 1;\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pDestinationLevel.x || pDestinationLevel.y parameter. Reverted to default');\t\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t} else {\r\n\t\t\tdestinationX = destinationY = 1;\r\n\t\t\tthis.logger.prefix('Lens-Module').warn('No pDestinationLevel parameter passed. Reverted to default');\r\n\t\t}\r\n\r\n\t\tif (this.settings.zoom.destinationLevel.x !== destinationX) {\r\n\t\t\tif (this.settings.zoom.active.x) {\r\n\t\t\t\tthis.reset('zoomX');\r\n\t\t\t}\r\n\t\t\tthis.settings.zoom.active.x = true;\r\n\t\t\tthis.settings.zoom.destinationLevel.x = destinationX;\r\n\t\t\tthis.settings.zoom.initialLevel.x = VYLO.Client.mapView.zoom.x;\r\n\t\t\tthis.settings.zoom.differenceLevel.x = Math.round((this.settings.zoom.destinationLevel.x - this.settings.zoom.initialLevel.x) * 10) / 10;\r\n\t\t}\r\n\r\n\t\tif (this.settings.zoom.destinationLevel.y !== destinationY) {\r\n\t\t\tif (this.settings.zoom.active.y) {\r\n\t\t\t\tthis.reset('zoomY');\r\n\t\t\t}\r\n\t\t\tthis.settings.zoom.active.y = true;\r\n\t\t\tthis.settings.zoom.destinationLevel.y = destinationY;\r\n\t\t\tthis.settings.zoom.initialLevel.y = VYLO.Client.mapView.zoom.y;\r\n\t\t\tthis.settings.zoom.differenceLevel.y = Math.round((this.settings.zoom.destinationLevel.y - this.settings.zoom.initialLevel.y) * 10) / 10;\r\n\t\t}\r\n\r\n\t\t// Duration\r\n\t\tif (pDuration) {\r\n\t\t\tif (typeof(pDuration) !== 'object') {\r\n\t\t\t\tif (typeof(pDuration) === 'number') {\r\n\t\t\t\t\tthis.settings.zoom.duration.x = pDuration;\r\n\t\t\t\t\tthis.settings.zoom.duration.y = pDuration;\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.settings.zoom.duration.x = this.settings.zoom.duration.y = 1000;\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pDuration parameter. Reverted to default');\r\n\t\t\t\t}\r\n\t\t\t} else {\r\n\t\t\t\tif (typeof(pDuration) === 'object') {\r\n\t\t\t\t\tif (typeof(pDuration.x) === 'number' && typeof(pDuration.y) === 'number') {\r\n\t\t\t\t\t\tthis.settings.zoom.duration = pDuration;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.zoom.duration.x = this.settings.zoom.duration.y = 1000;\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pDuration.x || pDuration.y parameter. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t} else {\r\n\t\t\tthis.settings.zoom.duration.x = this.settings.zoom.duration.y = 1000;\r\n\t\t\tthis.logger.prefix('Lens-Module').warn('No pDuration parameter passed. Reverted to default');\r\n\t\t}\r\n\r\n\t\t// Ease \r\n\t\tif (pEase) {\r\n\t\t\tif (typeof(pEase) !== 'object') {\r\n\t\t\t\tif (typeof(pEase) === 'string') {\r\n\t\t\t\t\tif (LensComponent.validEase.includes(pEase)) {\r\n\t\t\t\t\t\tthis.settings.zoom.ease.x = this.settings.zoom.ease.y = pEase;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid pEase name passed. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pEase parameter. Reverted to default');\r\n\t\t\t\t}\r\n\r\n\t\t\t} else {\r\n\t\t\t\tif (typeof(pEase) === 'object') {\r\n\t\t\t\t\tif (typeof(pEase.x) === 'string' && typeof(pEase.y) === 'string') {\r\n\t\t\t\t\t\tif (LensComponent.validEase.includes(pEase.x) && LensComponent.validEase.includes(pEase.y)) {\r\n\t\t\t\t\t\t\tthis.settings.zoom.ease = pEase;\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\tthis.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid pEase name passed for pEase.x || pEase.y. Reverted to default');\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\t\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pEase.x || pEase.y parameter. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t}\t\t\t\t\r\n\t\t\t}\r\n\t\t} else {\r\n\t\t\tthis.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';\r\n\t\t\tthis.logger.prefix('Lens-Module').warn('No pEase parameter passed. Reverted to default');\t\r\n\t\t}\r\n\r\n\t\t// Callback\r\n\t\tif (typeof(pCallback) === 'function') {\r\n\t\t\tthis.settings.zoom.callback = pCallback;\r\n\t\t} else if (pCallback) {\r\n\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pCallback property.');\r\n\t\t}\r\n\t\tthis.settings.zooming = true;\r\n\t}\r\n\t/**\r\n\t * @private\r\n\t * Event handler for when the zoom is finished\r\n\t */\r\n\tonZoomEnd() {\r\n\t\tif (this.settings.zoom.callback) {\r\n\t\t\tthis.settings.zoom.callback();\r\n\t\t}\r\n\t\tVYLO.Client.mapView.zoom.x = Math.round(this.settings.zoom.destinationLevel.x * 10) / 10;\r\n\t\tVYLO.Client.mapView.zoom.y = Math.round(this.settings.zoom.destinationLevel.y * 10) / 10;\r\n\t\tthis.reset('zoom');\r\n\t}\r\n\t/**\r\n\t * Sets the camera to operate using these user defined settings.\r\n\t * @param {Object} pSettings - An object that holds settings for how the canera will behave.\r\n\t * @param {Object} pSettings.duration - An object that holds settings for how the canera will behave.\r\n\t * @param {number} pSettings.duration.x - The duration of the ease in the x dimension.\r\n\t * @param {number} pSettings.duration.y - The duration of the ease in the y dimension.\r\n\t * @param {Object} pSettings.ease - An object that holds settings for how the canera will behave.\r\n\t * @param {string} pSettings.ease.x - The ease to use in the x dimension.\r\n\t * @param {string} pSettings.ease.y - The ease to use in the y dimension.\r\n\t */\r\n\tsetSettings(pSettings) {\r\n\t\tif (pSettings) {\r\n\t\t\tif (typeof(pSettings) === 'object' && pSettings.constructor === Object) {\r\n\t\t\t\tif (pSettings.duration) {\r\n\t\t\t\t\tif (typeof(pSettings.duration) === 'object' && pSettings.duration.constructor === Object) {\r\n\t\t\t\t\t\tif (typeof(pSettings.duration.x) === 'number' && typeof(pSettings.duration.y) === 'number') {\r\n\t\t\t\t\t\t\tthis.settings.custom.duration.x = pSettings.duration.x;\r\n\t\t\t\t\t\t\tthis.settings.custom.duration.y = pSettings.duration.y;\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\tthis.settings.custom.duration.x = this.settings.custom.duration.y = 1000;\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.duration.x || pSettings.duration.y property. Reverted to default');\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t} else if (typeof(pSettings.duration === 'number')) {\r\n\t\t\t\t\t\tthis.settings.custom.duration.x = this.settings.custom.duration.y = pSettings.duration;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.custom.duration.x = this.settings.custom.duration.y = 1000;\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.duration property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.settings.custom.duration.x = this.settings.custom.duration.y = 1000;\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('No pSettings.duration parameter passed. Reverted to default');\r\n\t\t\t\t}\r\n\r\n\t\t\t\tif (pSettings.ease) {\r\n\t\t\t\t\tif (typeof(pSettings.ease) === 'object' && pSettings.ease.constructor === Object) {\r\n\t\t\t\t\t\tif (typeof(pSettings.ease.x) === 'string' && typeof(pSettings.ease.y) === 'string') {\r\n\t\t\t\t\t\t\tif (LensComponent.validEase.includes(pSettings.ease.x) && LensComponent.validEase.includes(pSettings.ease.y)) {\r\n\t\t\t\t\t\t\t\tthis.settings.custom.ease.x = pSettings.ease.x;\r\n\t\t\t\t\t\t\t\tthis.settings.custom.ease.y = pSettings.ease.y;\r\n\t\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\t\tthis.settings.custom.ease.x = this.settings.custom.ease.y = 'easeOutCubic';\r\n\t\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid ease name passed for pSettings.ease.x || pSettings.ease.y. Reverted to default');\r\n\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\tthis.settings.custom.ease.x = this.settings.custom.ease.y = 'easeOutCubic';\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.ease.x || pSettings.ease.y property. Reverted to default');\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t} else if (typeof(pSettings.ease === 'string')) {\r\n\t\t\t\t\t\tif (LensComponent.validEase.includes(pSettings.ease)) {\r\n\t\t\t\t\t\t\tthis.settings.custom.ease.x = this.settings.custom.ease.y = pSettings.ease;\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\tthis.settings.custom.ease.x = this.settings.custom.ease.y = 'easeOutCubic';\r\n\t\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid ease name passed for pSettings.ease. Reverted to default');\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.settings.custom.ease.x = this.settings.custom.ease.y = 'easeOutCubic';\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.ease property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.settings.custom.ease.x = this.settings.custom.ease.y = 'easeOutCubic';\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('No pSettings.ease parameter passed. Reverted to default');\r\n\t\t\t\t}\r\n\r\n\t\t\t\tthis.reset('standard');\r\n\t\t\t\tthis.custom = true;\r\n\t\t\t\tthis.settings.custom.initialPos.x = this.camera.x;\r\n\t\t\t\tthis.settings.custom.initialPos.y = this.camera.y;\r\n\t\t\t} else {\r\n\t\t\t\tthis.reset('custom');\r\n\t\t\t\tthis.custom = false;\r\n\t\t\t\tthis.settings.standard.initialPos.x = this.camera.x;\r\n\t\t\t\tthis.settings.standard.initialPos.y = this.camera.y;\r\n\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings parameter. Reverted to default');\r\n\t\t\t}\r\n\t\t} else {\r\n\t\t\tthis.reset('custom');\r\n\t\t\tthis.custom = false;\r\n\t\t\tthis.settings.standard.initialPos.x = this.camera.x;\r\n\t\t\tthis.settings.standard.initialPos.y = this.camera.y;\r\n\t\t}\r\n\t}\r\n\t/**\r\n\t * Spectates another instance with the camera using the passed settings. If the location is over 1000m(pixels) away then the camera will automatically jump to that position no matter if `forcePos` is toggled or not.\r\n\t * @todo Allow pSettings.target to also be a coordinate position, this will send the camera to that space and spectate that position.\r\n\t * @param {Object} pSettings - Settings to control the spectate\r\n\t * @param {Object} pSettings.target - The instance to spectate\r\n\t * @param {boolean} pSettings.forcePos - If the camera should spectate instantly without easing to the location. \r\n\t */\r\n\tspectate(pSettings) {\r\n\t\tif (this.settings.panning) {\r\n\t\t\tthis.logger.prefix('Lens-Module').error('Cannot spectate camera is currently panning. Spectate failed');\r\n\t\t\treturn;\r\n\t\t}\r\n\t\tif (pSettings) {\r\n\t\t\tif (typeof(pSettings) === 'object' && pSettings.constructor === Object) {\r\n\t\t\t\tif (typeof(pSettings.target) === 'object' && pSettings.target.baseType) {\r\n\t\t\t\t\tif (typeof(pSettings.target.x) === 'number' && typeof(pSettings.target.y) === 'number' && typeof(pSettings.target.mapName) === 'string') {\r\n\t\t\t\t\t\tthis.settings.spectate.forcePos = false;\r\n\t\t\t\t\t\t// Get the center position of the target\r\n\t\t\t\t\t\tconst centerPositionOfTarget = this.getTrueCenterPos(pSettings.target);\r\n\t\t\t\t\t\t// Doesn't ease to the spectatee\r\n\t\t\t\t\t\tif (pSettings.forcePos) {\r\n\t\t\t\t\t\t\tthis.settings.spectate.forcePos = pSettings.forcePos;\r\n\t\t\t\t\t\t\tthis.camera.setPos(centerPositionOfTarget.x, centerPositionOfTarget.y, pSettings.target.mapName);\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\t// If the distance is too far, then just force the position\r\n\t\t\t\t\t\t\tif (Utils.getDistance(this.following, pSettings.target) > 1000) {\r\n\t\t\t\t\t\t\t\tthis.settings.spectate.forcePos = true;\r\n\t\t\t\t\t\t\t\tthis.camera.setPos(centerPositionOfTarget.x, centerPositionOfTarget.y, pSettings.target.mapName);\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\t// Store the original instance the camera was following, so we can go back to it when spectating is done.\r\n\t\t\t\t\t\tif (!this.settings.spectate.priorFollowedPlayer) {\r\n\t\t\t\t\t\t\tthis.settings.spectate.priorFollowedPlayer = this.following;\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\tthis.following = pSettings.target;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').error('Invalid variable type passed for the pSettings.target.x || pSettings.target.y || pSettings.target.mapName property. Spectate failed');\r\n\t\t\t\t\t\treturn;\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').error('Invalid variable type passed for the pSettings.target property. Pan failed');\r\n\t\t\t\t\treturn;\r\n\t\t\t\t}\r\n\t\t\t} else {\r\n\t\t\t\tthis.logger.prefix('Lens-Module').error('Invalid variable type passed for the pSettings parameter. Spectate failed');\r\n\t\t\t\treturn;\r\n\t\t\t}\r\n\t\t} else {\r\n\t\t\tthis.logger.prefix('Lens-Module').error('No pSettings parameter passed. Spectate failed');\r\n\t\t\treturn;\r\n\t\t}\r\n\t\tthis.settings.spectating = true;\r\n\t}\r\n\t/**\r\n\t * Stops spectating. \r\n\t * If the setting 'forcePos' was set. Then the camera will immedietly jump to the original camera target.\r\n\t */\r\n\tcancelSpectate() {\r\n\t\tif (this.settings.spectating) {\r\n\t\t\tif (this.settings.spectate.forcePos) {\r\n\t\t\t\tconst centerPositionOfFollowing = this.getTrueCenterPos(this.settings.spectate.priorFollowedPlayer);\r\n\t\t\t\tthis.camera.setPos(centerPositionOfFollowing.x, centerPositionOfFollowing.y, this.settings.spectate.priorFollowedPlayer.mapName);\r\n\t\t\t}\r\n\t\t\t// We check if this reference is still good to reattach to. \r\n\t\t\t// As if not we will need to detach the camera.\r\n\t\t\tif (this.settings.spectate.priorFollowedPlayer.mapName) {\r\n\t\t\t\tthis.following = this.settings.spectate.priorFollowedPlayer;\r\n\t\t\t} else {\r\n\t\t\t\tthis.detach();\r\n\t\t\t\tthis.logger.prefix('Lens-Module').error('Forced Detach! Could not return to previous target.');\r\n\t\t\t\treturn;\r\n\t\t\t}\r\n\t\t\tthis.reset('spectate');\r\n\t\t}\r\n\t}\r\n\t/**\r\n\t * Attaches the camera to the passed instance.\r\n\t * @param {Object} pInstance - The instance to attach the camera to\r\n\t * @param {Object} pSettings - An object that holds settings for how the canera will behave.\r\n\t * @param {Object} pSettings.duration - An object that holds settings for how the canera will behave.\r\n\t * @param {number} pSettings.duration.x - The duration of the ease in the x dimension.\r\n\t * @param {number} pSettings.duration.y - The duration of the ease in the y dimension.\r\n\t * @param {Object} pSettings.ease - An object that holds settings for how the canera will behave.\r\n\t * @param {string} pSettings.ease.x - The ease to use in the x dimension.\r\n\t * @param {string} pSettings.ease.y - The ease to use in the y dimension.\r\n\t * @param {Function} pUpdateFunc - A callback that will be called when the camera is updated. pDiffX and pDiffY params are the difference in position between the last tick.\r\n\t */\r\n\tattach(pInstance, pSettings, pUpdateFunc) {\r\n\t\tif (typeof(pInstance) === 'object') {\r\n\t\t\tif (!pInstance.baseType) {\r\n\t\t\t\tthis.logger.prefix('Lens-Module').error('Nothing to attach to. Attachment failed.');\r\n\t\t\t\treturn;\r\n\t\t\t}\r\n\t\t}\r\n\t\tif (typeof(pUpdateFunc) === 'function') {\r\n\t\t\tthis.updateWithCamera = pUpdateFunc;\r\n\t\t}\r\n        // Initialize the mapView object\r\n\t\tif (!this.mapViewInitialized) {\r\n            // Prep the client's mapview object\r\n            VYLO.Client.mapView.anchor = { 'x': 0.5, 'y': 0.5 };\r\n            this.logger.prefix('Lens-Module').log('Client.mapview.anchor may have been changed. This module requires the mapview anchor to be 0.5');\r\n\t\t\tthis.mapViewInitialized = true;\r\n\t\t}\r\n\t\t// Assign the settings to the camera\r\n\t\tif (pSettings) {\r\n\t\t\tthis.setSettings(pSettings);\r\n\t\t}\r\n\r\n\t\tthis.following = pInstance;\r\n\t\tthis.oldFollowingPos = { 'x': this.following.x + this.following.xIconOffset, 'y': this.following.y + this.following.yIconOffset };\r\n\t\tconst centerPositionOfFollowing = this.getTrueCenterPos(this.following);\r\n\t\tthis.camera.setPos(centerPositionOfFollowing.x, centerPositionOfFollowing.y, this.following.mapName);\r\n\t\tthis.attached = true;\r\n\t\tVYLO.Client.setViewEye(this.camera);\r\n\t}\r\n\t/**\r\n\t * Detaches the camera. The camera is no longer the view eye.\r\n\t */\r\n\tdetach() {\r\n\t\tif (!this.attached) {\r\n\t\t\tthis.logger.prefix('Lens-Module').error('Camera is already detached!');\r\n\t\t\treturn;\r\n\t\t}\r\n\t\tthis.reset('spectate');\r\n\t\tthis.reset('shake');\r\n\t\tthis.reset('zoom');\r\n\t\tthis.reset('pan');\r\n\t\tthis.reset('standard');\r\n\t\tthis.reset('custom');\r\n\t\tthis.following = VYLO.Client.mob;\r\n\t\tthis.setSettings();\r\n\t\tthis.attached = false;\r\n\t\tthis.camera.setLoc();\r\n\t\tVYLO.Client.setViewEye(this.following);\r\n\t}\r\n\t/**\r\n\t * Shakes the camera with the passed settings.\r\n\t * @param {number} pIntensity - The intensity of the shaking effect. 0 - 100\r\n\t * @param {number} pDuration - The duration of the shaking effect in ms.\r\n\t * @param {boolean} pRotational - Whether the shaking consists of rotational shaking as well.\r\n\t * @param {Function} pCallback - Callback function to call when the shaking is completed.\r\n\t */\r\n\tshake(pIntensity, pDuration, pRotational=false, pCallback) {\r\n\t\tconst intensityValue = { 'x': 1, 'y': 1 };\r\n\t\tconst durationValue = { 'x': 1000, 'y': 1000 };\r\n\t\tif (pIntensity) {\r\n\t\t\tif (typeof(pIntensity) === 'object' && pIntensity.constructor === Object) {\r\n\t\t\t\tif (pIntensity.x || pIntensity.x === 0) {\r\n\t\t\t\t\tif (typeof(pIntensity.x) === 'number') {\r\n\t\t\t\t\t\tintensityValue.x = Math.max(pIntensity.x, 0);\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type for pIntensity.x property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('No pIntensity.x property value passed. Reverted to default');\r\n\t\t\t\t}\r\n\r\n\t\t\t\tif (pIntensity.y || pIntensity.y === 0) {\r\n\t\t\t\t\tif (typeof(pIntensity.y) === 'number') {\r\n\t\t\t\t\t\tintensityValue.y = Math.max(pIntensity.y, 0);\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type for pIntensity.y property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('No pIntensity.y property value passed. Reverted to default');\r\n\t\t\t\t}\r\n\r\n\t\t\t} else if (typeof(pIntensity) === 'number') {\r\n\t\t\t\tintensityValue.x = intensityValue.y = Math.max(pIntensity, 0);\r\n\t\t\t} else {\r\n\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type for pIntensity parameter passed. Reverted to default');\r\n\t\t\t}\r\n\r\n\t\t} else {\r\n\t\t\tthis.logger.prefix('Lens-Module').warn('No pIntensity parameter passed. Reverted to default');\r\n\t\t}\r\n\r\n\t\tif (pDuration) {\r\n\t\t\tif (typeof(pDuration) === 'object' && pDuration.constructor === Object) {\r\n\t\t\t\tif (pDuration.x || pDuration.x === 0) {\r\n\t\t\t\t\tif (typeof(pDuration.x) === 'number') {\r\n\t\t\t\t\t\tdurationValue.x = pDuration.x;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type for pDuration.x property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('No pDuration.x property value passed. Reverted to default');\r\n\t\t\t\t}\r\n\r\n\t\t\t\tif (pDuration.y || pDuration.y === 0) {\r\n\t\t\t\t\tif (typeof(pDuration.y) === 'number') {\r\n\t\t\t\t\t\tdurationValue.y = pDuration.y;\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type for pDuration.y property. Reverted to default');\r\n\t\t\t\t\t}\r\n\t\t\t\t} else {\r\n\t\t\t\t\tthis.logger.prefix('Lens-Module').warn('No pDuration.y property value passed. Reverted to default');\r\n\t\t\t\t}\r\n\t\t\t} else if (typeof(pDuration) === 'number') {\r\n\t\t\t\tdurationValue.x = durationValue.y = pDuration;\r\n\t\t\t} else {\r\n\t\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pDuration.x || pDuration.y property. Reverted to default');\r\n\t\t\t}\r\n\t\t\t\r\n\t\t} else {\r\n\t\t\tthis.logger.prefix('Lens-Module').warn('No pDuration parameter passed. Reverted to default');\r\n\t\t}\r\n\r\n\t\tif (pRotational) {\r\n\t\t\tthis.settings.shake.rotational = true;\r\n\t\t}\r\n\r\n\t\tif (typeof(pCallback) === 'function') {\r\n\t\t\tthis.settings.shake.callback = pCallback;\r\n\t\t} else if (pCallback) {\r\n\t\t\tthis.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pCallback property.');\r\n\t\t}\r\n\r\n\t\tif (intensityValue.x && durationValue.x) {\r\n\t\t\tthis.settings.shake.intensity.x = intensityValue.x;\r\n\t\t\tthis.settings.shake.duration.x = durationValue.x;\r\n\t\t\tthis.settings.shake.active.x = true;\r\n\t\t}\r\n\r\n\t\tif (intensityValue.y && durationValue.y) {\r\n\t\t\tthis.settings.shake.intensity.y = intensityValue.y;\r\n\t\t\tthis.settings.shake.duration.y = durationValue.y;\r\n\t\t\tthis.settings.shake.active.y = true;\r\n\t\t}\r\n\t\tthis.settings.shaking = true;\r\n\t}\r\n\t/**\r\n\t * @private\r\n\t * Event handler for when the camera is done shaking.\r\n\t */\r\n\tonShakeEnd() {\r\n\t\tif (this.settings.shake.callback) {\r\n\t\t\tthis.settings.shake.callback();\r\n\t\t\t// Reset the view eye offsets\r\n\t\t\tVYLO.Client.setViewEyeOffsets(0, 0);\r\n\t\t}\r\n\t\tthis.reset('shake');\r\n\t}\r\n\t/**\r\n\t * Check if the camera is currently shaking.\r\n\t * @returns {boolean} True if shaking, false otherwise.\r\n\t */\r\n\tisShaking() {\r\n\t\treturn this.settings.shaking;\r\n\t}\r\n\t/**\r\n\t * Check if the camera is currently spectating.\r\n\t * @returns {boolean} True if spectating, false otherwise.\r\n\t */\r\n\tisSpectating() {\r\n\t\treturn this.settings.spectating;\r\n\t}\r\n\t/**\r\n\t * Check if the camera is currently zooming.\r\n\t * @returns {boolean} True if zooming, false otherwise.\r\n\t */\r\n\tisZooming() {\r\n\t\treturn this.settings.zooming;\r\n\t}\r\n\t/**\r\n\t * Check if the camera is currently panning.\r\n\t * @returns {boolean} True if panning, false otherwise.\r\n\t */\r\n\tisPanning() {\r\n\t\treturn this.settings.panning;\r\n\t}\r\n\t/**\r\n\t * Check if the camera is currently moving.\r\n\t * @returns {boolean} True if panning, false otherwise.\r\n\t */\r\n\tisMoving() {\r\n\t\treturn this.settings.moving;\r\n\t}\r\n}\r\n\r\nexport const Lens = new LensComponent();\r\n",
     "static": true,
     "longname": "C:/Users/jared/Documents/Github/Lens/src/lens.mjs",
     "access": "public",
@@ -586,7 +586,7 @@
     "importPath": "lens/src/lens.mjs",
     "importStyle": "{Lens}",
     "description": null,
-    "lineNumber": 1427,
+    "lineNumber": 1437,
     "undocument": true,
     "type": {
       "types": [
@@ -606,11 +606,9 @@
     "importPath": "lens/src/lens.mjs",
     "importStyle": null,
     "description": "",
-    "lineNumber": 12,
+    "lineNumber": 10,
     "todo": [
-      "Create test project",
-      "Mention in README that this module expects VYLO to be a global variable.",
-      "handle delta time"
+      "Create test project"
     ],
     "pseudoExport": true,
     "interface": false
@@ -624,7 +622,7 @@
     "longname": "src/lens.mjs~LensComponent.MAX_DISPLAY",
     "access": "private",
     "description": "The max display an instance can be displayed at.",
-    "lineNumber": 18,
+    "lineNumber": 16,
     "type": {
       "nullable": null,
       "types": [
@@ -643,7 +641,7 @@
     "longname": "src/lens.mjs~LensComponent.MAX_DELTA_TIME",
     "access": "private",
     "description": "The max amount of delta time between ticks. If this limit is passed, it will be clamped to this value.",
-    "lineNumber": 29,
+    "lineNumber": 27,
     "type": {
       "nullable": null,
       "types": [
@@ -662,7 +660,7 @@
     "longname": "src/lens.mjs~LensComponent.DEFAULT_TILE_SIZE",
     "access": "private",
     "description": "The default tile size of the Vylocity Game Engine.",
-    "lineNumber": 35,
+    "lineNumber": 33,
     "type": {
       "nullable": null,
       "types": [
@@ -675,17 +673,17 @@
   {
     "__docId__": 54,
     "kind": "member",
-    "name": "AXIS",
+    "name": "DEFAULT_PAN_DURATION",
     "memberof": "src/lens.mjs~LensComponent",
     "static": true,
-    "longname": "src/lens.mjs~LensComponent.AXIS",
+    "longname": "src/lens.mjs~LensComponent.DEFAULT_PAN_DURATION",
     "access": "private",
-    "description": "An array of axis.",
-    "lineNumber": 41,
+    "description": "The default pan duration. Used as default.",
+    "lineNumber": 39,
     "type": {
       "nullable": null,
       "types": [
-        "Array"
+        "number"
       ],
       "spread": false,
       "description": null
@@ -694,29 +692,13 @@
   {
     "__docId__": 55,
     "kind": "member",
-    "name": "version",
-    "memberof": "src/lens.mjs~LensComponent",
-    "static": false,
-    "longname": "src/lens.mjs~LensComponent#version",
-    "access": "public",
-    "description": "The version of the module.",
-    "lineNumber": 45,
-    "type": {
-      "types": [
-        "*"
-      ]
-    }
-  },
-  {
-    "__docId__": 56,
-    "kind": "member",
-    "name": "validEase",
+    "name": "AXIS",
     "memberof": "src/lens.mjs~LensComponent",
     "static": true,
-    "longname": "src/lens.mjs~LensComponent.validEase",
+    "longname": "src/lens.mjs~LensComponent.AXIS",
     "access": "private",
-    "description": "An array of valid ease names.",
-    "lineNumber": 51,
+    "description": "An array of axis.",
+    "lineNumber": 45,
     "type": {
       "nullable": null,
       "types": [
@@ -727,7 +709,42 @@
     }
   },
   {
+    "__docId__": 56,
+    "kind": "member",
+    "name": "version",
+    "memberof": "src/lens.mjs~LensComponent",
+    "static": false,
+    "longname": "src/lens.mjs~LensComponent#version",
+    "access": "public",
+    "description": "The version of the module.",
+    "lineNumber": 49,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
     "__docId__": 57,
+    "kind": "member",
+    "name": "validEase",
+    "memberof": "src/lens.mjs~LensComponent",
+    "static": true,
+    "longname": "src/lens.mjs~LensComponent.validEase",
+    "access": "private",
+    "description": "An array of valid ease names.",
+    "lineNumber": 55,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Array"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 58,
     "kind": "member",
     "name": "camera",
     "memberof": "src/lens.mjs~LensComponent",
@@ -735,7 +752,7 @@
     "longname": "src/lens.mjs~LensComponent#camera",
     "access": "public",
     "description": "The camera that lens controls.",
-    "lineNumber": 61,
+    "lineNumber": 65,
     "type": {
       "nullable": null,
       "types": [
@@ -746,7 +763,7 @@
     }
   },
   {
-    "__docId__": 58,
+    "__docId__": 59,
     "kind": "member",
     "name": "initialized",
     "memberof": "src/lens.mjs~LensComponent",
@@ -754,26 +771,7 @@
     "longname": "src/lens.mjs~LensComponent#initialized",
     "access": "private",
     "description": "Whether the camera has been created and is ready for use or not.",
-    "lineNumber": 67,
-    "type": {
-      "nullable": null,
-      "types": [
-        "boolean"
-      ],
-      "spread": false,
-      "description": null
-    }
-  },
-  {
-    "__docId__": 59,
-    "kind": "member",
-    "name": "attached",
-    "memberof": "src/lens.mjs~LensComponent",
-    "static": false,
-    "longname": "src/lens.mjs~LensComponent#attached",
-    "access": "private",
-    "description": "Whether the camera is attached to something and will follow it.",
-    "lineNumber": 73,
+    "lineNumber": 71,
     "type": {
       "nullable": null,
       "types": [
@@ -786,13 +784,13 @@
   {
     "__docId__": 60,
     "kind": "member",
-    "name": "custom",
+    "name": "attached",
     "memberof": "src/lens.mjs~LensComponent",
     "static": false,
-    "longname": "src/lens.mjs~LensComponent#custom",
+    "longname": "src/lens.mjs~LensComponent#attached",
     "access": "private",
-    "description": "If this camera is using custom settings currently.",
-    "lineNumber": 79,
+    "description": "Whether the camera is attached to something and will follow it.",
+    "lineNumber": 77,
     "type": {
       "nullable": null,
       "types": [
@@ -805,17 +803,17 @@
   {
     "__docId__": 61,
     "kind": "member",
-    "name": "following",
+    "name": "custom",
     "memberof": "src/lens.mjs~LensComponent",
     "static": false,
-    "longname": "src/lens.mjs~LensComponent#following",
+    "longname": "src/lens.mjs~LensComponent#custom",
     "access": "private",
-    "description": "The current instance this camera is following.",
-    "lineNumber": 85,
+    "description": "If this camera is using custom settings currently.",
+    "lineNumber": 83,
     "type": {
       "nullable": null,
       "types": [
-        "Object"
+        "boolean"
       ],
       "spread": false,
       "description": null
@@ -824,13 +822,13 @@
   {
     "__docId__": 62,
     "kind": "member",
-    "name": "oldFollowingPos",
+    "name": "following",
     "memberof": "src/lens.mjs~LensComponent",
     "static": false,
-    "longname": "src/lens.mjs~LensComponent#oldFollowingPos",
+    "longname": "src/lens.mjs~LensComponent#following",
     "access": "private",
-    "description": "The old position that the camera was following in the last tick.",
-    "lineNumber": 91,
+    "description": "The current instance this camera is following.",
+    "lineNumber": 89,
     "type": {
       "nullable": null,
       "types": [
@@ -843,13 +841,13 @@
   {
     "__docId__": 63,
     "kind": "member",
-    "name": "settings",
+    "name": "oldFollowingPos",
     "memberof": "src/lens.mjs~LensComponent",
     "static": false,
-    "longname": "src/lens.mjs~LensComponent#settings",
+    "longname": "src/lens.mjs~LensComponent#oldFollowingPos",
     "access": "private",
-    "description": "The settings this camera uses to operate.",
-    "lineNumber": 97,
+    "description": "The old position that the camera was following in the last tick.",
+    "lineNumber": 95,
     "type": {
       "nullable": null,
       "types": [
@@ -862,13 +860,32 @@
   {
     "__docId__": 64,
     "kind": "member",
+    "name": "settings",
+    "memberof": "src/lens.mjs~LensComponent",
+    "static": false,
+    "longname": "src/lens.mjs~LensComponent#settings",
+    "access": "private",
+    "description": "The settings this camera uses to operate.",
+    "lineNumber": 101,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Object"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 65,
+    "kind": "member",
     "name": "instanceWeakMap",
     "memberof": "src/lens.mjs~LensComponent",
     "static": false,
     "longname": "src/lens.mjs~LensComponent#instanceWeakMap",
     "access": "private",
     "description": "Weakmap to track data belonging to instances used in this module.",
-    "lineNumber": 180,
+    "lineNumber": 184,
     "type": {
       "nullable": null,
       "types": [
@@ -879,7 +896,7 @@
     }
   },
   {
-    "__docId__": 65,
+    "__docId__": 66,
     "kind": "member",
     "name": "mapViewInitialized",
     "memberof": "src/lens.mjs~LensComponent",
@@ -887,7 +904,7 @@
     "longname": "src/lens.mjs~LensComponent#mapViewInitialized",
     "access": "private",
     "description": "Whether the mapview has been initialized.",
-    "lineNumber": 186,
+    "lineNumber": 190,
     "type": {
       "nullable": null,
       "types": [
@@ -898,7 +915,7 @@
     }
   },
   {
-    "__docId__": 66,
+    "__docId__": 67,
     "kind": "member",
     "name": "updateWithCamera",
     "memberof": "src/lens.mjs~LensComponent",
@@ -906,7 +923,7 @@
     "longname": "src/lens.mjs~LensComponent#updateWithCamera",
     "access": "public",
     "description": "A callback to be called when the camera is updated.",
-    "lineNumber": 193,
+    "lineNumber": 197,
     "params": [
       {
         "nullable": null,
@@ -940,7 +957,7 @@
     }
   },
   {
-    "__docId__": 67,
+    "__docId__": 68,
     "kind": "member",
     "name": "logger",
     "memberof": "src/lens.mjs~LensComponent",
@@ -948,7 +965,7 @@
     "longname": "src/lens.mjs~LensComponent#logger",
     "access": "private",
     "description": "The logger module this module uses to log errors / logs.",
-    "lineNumber": 198,
+    "lineNumber": 202,
     "type": {
       "nullable": null,
       "types": [
@@ -959,7 +976,7 @@
     }
   },
   {
-    "__docId__": 68,
+    "__docId__": 69,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "src/lens.mjs~LensComponent",
@@ -969,10 +986,10 @@
     "longname": "src/lens.mjs~LensComponent#constructor",
     "access": "private",
     "description": "",
-    "lineNumber": 202
+    "lineNumber": 206
   },
   {
-    "__docId__": 69,
+    "__docId__": 70,
     "kind": "method",
     "name": "initCamera",
     "memberof": "src/lens.mjs~LensComponent",
@@ -982,12 +999,12 @@
     "longname": "src/lens.mjs~LensComponent#initCamera",
     "access": "private",
     "description": "Builds and initiates the camera and assigns some presets to it",
-    "lineNumber": 236,
+    "lineNumber": 240,
     "params": [],
     "return": null
   },
   {
-    "__docId__": 72,
+    "__docId__": 73,
     "kind": "method",
     "name": "getTrueCenterPos",
     "memberof": "src/lens.mjs~LensComponent",
@@ -997,7 +1014,7 @@
     "longname": "src/lens.mjs~LensComponent#getTrueCenterPos",
     "access": "private",
     "description": "Returns the true center position by using the x and y position and adding half of the icon's width / height. If no icon is found, we instead use the half of the default tileSize.",
-    "lineNumber": 266,
+    "lineNumber": 270,
     "unknown": [
       {
         "tagName": "@returns",
@@ -1026,7 +1043,7 @@
     }
   },
   {
-    "__docId__": 73,
+    "__docId__": 74,
     "kind": "method",
     "name": "reset",
     "memberof": "src/lens.mjs~LensComponent",
@@ -1036,7 +1053,7 @@
     "longname": "src/lens.mjs~LensComponent#reset",
     "access": "private",
     "description": "Resets the camera based on the method passed.",
-    "lineNumber": 284,
+    "lineNumber": 288,
     "params": [
       {
         "nullable": null,
@@ -1052,7 +1069,7 @@
     "return": null
   },
   {
-    "__docId__": 74,
+    "__docId__": 75,
     "kind": "method",
     "name": "zoomUpdate",
     "memberof": "src/lens.mjs~LensComponent",
@@ -1062,7 +1079,7 @@
     "longname": "src/lens.mjs~LensComponent#zoomUpdate",
     "access": "private",
     "description": "The method to update the zoom when it is active.",
-    "lineNumber": 419,
+    "lineNumber": 422,
     "params": [
       {
         "nullable": null,
@@ -1073,22 +1090,12 @@
         "optional": false,
         "name": "pElapsedMS",
         "description": "The amount of ms that has passed since the last tick."
-      },
-      {
-        "nullable": null,
-        "types": [
-          "number"
-        ],
-        "spread": false,
-        "optional": false,
-        "name": "pDeltaTime",
-        "description": "The delta time between ticks."
       }
     ],
     "return": null
   },
   {
-    "__docId__": 75,
+    "__docId__": 76,
     "kind": "method",
     "name": "shakeUpdate",
     "memberof": "src/lens.mjs~LensComponent",
@@ -1098,7 +1105,7 @@
     "longname": "src/lens.mjs~LensComponent#shakeUpdate",
     "access": "private",
     "description": "The method to update shaking when it is active.",
-    "lineNumber": 466,
+    "lineNumber": 468,
     "params": [
       {
         "nullable": null,
@@ -1109,22 +1116,12 @@
         "optional": false,
         "name": "pElapsedMS",
         "description": "The amount of ms that has passed since the last tick."
-      },
-      {
-        "nullable": null,
-        "types": [
-          "number"
-        ],
-        "spread": false,
-        "optional": false,
-        "name": "pDeltaTime",
-        "description": "The delta time between ticks."
       }
     ],
     "return": null
   },
   {
-    "__docId__": 76,
+    "__docId__": 77,
     "kind": "method",
     "name": "pan",
     "memberof": "src/lens.mjs~LensComponent",
@@ -1134,7 +1131,7 @@
     "longname": "src/lens.mjs~LensComponent#pan",
     "access": "public",
     "description": "Pans the camera from one view to another view. This pan can be customized in both axis. This pan has callbacks and settings that allow further customization.",
-    "lineNumber": 539,
+    "lineNumber": 542,
     "params": [
       {
         "nullable": null,
@@ -1330,7 +1327,7 @@
     "return": null
   },
   {
-    "__docId__": 77,
+    "__docId__": 78,
     "kind": "method",
     "name": "onPanned",
     "memberof": "src/lens.mjs~LensComponent",
@@ -1340,12 +1337,12 @@
     "longname": "src/lens.mjs~LensComponent#onPanned",
     "access": "private",
     "description": "Event handler for when the first part of the pan completes.",
-    "lineNumber": 737,
+    "lineNumber": 740,
     "params": [],
     "return": null
   },
   {
-    "__docId__": 79,
+    "__docId__": 80,
     "kind": "method",
     "name": "onPanFinish",
     "memberof": "src/lens.mjs~LensComponent",
@@ -1355,12 +1352,12 @@
     "longname": "src/lens.mjs~LensComponent#onPanFinish",
     "access": "private",
     "description": "Event handler for when the second part of the pan completes.",
-    "lineNumber": 768,
+    "lineNumber": 775,
     "params": [],
     "return": null
   },
   {
-    "__docId__": 80,
+    "__docId__": 81,
     "kind": "method",
     "name": "followLogic",
     "memberof": "src/lens.mjs~LensComponent",
@@ -1370,7 +1367,7 @@
     "longname": "src/lens.mjs~LensComponent#followLogic",
     "access": "private",
     "description": "The logic for following instances via the camera.",
-    "lineNumber": 787,
+    "lineNumber": 794,
     "params": [
       {
         "nullable": null,
@@ -1426,7 +1423,7 @@
     "return": null
   },
   {
-    "__docId__": 81,
+    "__docId__": 82,
     "kind": "method",
     "name": "follow",
     "memberof": "src/lens.mjs~LensComponent",
@@ -1436,7 +1433,7 @@
     "longname": "src/lens.mjs~LensComponent#follow",
     "access": "private",
     "description": "Method to follow the target of the camera.",
-    "lineNumber": 818,
+    "lineNumber": 825,
     "params": [
       {
         "nullable": null,
@@ -1462,7 +1459,7 @@
     "return": null
   },
   {
-    "__docId__": 82,
+    "__docId__": 83,
     "kind": "method",
     "name": "update",
     "memberof": "src/lens.mjs~LensComponent",
@@ -1472,7 +1469,7 @@
     "longname": "src/lens.mjs~LensComponent#update",
     "access": "private",
     "description": "Update handler that is called each tick to update the camera's state",
-    "lineNumber": 876,
+    "lineNumber": 882,
     "params": [
       {
         "nullable": null,
@@ -1483,22 +1480,12 @@
         "optional": false,
         "name": "pElapsedMS",
         "description": "The amount of ms that has passed since the last tick"
-      },
-      {
-        "nullable": null,
-        "types": [
-          "number"
-        ],
-        "spread": false,
-        "optional": false,
-        "name": "pDeltaTime",
-        "description": "The delta time between ticks."
       }
     ],
     "return": null
   },
   {
-    "__docId__": 83,
+    "__docId__": 84,
     "kind": "method",
     "name": "zoom",
     "memberof": "src/lens.mjs~LensComponent",
@@ -1508,7 +1495,7 @@
     "longname": "src/lens.mjs~LensComponent#zoom",
     "access": "public",
     "description": "Zooms the camera in via the passed in arguments.",
-    "lineNumber": 932,
+    "lineNumber": 938,
     "unknown": [
       {
         "tagName": "@returns",
@@ -1600,7 +1587,7 @@
     "return": null
   },
   {
-    "__docId__": 84,
+    "__docId__": 85,
     "kind": "method",
     "name": "onZoomEnd",
     "memberof": "src/lens.mjs~LensComponent",
@@ -1610,12 +1597,12 @@
     "longname": "src/lens.mjs~LensComponent#onZoomEnd",
     "access": "private",
     "description": "",
-    "lineNumber": 1061,
+    "lineNumber": 1067,
     "params": [],
     "return": null
   },
   {
-    "__docId__": 85,
+    "__docId__": 86,
     "kind": "method",
     "name": "setSettings",
     "memberof": "src/lens.mjs~LensComponent",
@@ -1625,7 +1612,7 @@
     "longname": "src/lens.mjs~LensComponent#setSettings",
     "access": "public",
     "description": "Sets the camera to operate using these user defined settings.",
-    "lineNumber": 1079,
+    "lineNumber": 1085,
     "params": [
       {
         "nullable": null,
@@ -1701,7 +1688,7 @@
     "return": null
   },
   {
-    "__docId__": 89,
+    "__docId__": 90,
     "kind": "method",
     "name": "spectate",
     "memberof": "src/lens.mjs~LensComponent",
@@ -1711,7 +1698,7 @@
     "longname": "src/lens.mjs~LensComponent#spectate",
     "access": "public",
     "description": "Spectates another instance with the camera using the passed settings. If the location is over 1000m(pixels) away then the camera will automatically jump to that position no matter if `forcePos` is toggled or not.",
-    "lineNumber": 1158,
+    "lineNumber": 1163,
     "todo": [
       "Allow pSettings.target to also be a coordinate position, this will send the camera to that space and spectate that position."
     ],
@@ -1750,7 +1737,7 @@
     "return": null
   },
   {
-    "__docId__": 91,
+    "__docId__": 92,
     "kind": "method",
     "name": "cancelSpectate",
     "memberof": "src/lens.mjs~LensComponent",
@@ -1760,12 +1747,12 @@
     "longname": "src/lens.mjs~LensComponent#cancelSpectate",
     "access": "public",
     "description": "Stops spectating. \nIf the setting 'forcePos' was set. Then the camera will immedietly jump to the original camera target.",
-    "lineNumber": 1208,
+    "lineNumber": 1213,
     "params": [],
     "return": null
   },
   {
-    "__docId__": 93,
+    "__docId__": 94,
     "kind": "method",
     "name": "attach",
     "memberof": "src/lens.mjs~LensComponent",
@@ -1775,7 +1762,7 @@
     "longname": "src/lens.mjs~LensComponent#attach",
     "access": "public",
     "description": "Attaches the camera to the passed instance.",
-    "lineNumber": 1237,
+    "lineNumber": 1243,
     "params": [
       {
         "nullable": null,
@@ -1871,7 +1858,7 @@
     "return": null
   },
   {
-    "__docId__": 99,
+    "__docId__": 100,
     "kind": "method",
     "name": "detach",
     "memberof": "src/lens.mjs~LensComponent",
@@ -1881,12 +1868,12 @@
     "longname": "src/lens.mjs~LensComponent#detach",
     "access": "public",
     "description": "Detaches the camera. The camera is no longer the view eye.",
-    "lineNumber": 1269,
+    "lineNumber": 1275,
     "params": [],
     "return": null
   },
   {
-    "__docId__": 102,
+    "__docId__": 103,
     "kind": "method",
     "name": "shake",
     "memberof": "src/lens.mjs~LensComponent",
@@ -1896,7 +1883,7 @@
     "longname": "src/lens.mjs~LensComponent#shake",
     "access": "public",
     "description": "Shakes the camera with the passed settings.",
-    "lineNumber": 1289,
+    "lineNumber": 1299,
     "params": [
       {
         "nullable": null,
@@ -1942,7 +1929,7 @@
     "return": null
   },
   {
-    "__docId__": 103,
+    "__docId__": 104,
     "kind": "method",
     "name": "onShakeEnd",
     "memberof": "src/lens.mjs~LensComponent",
@@ -1952,12 +1939,12 @@
     "longname": "src/lens.mjs~LensComponent#onShakeEnd",
     "access": "private",
     "description": "",
-    "lineNumber": 1382,
+    "lineNumber": 1392,
     "params": [],
     "return": null
   },
   {
-    "__docId__": 104,
+    "__docId__": 105,
     "kind": "method",
     "name": "isShaking",
     "memberof": "src/lens.mjs~LensComponent",
@@ -1967,7 +1954,7 @@
     "longname": "src/lens.mjs~LensComponent#isShaking",
     "access": "public",
     "description": "Check if the camera is currently shaking.",
-    "lineNumber": 1394,
+    "lineNumber": 1404,
     "unknown": [
       {
         "tagName": "@returns",
@@ -1985,7 +1972,7 @@
     "params": []
   },
   {
-    "__docId__": 105,
+    "__docId__": 106,
     "kind": "method",
     "name": "isSpectating",
     "memberof": "src/lens.mjs~LensComponent",
@@ -1995,7 +1982,7 @@
     "longname": "src/lens.mjs~LensComponent#isSpectating",
     "access": "public",
     "description": "Check if the camera is currently spectating.",
-    "lineNumber": 1401,
+    "lineNumber": 1411,
     "unknown": [
       {
         "tagName": "@returns",
@@ -2013,7 +2000,7 @@
     "params": []
   },
   {
-    "__docId__": 106,
+    "__docId__": 107,
     "kind": "method",
     "name": "isZooming",
     "memberof": "src/lens.mjs~LensComponent",
@@ -2023,7 +2010,7 @@
     "longname": "src/lens.mjs~LensComponent#isZooming",
     "access": "public",
     "description": "Check if the camera is currently zooming.",
-    "lineNumber": 1408,
+    "lineNumber": 1418,
     "unknown": [
       {
         "tagName": "@returns",
@@ -2041,7 +2028,7 @@
     "params": []
   },
   {
-    "__docId__": 107,
+    "__docId__": 108,
     "kind": "method",
     "name": "isPanning",
     "memberof": "src/lens.mjs~LensComponent",
@@ -2051,7 +2038,7 @@
     "longname": "src/lens.mjs~LensComponent#isPanning",
     "access": "public",
     "description": "Check if the camera is currently panning.",
-    "lineNumber": 1415,
+    "lineNumber": 1425,
     "unknown": [
       {
         "tagName": "@returns",
@@ -2069,7 +2056,7 @@
     "params": []
   },
   {
-    "__docId__": 108,
+    "__docId__": 109,
     "kind": "method",
     "name": "isMoving",
     "memberof": "src/lens.mjs~LensComponent",
@@ -2079,7 +2066,7 @@
     "longname": "src/lens.mjs~LensComponent#isMoving",
     "access": "public",
     "description": "Check if the camera is currently moving.",
-    "lineNumber": 1422,
+    "lineNumber": 1432,
     "unknown": [
       {
         "tagName": "@returns",
@@ -2098,7 +2085,7 @@
   },
   {
     "kind": "index",
-    "content": "# Lens Module  \r\nA powerful module that will allow you to attach a camera to your player and use its rich API for some cool effects.\r\n\r\n## Installation\r\n\r\n### ES Module\r\n\r\n```js\r\nimport { Lens } from './lens.mjs';\r\n```\r\n\r\n### IIFE (Immediately Invoked Function Expression)\r\n\r\n```js\r\n<script src=\"lens.js\"></script>;\r\n// ...\r\nwindow.LensBundle.Lens;\r\n```\r\n\r\n## API\r\n\r\n🚧👷🏽🔨 We're hard at work on documentation and examples.\r\n\r\nHead on over here to see the docs [here](https://evitcastudio.github.io/Lens/) until we're done.\r\n\r\n### Global Dependency\r\n\r\nLens relies on the `VYLO` variable being globally accessible.",
+    "content": "# Lens Module  \r\nA powerful module that will allow you to attach a camera to your player and use its rich API for some cool effects.\r\n\r\n## Installation\r\n\r\n### ES Module\r\n\r\n```js\r\nimport { Lens } from './lens.mjs';\r\n```\r\n\r\n### IIFE (Immediately Invoked Function Expression)\r\n\r\n```js\r\n<script src=\"lens.js\"></script>;\r\n// ...\r\nwindow.LensBundle.Lens;\r\n```\r\n\r\n## API\r\n\r\n🚧👷🏽🔨 We're hard at work on documentation and examples.  \r\nHead on over here to see the docs [here](https://evitcastudio.github.io/Lens/) until we're done.\r\n\r\n### Global Dependency\r\n\r\nLens relies on the `VYLO` variable being globally accessible.",
     "longname": "C:\\Users\\jared\\Documents\\Github\\Lens\\README.md",
     "name": "./README.md",
     "static": true,

@@ -534,6 +534,12 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/lens.mjs~lenscomponent.default_pan_duration",
+    "class/src/lens.mjs~LensComponent.html#static-member-DEFAULT_PAN_DURATION",
+    "src/lens.mjs~LensComponent.DEFAULT_PAN_DURATION",
+    "member"
+  ],
+  [
     "src/lens.mjs~lenscomponent.default_tile_size",
     "class/src/lens.mjs~LensComponent.html#static-member-DEFAULT_TILE_SIZE",
     "src/lens.mjs~LensComponent.DEFAULT_TILE_SIZE",

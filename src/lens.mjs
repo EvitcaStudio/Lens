@@ -5,8 +5,6 @@ import { Logger } from './vendor/logger.min.mjs';
 
 /**
  * @todo Create test project
- * @todo Mention in README that this module expects VYLO to be a global variable.
- * @todo handle delta time
  * @private
  */
 class LensComponent {
@@ -33,6 +31,12 @@ class LensComponent {
 	 * @type {number}
 	 */
 	static DEFAULT_TILE_SIZE = 32;
+	/**
+	 * The default pan duration. Used as default.
+	 * @private
+	 * @type {number}
+	 */
+	static DEFAULT_PAN_DURATION = 2000;
 	/**
 	 * An array of axis.
 	 * @private
@@ -218,7 +222,7 @@ class LensComponent {
 				if (deltaTime >= LensComponent.MAX_DELTA_TIME) {
 					deltaTime = LensComponent.MAX_DELTA_TIME;
 				}
-				this.update(elapsedMS, deltaTime);
+				this.update(elapsedMS);
 				// Call callback to update with camera
 				if (this.attached && this.updateWithCamera) {
 					this.updateWithCamera(deltaTime);
@@ -414,9 +418,8 @@ class LensComponent {
 	 * The method to update the zoom when it is active.
 	 * @private
 	 * @param {number} pElapsedMS - The amount of ms that has passed since the last tick.
-	 * @param {number} pDeltaTime - The delta time between ticks.
 	 */
-	zoomUpdate(pElapsedMS, pDeltaTime) {
+	zoomUpdate(pElapsedMS) {
 		/**
 		 * The new x zoom to move the mapView to. Defaulted to the current zoom x in the event no changes are needed.
 		 * @type {number}
@@ -461,13 +464,13 @@ class LensComponent {
 	 * The method to update shaking when it is active.
 	 * @private
 	 * @param {number} pElapsedMS - The amount of ms that has passed since the last tick.
-	 * @param {number} pDeltaTime - The delta time between ticks.
 	 */
-	shakeUpdate(pElapsedMS, pDeltaTime) {
+	shakeUpdate(pElapsedMS) {
 		let angle;
 		let xForce = 0;
 		let yForce = 0;
 
+		// This changes the angle of the mapView
 		if (this.settings.shake.rotational) {
 			let seed;
 			let seed2;
@@ -635,17 +638,17 @@ class LensComponent {
 							this.settings.pan.duration.x = pSettings.duration.x;
 							this.settings.pan.duration.y = pSettings.duration.y;
 						} else {
-							this.settings.pan.duration.x = this.settings.pan.duration.y = 2000;
+							this.settings.pan.duration.x = this.settings.pan.duration.y = LensComponent.DEFAULT_PAN_DURATION;
 							this.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.duration.x || pSettings.duration.y parameter. Reverted to default');
 						}
 					} else if (typeof(pSettings.duration) === 'number') {
 							this.settings.pan.duration.x = this.settings.pan.duration.y = pSettings.duration;
 					} else {
-						this.settings.pan.duration.x = this.settings.pan.duration.y = 2000;
+						this.settings.pan.duration.x = this.settings.pan.duration.y = LensComponent.DEFAULT_PAN_DURATION;
 						this.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.duration property. Reverted to default');
 					}
 				} else {
-						this.settings.pan.duration.x = this.settings.pan.duration.y = 2000;
+						this.settings.pan.duration.x = this.settings.pan.duration.y = LensComponent.DEFAULT_PAN_DURATION;
 						this.logger.prefix('Lens-Module').warn('No duration property included inside of the pSettings parameter. Reverted to default');
 				}
 
@@ -656,17 +659,17 @@ class LensComponent {
 							this.settings.pan.panBackDuration.x = pSettings.panBackDuration.x;
 							this.settings.pan.panBackDuration.y = pSettings.panBackDuration.y;
 						} else {
-							this.settings.pan.panBackDuration.x = this.settings.pan.panBackDuration.y = 2000;
+							this.settings.pan.panBackDuration.x = this.settings.pan.panBackDuration.y = LensComponent.DEFAULT_PAN_DURATION;
 							this.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.panBackDuration.x || pSettings.panBackDuration.y parameter. Reverted to default');
 						}
 					} else if (typeof(pSettings.panBackDuration) === 'number') {
 							this.settings.pan.panBackDuration.x = this.settings.pan.panBackDuration.y = pSettings.panBackDuration;
 					} else {
-						this.settings.pan.panBackDuration.x = this.settings.pan.panBackDuration.y = 2000;
+						this.settings.pan.panBackDuration.x = this.settings.pan.panBackDuration.y = LensComponent.DEFAULT_PAN_DURATION;
 						this.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pSettings.panBackDuration property. Reverted to default');
 					}
 				} else {
-						this.settings.pan.panBackDuration.x = this.settings.pan.panBackDuration.y = 2000;
+						this.settings.pan.panBackDuration.x = this.settings.pan.panBackDuration.y = LensComponent.DEFAULT_PAN_DURATION;
 						this.logger.prefix('Lens-Module').warn('No panBackDuration property included inside of the pSettings parameter. Reverted to default');
 				}
 
@@ -693,7 +696,7 @@ class LensComponent {
 					 * @info Should there be a setting to disable movement here?
 					 */
 					this.settings.pan.storedDir = this.following.dir;
-					this.following.dir = Utils.getDirection(Utils.convertRaWAngleToVyloCoords(Utils.getAngle(this.following, this.settings.pan.target)));
+					this.following.dir = Utils.getDirection(Utils.getAngle2(this.following, this.settings.pan.target));
 				}
 				// panToCallback
 				if (pSettings.panToCallback) {
@@ -740,26 +743,30 @@ class LensComponent {
 			this.settings.pan.panToCallback = null;
 		}
 		if (this.settings.pan.attach) {
-			if (typeof(this.settings.pan.target) === 'object') {
-				// Check if its a instance
-				if (this.settings.pan.target.baseType) {
-					this.following = this.settings.pan.target;
-					this.reset('pan');
-				} else {
-					this.logger.prefix('Lens-Module').warn('Cannot attach to a non MapObject | Diob type. Attachment failed');
-				}
+			// Check if its on the map
+			if (this.settings.pan.target.mapName) {
+				this.following = this.settings.pan.target;
+				this.reset('pan');
+				return;
 			}
-		} else {
-			this.settings.pan.target = this.following;
-			this.settings.pan.initialPos.x = this.camera.x;
-			this.settings.pan.initialPos.y = this.camera.y;
-			this.settings.pan.time.x = this.settings.pan.time.y = 0;
-			this.settings.pan.duration.x = this.settings.pan.panBackDuration.x;
-			this.settings.pan.duration.y = this.settings.pan.panBackDuration.y;
-			this.settings.pan.ease.x = this.settings.pan.panBackEase.x;
-			this.settings.pan.ease.y = this.settings.pan.panBackEase.y;
-			this.settings.pan.returning = true;
+			this.logger.prefix('Lens-Module').error('Could not return to previous target.');
 		}
+
+		// If this is not a valid target to go back to. We have to force detach the camera.
+		if (!this.following.mapName) {
+			this.logger.prefix('Lens-Module').error('Forced Detach! Could not return to previous target.');
+			this.detach();
+			return;
+		}
+		this.settings.pan.target = this.following;
+		this.settings.pan.initialPos.x = this.camera.x;
+		this.settings.pan.initialPos.y = this.camera.y;
+		this.settings.pan.time.x = this.settings.pan.time.y = 0;
+		this.settings.pan.duration.x = this.settings.pan.panBackDuration.x;
+		this.settings.pan.duration.y = this.settings.pan.panBackDuration.y;
+		this.settings.pan.ease.x = this.settings.pan.panBackEase.x;
+		this.settings.pan.ease.y = this.settings.pan.panBackEase.y;
+		this.settings.pan.returning = true;
 	}
 	/**
 	 * Event handler for when the second part of the pan completes.
@@ -833,11 +840,11 @@ class LensComponent {
 					settings.pauseDuration = Math.max(settings.pauseDuration - pElapsedMS, 0);
 					if (settings.pauseDuration > 0) return;
 				}
-				if (this.x !== centerPositionOfTarget.x) {
+				if (this.camera.x !== centerPositionOfTarget.x) {
 					settings.active.x = true;
 				}
 
-				if (this.y !== centerPositionOfTarget.y) {
+				if (this.camera.y !== centerPositionOfTarget.y) {
 					settings.active.y = true;
 				}
 			}
@@ -871,17 +878,16 @@ class LensComponent {
 	 * Update handler that is called each tick to update the camera's state
 	 * @private
 	 * @param {number} pElapsedMS - The amount of ms that has passed since the last tick
-	 * @param {number} pDeltaTime - The delta time between ticks.
 	 */
-	update(pElapsedMS, pDeltaTime) {
+	update(pElapsedMS) {
 		// Zoom
 		if (this.settings.zoom.active.x || this.settings.zoom.active.y) {
-			this.zoomUpdate(pElapsedMS, pDeltaTime);
+			this.zoomUpdate(pElapsedMS);
 		}
 		
 		// Shake
 		if (this.settings.shake.active.x || this.settings.shake.active.y) {
-			this.shakeUpdate(pElapsedMS, pDeltaTime);
+			this.shakeUpdate(pElapsedMS);
 		}
 
 		if (this.attached) {
@@ -899,7 +905,6 @@ class LensComponent {
 				const xFollowingPos = centerPositionOfFollowing.x;
 				const yFollowingPos = centerPositionOfFollowing.y;
 				if (this.following.isMoving || this.oldFollowingPos.x !== xFollowingPos || this.oldFollowingPos.y !== yFollowingPos) {
-					this.settings.moving = true;
 					this.settings[cameraFollowMode].time.x = 0;
 					this.settings[cameraFollowMode].active.x = (this.camera.x !== xFollowingPos ? true : false);
 					this.settings[cameraFollowMode].initialPos.x = this.camera.x;
@@ -910,6 +915,7 @@ class LensComponent {
 				}
 
 				if (this.settings[cameraFollowMode].active.x || this.settings[cameraFollowMode].active.y) {
+					this.settings.moving = true;
 					this.follow(cameraFollowMode, pElapsedMS);
 				}
 				this.oldFollowingPos.x = xFollowingPos;
@@ -1047,9 +1053,9 @@ class LensComponent {
 		}
 
 		// Callback
-		if (pCallback && typeof(pCallback) === 'function') {
+		if (typeof(pCallback) === 'function') {
 			this.settings.zoom.callback = pCallback;
-		} else {
+		} else if (pCallback) {
 			this.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pCallback property.');
 		}
 		this.settings.zooming = true;
@@ -1145,7 +1151,6 @@ class LensComponent {
 			this.custom = false;
 			this.settings.standard.initialPos.x = this.camera.x;
 			this.settings.standard.initialPos.y = this.camera.y;
-			this.logger.prefix('Lens-Module').warn('No pSettings parameter passed. Reverted to default');
 		}
 	}
 	/**
@@ -1218,6 +1223,7 @@ class LensComponent {
 			} else {
 				this.detach();
 				this.logger.prefix('Lens-Module').error('Forced Detach! Could not return to previous target.');
+				return;
 			}
 			this.reset('spectate');
 		}
@@ -1271,8 +1277,12 @@ class LensComponent {
 			this.logger.prefix('Lens-Module').error('Camera is already detached!');
 			return;
 		}
-
 		this.reset('spectate');
+		this.reset('shake');
+		this.reset('zoom');
+		this.reset('pan');
+		this.reset('standard');
+		this.reset('custom');
 		this.following = VYLO.Client.mob;
 		this.setSettings();
 		this.attached = false;
@@ -1293,7 +1303,7 @@ class LensComponent {
 			if (typeof(pIntensity) === 'object' && pIntensity.constructor === Object) {
 				if (pIntensity.x || pIntensity.x === 0) {
 					if (typeof(pIntensity.x) === 'number') {
-						intensityValue.x = Utils.clamp(pIntensity.x, 0, LensComponent.MAX_CAMERA_SHAKE_FORCE);
+						intensityValue.x = Math.max(pIntensity.x, 0);
 					} else {
 						this.logger.prefix('Lens-Module').warn('Invalid variable type for pIntensity.x property. Reverted to default');
 					}
@@ -1303,7 +1313,7 @@ class LensComponent {
 
 				if (pIntensity.y || pIntensity.y === 0) {
 					if (typeof(pIntensity.y) === 'number') {
-						intensityValue.y = Utils.clamp(pIntensity.y, 0, LensComponent.MAX_CAMERA_SHAKE_FORCE);
+						intensityValue.y = Math.max(pIntensity.y, 0);
 					} else {
 						this.logger.prefix('Lens-Module').warn('Invalid variable type for pIntensity.y property. Reverted to default');
 					}
@@ -1312,7 +1322,7 @@ class LensComponent {
 				}
 
 			} else if (typeof(pIntensity) === 'number') {
-				intensityValue.x = intensityValue.y = Utils.clamp(pIntensity, 0, LensComponent.MAX_CAMERA_SHAKE_FORCE);
+				intensityValue.x = intensityValue.y = Math.max(pIntensity, 0);
 			} else {
 				this.logger.prefix('Lens-Module').warn('Invalid variable type for pIntensity parameter passed. Reverted to default');
 			}
@@ -1358,7 +1368,7 @@ class LensComponent {
 
 		if (typeof(pCallback) === 'function') {
 			this.settings.shake.callback = pCallback;
-		} else if (pCallback !== undefined) {
+		} else if (pCallback) {
 			this.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pCallback property.');
 		}
 
