@@ -42,14 +42,14 @@ import { Utils } from &apos;./vendor/utils.min.mjs&apos;;
 import { Logger } from &apos;./vendor/logger.min.mjs&apos;;
 
 /**
-* A powerful plugin that will allow you to attach a camera to your player and use its rich API for some cool effects.
-* @class Lens
-* @license Lens is free software, available under the terms of a MIT style License.
-* @author https://github.com/doubleactii
-*/
+ * @todo Create test project
+ * @todo Mention in README that this module expects VYLO to be a global variable.
+ * @todo handle delta time
+ * @private
+ */
 class LensComponent {
 	/**
-	 * The max display a diob can be displayed at.
+	 * The max display an instance can be displayed at.
 	 * @private
 	 * @type {number}
 	 */
@@ -59,41 +59,28 @@ class LensComponent {
 	 * @private
 	 * @type {number}
 	 */
-	static MAX_CAMERA_SHAKE_FORCE = 100;
+	/**
+	 * The max amount of delta time between ticks. If this limit is passed, it will be clamped to this value.
+	 * @private
+	 * @type {number}
+	 */
+	static MAX_DELTA_TIME = 0.03333333333;
+	/**
+	 * The default tile size of the Vylocity Game Engine.
+	 * @private
+	 * @type {number}
+	 */
+	static DEFAULT_TILE_SIZE = 32;
+	/**
+	 * An array of axis.
+	 * @private
+	 * @type {Array}
+	 */
+	static AXIS = [ &apos;x&apos;, &apos;y&apos; ];
 	/**
 	 * The version of the module.
 	 */
 	version = &quot;VERSION_REPLACE_ME&quot;;
-	/**
-	 * Shorthand for zooming to 1 scale
-	 * @type {number}
-	 */
-	ONE = 1;
-	/**
-	 * Shorthand for zooming to 2 scale
-	 * @type {number}
-	 */
-	TWO = 2;
-	/**
-	 * Shorthand for zooming to 3 scale
-	 * @type {number}
-	 */
-	THREE = 3;
-	/**
-	 * Shorthand for zooming to 4 scale
-	 * @type {number}
-	 */
-	FOUR = 4;
-	/**
-	 * Shorthand for zooming to 5 scale
-	 * @type {number}
-	 */
-	FIVE = 5;
-	/**
-	 * Shorthand for zooming to 6 scale
-	 * @type {number}
-	 */
-	SIX = 6;
 	/**
 	 * An array of valid ease names.
 	 * @private
@@ -115,7 +102,7 @@ class LensComponent {
 	 * @private
 	 * @type {boolean}
 	 */
-	init = false;
+	initialized = false;
 	/**
 	 * Whether the camera is attached to something and will follow it.
 	 * @private
@@ -129,7 +116,7 @@ class LensComponent {
 	 */
 	custom = false;
 	/**
-	 * The current diob instance this camera is following.
+	 * The current instance this camera is following.
 	 * @private
 	 * @type {Object}
 	 */
@@ -146,7 +133,8 @@ class LensComponent {
 	 * @type {Object}
 	 */
 	settings = {
-		&apos;zoom&apos;: { // allows separate dimension zooming
+		// Allows separate dimension zooming
+		&apos;zoom&apos;: {
 			&apos;active&apos;: { &apos;x&apos;: false, &apos;y&apos;: false },
 			&apos;time&apos;: { &apos;x&apos;: 0, &apos;y&apos;: 0 },
 			&apos;duration&apos;: { &apos;x&apos;: 1000 , &apos;y&apos;: 1000 },
@@ -157,23 +145,25 @@ class LensComponent {
 			&apos;ease&apos;: { &apos;x&apos;: &apos;easeOutCubic&apos;, &apos;y&apos;: &apos;easeOutCubic&apos; },
 			&apos;callback&apos;: null
 		},
-		&apos;shake&apos;: { // allows separate dimension shaking
+		// Allows separate dimension shaking
+		&apos;shake&apos;: {
 			&apos;active&apos;: { &apos;x&apos;: false, &apos;y&apos;: false },
 			&apos;time&apos;: { &apos;x&apos;: 0, &apos;y&apos;: 0 },
 			&apos;duration&apos;: { &apos;x&apos;: 1000, &apos;y&apos;: 1000 },
 			&apos;intensity&apos;: { &apos;x&apos;: 1, &apos;y&apos;: 1 },
 			&apos;rotational&apos;: false, // if the camera tilts while shaking.
-			&apos;concurrentShaking&apos;: [], // saved 
 			&apos;callback&apos;: null
 		},
-		&apos;pan&apos;: { // allows separate dimension moving // when the camera moves from one object to another and then back to the starting object
+		// Allows separate dimension moving 
+		// When the camera moves from one object to another and then back to the starting object
+		&apos;pan&apos;: {
 			&apos;active&apos;: { &apos;x&apos;: false, &apos;y&apos;: false }, // if the camera is active or not
 			&apos;time&apos;: { &apos;x&apos;: 0, &apos;y&apos;: 0, &apos;z&apos;: 0 }, // the current time in the ease
 			&apos;destination&apos;: { &apos;x&apos;: null, &apos;y&apos;: null }, // the end position the camera will go to
 			&apos;ease&apos;: { &apos;x&apos;: &apos;easeOutCubic&apos;, &apos;y&apos;: &apos;easeOutCubic&apos; }, // the ease in each axis the camera will use
 			&apos;duration&apos;: { &apos;x&apos;: 1000, &apos;y&apos;: 1000 }, // how long in each axis the ease will take
-			&apos;target&apos;: null, // the panTo diob
-			&apos;storedDir&apos;: null, // the direction that is stored so it can be given back to the diob when the pan is over
+			&apos;target&apos;: null, // the panTo instance
+			&apos;storedDir&apos;: null, // the direction that is stored so it can be given back to the instance when the pan is over
 			&apos;returning&apos;: null, // if the pan is on the `returning` stage
 			&apos;forceDirChange&apos;: true, // if the panning forces the person the camera is attached to to change direction in the direction of the pan. This also disables movement.
 			&apos;pauseDuration&apos;: 0, // how long to stay at the object you&apos;ve panned to before continuing to pan back
@@ -184,7 +174,9 @@ class LensComponent {
 			&apos;panToCallback&apos;: null, // when you reach the object, this callback is called.
 			&apos;panBackCallback&apos;: null // when the camera pans back to the initiator, this callback is called.
 		},
-		&apos;standard&apos;: { // default camera movement settings, // allows separate dimension moving
+		// Default camera movement settings, 
+		// Allows separate dimension moving
+		&apos;standard&apos;: {
 			&apos;active&apos;: { &apos;x&apos;: false, &apos;y&apos;: false },
 			&apos;time&apos;: { &apos;x&apos;: 0, &apos;y&apos;: 0 },
 			&apos;duration&apos;: { &apos;x&apos;: 1000, &apos;y&apos;: 1000 },
@@ -192,7 +184,9 @@ class LensComponent {
 			&apos;initialPos&apos;: { &apos;x&apos;: null, &apos;y&apos;: null },
 			&apos;ease&apos;: { &apos;x&apos;: &apos;easeOutCubic&apos;, &apos;y&apos;: &apos;easeOutCubic&apos; }
 		},
-		&apos;custom&apos;: { // custom applied camera movement settings, // allows separate dimension moving
+		// Custom applied camera movement settings, 
+		// Allows separate dimension moving
+		&apos;custom&apos;: {
 			&apos;active&apos;: { &apos;x&apos;: false, &apos;y&apos;: false },
 			&apos;time&apos;: { &apos;x&apos;: 0, &apos;y&apos;: 0 },
 			&apos;duration&apos;: { &apos;x&apos;: 1000, &apos;y&apos;: 1000 },
@@ -200,52 +194,22 @@ class LensComponent {
 			&apos;initialPos&apos;: { &apos;x&apos;: null, &apos;y&apos;: null },
 			&apos;ease&apos;: { &apos;x&apos;: &apos;easeOutCubic&apos;, &apos;y&apos;: &apos;easeOutCubic&apos; }
 		},
+		// Spectate options
 		&apos;spectate&apos;: {
 			&apos;forcePos&apos;: true,
-			&apos;preventMovement&apos;: true,
 			&apos;player&apos;: null
 		},
-		&apos;loop&apos;: { // tracking elpasedMS and deltaTime
-			&apos;lastTime&apos;: 0,
-			&apos;deltaTime&apos;: 0,
-			&apos;elapsedMS&apos;: 0
+		// Render loop data
+		&apos;loop&apos;: {
+			&apos;lastTime&apos;: 0
 		},
+		// States of the camera
 		&apos;zooming&apos;: false,
 		&apos;panning&apos;: false,
-		&apos;scrolling&apos;: false,
 		&apos;spectating&apos;: false,
-		&apos;shaking&apos;: false
+		&apos;shaking&apos;: false,
+		&apos;moving&apos;: false
 	};
-	/**
-	 * Whether the camera is current moving or not.
-	 * @private
-	 * @type {boolean}
-	 */
-	currentlyMoving = false;
-	/**
-	 * Whether the camera is currently zooming or not.
-	 * @private
-	 * @type {boolean}
-	 */
-	currentlyZooming = false;
-	/**
-	 * Whether the camera is currently spectating.
-	 * @private
-	 * @type {boolean}
-	 */
-	currentlySpectating = false;
-	/**
-	 * Whether the camera is currently shaking.
-	 * @private
-	 * @type {boolean}
-	 */
-	currentlyShaking = false;
-	/**
-	 * Whether the camera is currently panning.
-	 * @private
-	 * @type {boolean}
-	 */
-	currentlyPanning = false;
 	/**
 	 * Weakmap to track data belonging to instances used in this module.
 	 * @private
@@ -257,34 +221,45 @@ class LensComponent {
      * @private
      * @type {boolean}
      */
-	mapViewInit = false
+	mapViewInitialized = false
 	/**
 	 * A callback to be called when the camera is updated.
 	 * @param {number} - pDiffX - The difference in position between the camera&apos;s old x position and it&apos;s new position.
 	 * @param {number} - pDiffY - The difference in position between the camera&apos;s old y position and it&apos;s new position.
+	 * @type {Function|undefined}
 	 */
 	updateWithCamera;
-
+	/** The logger module this module uses to log errors / logs.
+	 * @private
+	 * @type {Object}
+	 */	
+	logger = new Logger();
+	/**
+	 * @private
+	 */
 	constructor() {
-        /** The logger module this module uses to log errors / logs.
-         * @private
-         * @type {Object}
-         */
-        this.logger = new Logger();
+		// Register the logger type
         this.logger.registerType(&apos;Lens-Module&apos;, &apos;#ff6600&apos;);
 
+		// Set up the update loop for the camera.
 		Pulse.on(VYLO.Client, &apos;onScreenRender&apos;, (pT) =&gt; {
-			if (this.init) {
+			if (this.initialized) {
 				const now = pT;
 				if (!this.settings.loop.lastTime) this.settings.loop.lastTime = now;
-				const elapsedMS = (now - this.settings.loop.lastTime);
-				let dt = elapsedMS / 1000;
-				this.settings.loop.elapsedMS = elapsedMS;
-				this.settings.loop.deltaTime = dt;
-				this.update(this.settings.loop.elapsedMS, this.settings.loop.deltaTime);
+				const elapsedMS = now - this.settings.loop.lastTime;
+				/**
+				 * The delta time between ticks.
+				 * @type {number}
+				 */
+				let deltaTime = elapsedMS / 1000;
+				// If the delta is too big then we clamp it to the max delta time.
+				if (deltaTime &gt;= LensComponent.MAX_DELTA_TIME) {
+					deltaTime = LensComponent.MAX_DELTA_TIME;
+				}
+				this.update(elapsedMS, deltaTime);
 				// Call callback to update with camera
 				if (this.attached &amp;&amp; this.updateWithCamera) {
-					this.updateWithCamera(dt);
+					this.updateWithCamera(deltaTime);
 				}
 				this.settings.loop.lastTime = now;
 			}
@@ -297,36 +272,38 @@ class LensComponent {
 	 * @private
 	 */
 	initCamera() {
-		if (this.init) return;
+		if (this.initialized) return;
+		// Define the camera type
+		const cameraType = `MapObject/Lens-${Utils.generateID()}`;
+		VYLO.setType(cameraType, {
+			owner: this,
+			atlasName: &apos;&apos;,
+			width: 1,
+			height: 1,
+			// Remove all touch / mouse events
+			mouseOpacity: 0,
+			touchOpacity: 0,
+			// Do not allow this instance to interact with the environment
+			density: false,
+			plane: LensComponent.MAX_DISPLAY,
+			layer: LensComponent.MAX_DISPLAY,
+			invisibility: LensComponent.MAX_DISPLAY,
+			preventScreenRelayer: true,
+			preventInterpolation: true
+		});
 		// Create the camera
-		this.camera = VYLO.newDiob();
-		// Assign some presets to the camera
-		this.camera.owner = this;
-		this.camera.atlasName = &apos;&apos;;
-		this.camera.width = 1;
-		this.camera.height = 1;
-		this.camera.tint = 0xFF69B4;
-		// Remove all touch / mouse events
-		this.camera.mouseOpacity = 0;
-		this.camera.touchOpacity = 0;
-		// Do not allow this diob to interact with the environment
-		this.camera.density = false;
-		this.camera.plane = LensComponent.MAX_DISPLAY;
-		this.camera.layer = LensComponent.MAX_DISPLAY;
-		this.camera.invisibility = LensComponent.MAX_DISPLAY;
-		this.camera.preventScreenRelayer = true;
-		this.camera.preventInterpolation = true;
-		this.init = true;
+		this.camera = VYLO.newDiob(cameraType);
+		this.initialized = true;
 	}
 	/**
-	 * Returns the true center position by using the x and y position and adding half of the icon&apos;s width / height.
+	 * Returns the true center position by using the x and y position and adding half of the icon&apos;s width / height. If no icon is found, we instead use the half of the default tileSize.
 	 * @private
 	 * @param {Object} pInstance - The instance to get the true center position of.
 	 * @returns {Object} Object containing the true center position of the instance.
 	 */
 	getTrueCenterPos(pInstance) {
-		const instanceIconWidthHalf = pInstance.icon ? pInstance.icon.width / 2: 32;
-		const instanceIconHeightHalf = pInstance.icon ? pInstance.icon.height / 2: 32;
+		const instanceIconWidthHalf = pInstance.icon ? pInstance.icon.width / 2 : LensComponent.DEFAULT_TILE_SIZE / 2;
+		const instanceIconHeightHalf = pInstance.icon ? pInstance.icon.height / 2 : LensComponent.DEFAULT_TILE_SIZE / 2;
 		let centerObject = this.instanceWeakMap.get(pInstance);
 		// If it can pull any data it means no data was ever set, so we need to set the data and then grab it
 		if (!centerObject) {
@@ -366,7 +343,6 @@ class LensComponent {
 				this.settings.zoom.duration.x = this.settings.zoom.duration.y = null;	
 				this.settings.zoom.ease.x = this.settings.zoom.ease.y = null;
 				this.settings.zooming = false;
-				this.currentlyZooming = false;
 				break;
 
 			case &apos;panX&apos;:
@@ -397,7 +373,6 @@ class LensComponent {
 				this.settings.pan.duration.x = this.settings.pan.duration.y = null;
 				this.settings.pan.destination.x = this.settings.pan.destination.y = null;
 				this.settings.panning = false;
-				this.currentlyPanning = false;
 				break;
 
 			case &apos;standardX&apos;:
@@ -418,7 +393,7 @@ class LensComponent {
 
 				this.settings.standard.initialPos.x = this.camera.x;
 				this.settings.standard.initialPos.y = this.camera.y;
-				this.currentlyMoving = false;
+				this.settings.moving = false;
 				break;
 
 			case &apos;customX&apos;:
@@ -439,7 +414,7 @@ class LensComponent {
 
 				this.settings.custom.initialPos.x = this.camera.x;
 				this.settings.custom.initialPos.y = this.camera.y;
-				this.currentlyMoving = false;
+				this.settings.moving = false;
 				break;
 
 			case &apos;shakeX&apos;:
@@ -457,49 +432,56 @@ class LensComponent {
 			case &apos;shake&apos;:
 				this.settings.shake.callback = null;
 				this.settings.shake.rotational = false;
-				// this.settings.shake.concurrentShaking = ;
-
 				this.settings.shake.time.x = this.settings.shake.time.y = 0;
 				this.settings.shake.active.x = this.settings.shake.active.y = false;
 				this.settings.shake.duration.x = this.settings.shake.duration.y = 0;
 				this.settings.shake.intensity.x = this.settings.shake.intensity.y = 0;
-				VYLO.Client.setViewEyeOffsets(0, 0)
+				VYLO.Client.setViewEyeOffsets(0, 0);
 				VYLO.Client.mapView.angle = 0;
-				VYLO.Client.setMapView(VYLO.Client.mapView);
-				this.currentlyShaking = false;
+				this.settings.shaking = false;
 				break;
 
 			case &apos;spectate&apos;:
-				this.settings.spectate.player = null;
+				this.settings.spectate.priorFollowedPlayer = null;
 				this.settings.spectate.forcePos = false;
-				this.settings.spectate.preventMovement = false;
 				this.settings.spectating = false;
-				this.currentlySpectating = false;
 				break;
 		}
 	}
 	/**
 	 * The method to update the zoom when it is active.
 	 * @private
-	 * @param {number} pElapsedMS - The amount of ms that has passed since the last tick
-	 * @param {number} pDeltaTime - The delta time
+	 * @param {number} pElapsedMS - The amount of ms that has passed since the last tick.
+	 * @param {number} pDeltaTime - The delta time between ticks.
 	 */
 	zoomUpdate(pElapsedMS, pDeltaTime) {
+		/**
+		 * The new x zoom to move the mapView to. Defaulted to the current zoom x in the event no changes are needed.
+		 * @type {number}
+		 */
+		let newZoomX = VYLO.Client.mapView.zoom.x;
+		/**
+		 * The new y zoom to move the mapView to. Defaulted to the current zoom y in the event no changes are needed.
+		 * @type {number}
+		 */
+		let newZoomY = VYLO.Client.mapView.zoom.y;
+
 		if (this.settings.zoom.active.x) {
 			this.settings.zoom.time.x = Math.min(this.settings.zoom.time.x + pElapsedMS, this.settings.zoom.duration.x);
 			this.settings.zoom.currentLevel.x = Tween[this.settings.zoom.ease.x](this.settings.zoom.time.x, this.settings.zoom.initialLevel.x, this.settings.zoom.differenceLevel.x, this.settings.zoom.duration.x);
-			const stepSizeX = ((this.settings.zoom.currentLevel.x - VYLO.Client.mapView.scale.x));
-			VYLO.Client.mapView.scale.x += stepSizeX;
+			const stepSizeX = (this.settings.zoom.currentLevel.x - VYLO.Client.mapView.zoom.x);
+			newZoomX = VYLO.Client.mapView.zoom.x + stepSizeX;
 		}
 
 		if (this.settings.zoom.active.y) {
 			this.settings.zoom.time.y = Math.min(this.settings.zoom.time.y + pElapsedMS, this.settings.zoom.duration.y);
 			this.settings.zoom.currentLevel.y = Tween[this.settings.zoom.ease.y](this.settings.zoom.time.y, this.settings.zoom.initialLevel.y, this.settings.zoom.differenceLevel.y, this.settings.zoom.duration.y);
-			const stepSizeY = ((this.settings.zoom.currentLevel.y - VYLO.Client.mapView.scale.y));
-			VYLO.Client.mapView.scale.y += stepSizeY;
+			const stepSizeY = (this.settings.zoom.currentLevel.y - VYLO.Client.mapView.zoom.y);	
+			newZoomY = VYLO.Client.mapView.zoom.y + stepSizeY;
 		}
 
-		VYLO.Client.setMapView(VYLO.Client.mapView);
+		// Update the mapView with the new zoom
+		VYLO.Client.mapView.setZoom(newZoomX, newZoomY);
 
 		if (this.settings.zoom.time.x === this.settings.zoom.duration.x) {
 			this.reset(&apos;zoomX&apos;);
@@ -516,13 +498,14 @@ class LensComponent {
 	/**
 	 * The method to update shaking when it is active.
 	 * @private
-	 * @param {number} pElapsedMS - The amount of ms that has passed since the last tick
-	 * @param {number} pDeltaTime - The delta time
+	 * @param {number} pElapsedMS - The amount of ms that has passed since the last tick.
+	 * @param {number} pDeltaTime - The delta time between ticks.
 	 */
 	shakeUpdate(pElapsedMS, pDeltaTime) {
 		let angle;
-		let xForce;
-		let yForce;
+		let xForce = 0;
+		let yForce = 0;
+
 		if (this.settings.shake.rotational) {
 			let seed;
 			let seed2;
@@ -539,7 +522,6 @@ class LensComponent {
 
 			angle = Utils.decimalRand(-Utils.decimalRand(seed, seed2) / 200, Utils.decimalRand(seed, seed2) / 200);
 			VYLO.Client.mapView.angle = angle;
-			VYLO.Client.setMapView(VYLO.Client.mapView);
 		}
 
 		if (this.settings.shake.active.x) {
@@ -556,7 +538,7 @@ class LensComponent {
 			this.settings.shake.time.y = Math.min(this.settings.shake.time.y + pElapsedMS, this.settings.shake.duration.y);
 		}
 
-		VYLO.Client.setViewEyeOffsets(xForce ? xForce : 0, yForce ? yForce : 0);
+		VYLO.Client.setViewEyeOffsets(xForce, yForce);
 
 		if (this.settings.shake.time.x === this.settings.shake.duration.x) {
 			this.reset(&apos;shakeX&apos;);
@@ -604,18 +586,18 @@ class LensComponent {
 		if (typeof(pSettings) === &apos;object&apos; &amp;&amp; pSettings.constructor === Object) {
 			const settingsProps = Object.keys(pSettings);
 			if (settingsProps.includes(&apos;target&apos;)) {
-				// target
-				// Check if its a diob
+				// Target
+				// Check if its a valid instance to assign to a target
 				if (typeof(pSettings.target) === &apos;object&apos; &amp;&amp; pSettings.target.baseType) {
 					if (typeof(pSettings.target.x) === &apos;number&apos; &amp;&amp; typeof(pSettings.target.y) === &apos;number&apos; &amp;&amp; typeof(pSettings.target.mapName) === &apos;string&apos;) {
 						if (pSettings.target === this.following) {
 							this.logger.prefix(&apos;Lens-Module&apos;).error(&apos;You cannot pan to yourself. Pan failed&apos;);
-							return
+							return;
 						}
 						this.settings.pan.target = pSettings.target;
 					} else {
 						this.logger.prefix(&apos;Lens-Module&apos;).error(&apos;Invalid variable type passed for the pSettings.target.x || pSettings.target.y || *pSettings.target.mapName parameter. Pan failed&apos;);
-						return
+						return;
 					}
 				} else {
 					this.logger.prefix(&apos;Lens-Module&apos;).error(&apos;Invalid variable type passed for the pSettings.target property. Pan failed&apos;);
@@ -684,7 +666,7 @@ class LensComponent {
 						this.logger.prefix(&apos;Lens-Module&apos;).warn(&apos;No panBackEase property included inside of the pSettings parameter. Reverted to default&apos;);
 				}
 
-				//duration
+				// Duration
 				if (pSettings.duration) {
 					if (typeof(pSettings.duration) === &apos;object&apos; &amp;&amp; pSettings.duration.constructor === Object) {
 						if (typeof(pSettings.duration.x) === &apos;number&apos; &amp;&amp; typeof(pSettings.duration.y) === &apos;number&apos;) {
@@ -736,7 +718,7 @@ class LensComponent {
 					}
 				}
 
-				// attach
+				// Attach
 				this.settings.pan.attach = pSettings.attach;
 				// forceDirChange
 				this.settings.pan.forceDirChange = pSettings.forceDirChange;
@@ -745,11 +727,9 @@ class LensComponent {
 				this.settings.pan.initialPos.y = this.camera.y;
 
 				if (this.settings.pan.forceDirChange) {
-					// disable movement
 					/**
-					 * @todo Add a option/settings var to control this to see if macros should be captured
+					 * @info Should there be a setting to disable movement here?
 					 */
-					VYLO.Client.toggleMacroCapture(false);
 					this.settings.pan.storedDir = this.following.dir;
 					this.following.dir = Utils.getDirection(Utils.convertRaWAngleToVyloCoords(Utils.getAngle(this.following, this.settings.pan.target)));
 				}
@@ -787,11 +767,10 @@ class LensComponent {
 			this.logger.prefix(&apos;Lens-Module&apos;).error(&apos;Invalid variable type passed for the pSettings parameter. Pan failed&apos;);
 		}
 		this.settings.panning = true;
-		this.currentlyPanning = true;
 	}
 	/**
+	 * Event handler for when the first part of the pan completes.
 	 * @private
-	 * Event handler for when the first part of the pan completes
 	 */
 	onPanned() {
 		if (this.settings.pan.panToCallback) {
@@ -800,17 +779,12 @@ class LensComponent {
 		}
 		if (this.settings.pan.attach) {
 			if (typeof(this.settings.pan.target) === &apos;object&apos;) {
-				// Check if its a diob
+				// Check if its a instance
 				if (this.settings.pan.target.baseType) {
-					/**
-					 * @todo 
-					 * Make a flag that determines if macros get captured
-					 */
-					VYLO.Client.toggleMacroCapture(true);
 					this.following = this.settings.pan.target;
 					this.reset(&apos;pan&apos;);
 				} else {
-					this.logger.prefix(&apos;Lens-Module&apos;).warn(&apos;Cannot attach to a non diob type. Attachment failed&apos;);
+					this.logger.prefix(&apos;Lens-Module&apos;).warn(&apos;Cannot attach to a non MapObject | Diob type. Attachment failed&apos;);
 				}
 			}
 		} else {
@@ -826,8 +800,8 @@ class LensComponent {
 		}
 	}
 	/**
+	 * Event handler for when the second part of the pan completes.
 	 * @private
-	 * Event handler for when the second part of the pan completes
 	 */
 	onPanFinish() {
 		if (this.settings.pan.forceDirChange) {
@@ -838,130 +812,94 @@ class LensComponent {
 			this.settings.pan.panBackCallback = null;
 		}
 		this.reset(&apos;pan&apos;);
-		/**
-		 * @todo Add a flag to see if macros should be captured
-		 */
-		// Allow players to move again
-		VYLO.Client.toggleMacroCapture(true);
 	}
 	/**
-	 * Method to follow the target of the camera
+	 * The logic for following instances via the camera.
 	 * @private
-	 * @param {string} pMethod - The method in which the camera is following
-	 * @param {number} pElapsedMS - The amount of ms that has passed since the last tick
-	 * @param {number} pDeltaTime - The delta time
+	 * @param {string} pAxis - &apos;x&apos; | &apos;y&apos;. The axis to handle the logic in.
+	 * @param {Object} pPosition - The centered position of the target.
+	 * @param {string} pMethod - The method the camera is using to follow.
+	 * @param {number} pElapsedMS - The elapsed time since the last tick.
+	 * @param {Object} pSettings - The method&apos;s settings object.
 	 */
-	follow(pMethod, pElapsedMS, pDeltaTime) {
-		let distanceX;
-		let distanceY;
+	followLogic(pAxis, pPosition, pMethod, pElapsedMS, pSettings) {
+		// If this axis is active
+		if (pSettings.active[pAxis]) {
+			// Get the destination position in each axis.
+			pSettings.destination[pAxis] = pPosition[pAxis];
+			// Set the time elapsed.
+			pSettings.time[pAxis] = Math.min(pSettings.time[pAxis] + pElapsedMS, pSettings.duration[pAxis]);
+			// Get the distance between the start and end in this axis.
+			const distance = pSettings.destination[pAxis] - pSettings.initialPos[pAxis];
+			// Get the position the camera should go to next.
+			const pos = Tween[pSettings.ease[pAxis]](pSettings.time[pAxis], pSettings.initialPos[pAxis], distance, pSettings.duration[pAxis]);
+			// Add the stepSize to the camera&apos;s position in this axis to move closer to the destination.
+			this.camera[pAxis] += pos - this.camera[pAxis];
 
-		let stepSizeX;
-		let stepSizeY;
-
-		let target;
-
-		if (pMethod === &apos;pan&apos;) {
-			// now check to see if there is a paused duration you want the camera to stay at the panned object for before moving back
-			if (this.settings[pMethod].returning) {
-				if (this.settings[pMethod].pauseDuration) {
-					this.settings[pMethod].pauseDuration -= pElapsedMS
-					if (this.settings[pMethod].pauseDuration &lt;= 0) {
-						this.settings[pMethod].pauseDuration = 0;
-					} else {
-						return;
-					}
-				}
-				// Get the center position of the target
-				const centerPositionOfPanTarget = this.getTrueCenterPos(this.settings.pan.target);
-				if (this.x !== centerPositionOfPanTarget.x) {
-					this.settings.pan.active.x = true;
-				}
-
-				if (this.y !== centerPositionOfPanTarget.y) {
-					this.settings.pan.active.y = true;
-				}
+			// When the animation is over.
+			if (pSettings.time[pAxis] === pSettings.duration[pAxis]) {
+				// Get the proper reset API for each method.
+				const resetAPI = `${pMethod}${pAxis.toUpperCase()}`;
+				// The animation is over, so we force set the end position.
+				this.camera[pAxis] = pPosition[pAxis];
+				// Reset the method
+				this.reset(resetAPI);
 			}
-			// Get the center position of the target
-			const centerPositionOfTarget = this.getTrueCenterPos(this.settings[pMethod].target);
-			if (this.settings[pMethod].active.x) {
-				this.settings[pMethod].destination.x = centerPositionOfTarget.x;
-			}
-			if (this.settings[pMethod].active.y) {
-				this.settings[pMethod].destination.y = centerPositionOfTarget.y;
-			}
-			target = this.settings[pMethod].target;
-		} else {
-			// Get the center position of the target
-			const centerPositionOfFollowing = this.getTrueCenterPos(this.following);
-			if (this.settings[pMethod].active.x) {
-				this.settings[pMethod].destination.x = centerPositionOfFollowing.x;
-			}
-			if (this.settings[pMethod].active.y) {
-				this.settings[pMethod].destination.y = centerPositionOfFollowing.y;
-			}
-			target = this.following;		
 		}
-
-		if (this.settings[pMethod].active.x) {
-			this.settings[pMethod].time.x = Math.min(this.settings[pMethod].time.x + pElapsedMS, this.settings[pMethod].duration.x);
-			distanceX = this.settings[pMethod].destination.x - this.settings[pMethod].initialPos.x;
-			const x = Tween[this.settings[pMethod].ease.x](this.settings[pMethod].time.x, this.settings[pMethod].initialPos.x, distanceX, this.settings[pMethod].duration.x);
-			stepSizeX = (x - this.camera.x);
-			this.camera.x += stepSizeX;
-		}
-
-		if (this.settings[pMethod].active.y) {
-			this.settings[pMethod].time.y = Math.min(this.settings[pMethod].time.y + pElapsedMS, this.settings[pMethod].duration.y);
-			distanceY = this.settings[pMethod].destination.y - this.settings[pMethod].initialPos.y;
-			const y = Tween[this.settings[pMethod].ease.y](this.settings[pMethod].time.y, this.settings[pMethod].initialPos.y, distanceY, this.settings[pMethod].duration.y);
-			stepSizeY = (y - this.camera.y);
-			this.camera.y += stepSizeY;
-		}
-
-		this.camera.mapName = target.mapName;
-
-		// Get the center position of the target
+	}
+	/**
+	 * Method to follow the target of the camera.
+	 * @private
+	 * @param {string} pMethod - The method in which the camera is following.
+	 * @param {number} pElapsedMS - The amount of ms that has passed since the last tick.
+	 */
+	follow(pMethod, pElapsedMS) {
+		// Extract relevant settings.
+		const settings = this.settings[pMethod];
+		/**
+		 * The target to follow.
+		 * @type {Object}
+		 */
+		const target = (pMethod === &apos;pan&apos;) ? settings.target : this.following;
+		// Get the center of the target position.
 		const centerPositionOfTarget = this.getTrueCenterPos(target);
 
-		if (this.settings[pMethod].time.x === this.settings[pMethod].duration.x) {
-			this.camera.x = centerPositionOfTarget.x;
-			if (pMethod === &apos;pan&apos;) {
-				this.reset(&apos;panX&apos;);
-			} else if (pMethod === &apos;standard&apos;) {
-				this.reset(&apos;standardX&apos;);
-			} else if (pMethod === &apos;custom&apos;) {
-				this.reset(&apos;customX&apos;);
-			}
-		}
+		if (pMethod === &apos;pan&apos;) {
+			// Now check to see if there is a paused duration you want the camera to stay at the panned object for before moving back
+			if (settings.returning) {
+				if (settings.pauseDuration) {
+					settings.pauseDuration = Math.max(settings.pauseDuration - pElapsedMS, 0);
+					if (settings.pauseDuration &gt; 0) return;
+				}
+				if (this.x !== centerPositionOfTarget.x) {
+					settings.active.x = true;
+				}
 
-		if (this.settings[pMethod].time.y === this.settings[pMethod].duration.y) {
-			this.camera.y = centerPositionOfTarget.y;
-			if (pMethod === &apos;pan&apos;) {
-				this.reset(&apos;panY&apos;);
-			} else if (pMethod === &apos;standard&apos;) {
-				this.reset(&apos;standardY&apos;);
-			} else if (pMethod === &apos;custom&apos;) {
-				this.reset(&apos;customY&apos;);
-			}
-		}
-
-		if (pMethod === &apos;standard&apos;) {
-			if (!this.settings[pMethod].active.x &amp;&amp; !this.settings[pMethod].active.y) {
-				if (pMethod === &apos;standard&apos;) {
-					this.reset(&apos;standard&apos;);
-				} else if (pMethod === &apos;custom&apos;) {
-					this.reset(&apos;custom&apos;);
+				if (this.y !== centerPositionOfTarget.y) {
+					settings.active.y = true;
 				}
 			}
 		}
 
-		if (pMethod === &apos;pan&apos;) {
-			if (!this.settings[pMethod].active.x &amp;&amp; !this.settings[pMethod].active.y) {
-				if (this.settings[pMethod].returning) {
-					// you have panned on every axis and now can call the pan return callback
+		// Call the follow logic in each axis
+		for (const axis of LensComponent.AXIS) {
+			this.followLogic(axis, centerPositionOfTarget, pMethod, pElapsedMS, settings);
+		}
+
+		// To ensure that the camera is always on the same map as the target.
+		this.camera.mapName = target.mapName;
+
+		if (pMethod === &apos;standard&apos; || pMethod === &apos;custom&apos;) {
+			if (!settings.active.x &amp;&amp; !settings.active.y) {
+				this.reset(pMethod);
+			}
+		} else if (pMethod === &apos;pan&apos;) {
+			if (!settings.active.x &amp;&amp; !settings.active.y) {
+				if (settings.returning) {
+					// You have panned on every axis and now can call the pan return callback
 					this.onPanFinish();
 				} else {
-					// you have panned on every axis and now can call the pan callback
+					// You have panned on every axis and now can call the pan callback
 					this.onPanned();
 				}
 			}
@@ -971,7 +909,7 @@ class LensComponent {
 	 * Update handler that is called each tick to update the camera&apos;s state
 	 * @private
 	 * @param {number} pElapsedMS - The amount of ms that has passed since the last tick
-	 * @param {number} pDeltaTime - The delta time
+	 * @param {number} pDeltaTime - The delta time between ticks.
 	 */
 	update(pElapsedMS, pDeltaTime) {
 		// Zoom
@@ -981,52 +919,36 @@ class LensComponent {
 		
 		// Shake
 		if (this.settings.shake.active.x || this.settings.shake.active.y) {
-			// this.settings.shaking = true;
 			this.shakeUpdate(pElapsedMS, pDeltaTime);
 		}
 
 		if (this.attached) {
+			// Get the camera follow mode.
+			const cameraFollowMode = this.custom ? &apos;custom&apos; : &apos;standard&apos;;
+
 			// Pan
-			if (!this.settings.scrolling &amp;&amp; (this.settings.pan.active.x || this.settings.pan.active.y || this.settings.pan.returning)) {
-				this.follow(&apos;pan&apos;, pElapsedMS, pDeltaTime);
+			if (this.settings.pan.active.x || this.settings.pan.active.y || this.settings.pan.returning) {
+				this.follow(&apos;pan&apos;, pElapsedMS);
 			}
 			// Camera moving after whatever its following
-			if (!this.settings.scrolling &amp;&amp; !this.settings.panning &amp;&amp; this.following) {
+			if (!this.settings.panning &amp;&amp; this.following) {
 				// Get the center position of the target
 				const centerPositionOfFollowing = this.getTrueCenterPos(this.following);
 				const xFollowingPos = centerPositionOfFollowing.x;
 				const yFollowingPos = centerPositionOfFollowing.y;
 				if (this.following.isMoving || this.oldFollowingPos.x !== xFollowingPos || this.oldFollowingPos.y !== yFollowingPos) {
-					this.currentlyMoving = true;
-					if (this.custom) {
-						this.settings.custom.time.x = 0;
-						this.settings.custom.active.x = (this.camera.x !== xFollowingPos ? true : false);
-						this.settings.custom.initialPos.x = this.camera.x;
+					this.settings.moving = true;
+					this.settings[cameraFollowMode].time.x = 0;
+					this.settings[cameraFollowMode].active.x = (this.camera.x !== xFollowingPos ? true : false);
+					this.settings[cameraFollowMode].initialPos.x = this.camera.x;
 
-						this.settings.custom.time.y = 0;
-						this.settings.custom.active.y = (this.camera.y !== yFollowingPos ? true : false);
-						this.settings.custom.initialPos.y = this.camera.y;
-					} else {
-						this.settings.standard.time.x = 0;
-						this.settings.standard.active.x = (this.camera.x !== xFollowingPos ? true : false);
-						this.settings.standard.initialPos.x = this.camera.x;
-
-						this.settings.standard.time.y = 0;
-						this.settings.standard.active.y = (this.camera.y !== yFollowingPos ? true : false);
-						this.settings.standard.initialPos.y = this.camera.y;
-					}
+					this.settings[cameraFollowMode].time.y = 0;
+					this.settings[cameraFollowMode].active.y = (this.camera.y !== yFollowingPos ? true : false);
+					this.settings[cameraFollowMode].initialPos.y = this.camera.y;
 				}
 
-				// Custom camera moving
-				if (this.custom) {
-					if (this.settings.custom.active.x || this.settings.custom.active.y) {
-						this.follow(&apos;custom&apos;, pElapsedMS, pDeltaTime);
-					}
-				// Default camera moving
-				} else {
-					if (this.settings.standard.active.x || this.settings.standard.active.y) {
-						this.follow(&apos;standard&apos;, pElapsedMS, pDeltaTime);
-					}
+				if (this.settings[cameraFollowMode].active.x || this.settings[cameraFollowMode].active.y) {
+					this.follow(cameraFollowMode, pElapsedMS);
 				}
 				this.oldFollowingPos.x = xFollowingPos;
 				this.oldFollowingPos.y = yFollowingPos;
@@ -1051,57 +973,57 @@ class LensComponent {
 		}
 		// Preset the cameras current zoom level with info from the client if it isn&apos;t already set
 		if (!this.settings.zoom.currentLevel.x) {
-			this.settings.zoom.currentLevel.x = VYLO.Client.mapView.scale.x;
+			this.settings.zoom.currentLevel.x = VYLO.Client.mapView.zoom.x;
 		}
 		if (!this.settings.zoom.currentLevel.x) {
-			this.settings.zoom.currentLevel.y = VYLO.Client.mapView.scale.y;
+			this.settings.zoom.currentLevel.y = VYLO.Client.mapView.zoom.y;
 		}
 		// Destination level
-		let dx;
-		let dy;
+		let destinationX;
+		let destinationY;
 		if (pDestinationLevel || pDestinationLevel === 0) {
 			if (typeof(pDestinationLevel) !== &apos;object&apos;) {
 				if (typeof(pDestinationLevel) === &apos;number&apos;) {
-					dx = dy = pDestinationLevel;
+					destinationX = destinationY = pDestinationLevel;
 				} else {
-					dx = dy = 1;
+					destinationX = destinationY = 1;
 					this.logger.prefix(&apos;Lens-Module&apos;).warn(&apos;Invalid variable type passed for the pDestinationLevel parameter. Reverted to default&apos;);							
 				}
 			} else {
 				if (typeof(pDestinationLevel.x) === &apos;number&apos; &amp;&amp; typeof(pDestinationLevel.y) === &apos;number&apos;) {
-					dx = pDestinationLevel.x;
-					dy = pDestinationLevel.y;
+					destinationX = pDestinationLevel.x;
+					destinationY = pDestinationLevel.y;
 				} else {
-					dx = dy = 1;
+					destinationX = destinationY = 1;
 					this.logger.prefix(&apos;Lens-Module&apos;).warn(&apos;Invalid variable type passed for the pDestinationLevel.x || pDestinationLevel.y parameter. Reverted to default&apos;);	
 				}
 			}
 		} else {
-			dx = dy = 1;
+			destinationX = destinationY = 1;
 			this.logger.prefix(&apos;Lens-Module&apos;).warn(&apos;No pDestinationLevel parameter passed. Reverted to default&apos;);
 		}
 
-		if (this.settings.zoom.destinationLevel.x !== dx) {
+		if (this.settings.zoom.destinationLevel.x !== destinationX) {
 			if (this.settings.zoom.active.x) {
 				this.reset(&apos;zoomX&apos;);
 			}
 			this.settings.zoom.active.x = true;
-			this.settings.zoom.destinationLevel.x = dx;
-			this.settings.zoom.initialLevel.x = VYLO.Client.mapView.scale.x;
+			this.settings.zoom.destinationLevel.x = destinationX;
+			this.settings.zoom.initialLevel.x = VYLO.Client.mapView.zoom.x;
 			this.settings.zoom.differenceLevel.x = Math.round((this.settings.zoom.destinationLevel.x - this.settings.zoom.initialLevel.x) * 10) / 10;
 		}
 
-		if (this.settings.zoom.destinationLevel.y !== dy) {
+		if (this.settings.zoom.destinationLevel.y !== destinationY) {
 			if (this.settings.zoom.active.y) {
 				this.reset(&apos;zoomY&apos;);
 			}
 			this.settings.zoom.active.y = true;
-			this.settings.zoom.destinationLevel.y = dy;
-			this.settings.zoom.initialLevel.y = VYLO.Client.mapView.scale.y;
+			this.settings.zoom.destinationLevel.y = destinationY;
+			this.settings.zoom.initialLevel.y = VYLO.Client.mapView.zoom.y;
 			this.settings.zoom.differenceLevel.y = Math.round((this.settings.zoom.destinationLevel.y - this.settings.zoom.initialLevel.y) * 10) / 10;
 		}
 
-		// duration
+		// Duration
 		if (pDuration) {
 			if (typeof(pDuration) !== &apos;object&apos;) {
 				if (typeof(pDuration) === &apos;number&apos;) {
@@ -1117,7 +1039,7 @@ class LensComponent {
 						this.settings.zoom.duration = pDuration;
 					} else {
 						this.settings.zoom.duration.x = this.settings.zoom.duration.y = 1000;
-						console.warn(&apos;Invalid variable type passed for the pDuration.x || pDuration.y parameter. Reverted to default&apos;);
+						this.logger.prefix(&apos;Lens-Module&apos;).warn(&apos;Invalid variable type passed for the pDuration.x || pDuration.y parameter. Reverted to default&apos;);
 					}
 				}
 			}
@@ -1126,7 +1048,7 @@ class LensComponent {
 			this.logger.prefix(&apos;Lens-Module&apos;).warn(&apos;No pDuration parameter passed. Reverted to default&apos;);
 		}
 
-		// ease 
+		// Ease 
 		if (pEase) {
 			if (typeof(pEase) !== &apos;object&apos;) {
 				if (typeof(pEase) === &apos;string&apos;) {
@@ -1162,14 +1084,13 @@ class LensComponent {
 			this.logger.prefix(&apos;Lens-Module&apos;).warn(&apos;No pEase parameter passed. Reverted to default&apos;);	
 		}
 
-		// callback
-		if (typeof(pCallback) === &apos;function&apos;) {
+		// Callback
+		if (pCallback &amp;&amp; typeof(pCallback) === &apos;function&apos;) {
 			this.settings.zoom.callback = pCallback;
 		} else {
 			this.logger.prefix(&apos;Lens-Module&apos;).warn(&apos;Invalid variable type passed for the pCallback property.&apos;);
 		}
 		this.settings.zooming = true;
-		this.currentlyZooming = true;
 	}
 	/**
 	 * @private
@@ -1179,9 +1100,8 @@ class LensComponent {
 		if (this.settings.zoom.callback) {
 			this.settings.zoom.callback();
 		}
-		VYLO.Client.mapView.scale.x = Math.round(this.settings.zoom.destinationLevel.x * 10) / 10;
-		VYLO.Client.mapView.scale.y = Math.round(this.settings.zoom.destinationLevel.y * 10) / 10;
-		VYLO.Client.setMapView(VYLO.Client.mapView);
+		VYLO.Client.mapView.zoom.x = Math.round(this.settings.zoom.destinationLevel.x * 10) / 10;
+		VYLO.Client.mapView.zoom.y = Math.round(this.settings.zoom.destinationLevel.y * 10) / 10;
 		this.reset(&apos;zoom&apos;);
 	}
 	/**
@@ -1267,31 +1187,22 @@ class LensComponent {
 		}
 	}
 	/**
-	 * Spectates another diob with the camera using the passed settings
-	 * @todo Allow pSettings.target to also be a coordinate position, this will create a diob at that space and spectate that position.
+	 * Spectates another instance with the camera using the passed settings. If the location is over 1000m(pixels) away then the camera will automatically jump to that position no matter if `forcePos` is toggled or not.
+	 * @todo Allow pSettings.target to also be a coordinate position, this will send the camera to that space and spectate that position.
 	 * @param {Object} pSettings - Settings to control the spectate
-	 * @param {Object} pSettings.target - The diob instance to spectate
-	 * @param {boolean} pSettings.preventMovement - Prevent the client mob from moving while spectating
+	 * @param {Object} pSettings.target - The instance to spectate
 	 * @param {boolean} pSettings.forcePos - If the camera should spectate instantly without easing to the location. 
-	 * If the location is over 1000m(pixels) away then the camera will automatically jump to that position.
 	 */
 	spectate(pSettings) {
 		if (this.settings.panning) {
-			console.error(&apos;Lens: Cannot spectate camera is currently %cpanning&apos;, &apos;font-weight: bold&apos;, &apos;. Spectate failed&apos;);
+			this.logger.prefix(&apos;Lens-Module&apos;).error(&apos;Cannot spectate camera is currently panning. Spectate failed&apos;);
 			return;
 		}
 		if (pSettings) {
 			if (typeof(pSettings) === &apos;object&apos; &amp;&amp; pSettings.constructor === Object) {
 				if (typeof(pSettings.target) === &apos;object&apos; &amp;&amp; pSettings.target.baseType) {
 					if (typeof(pSettings.target.x) === &apos;number&apos; &amp;&amp; typeof(pSettings.target.y) === &apos;number&apos; &amp;&amp; typeof(pSettings.target.mapName) === &apos;string&apos;) {
-						this.settings.spectate.preventMovement = false;
 						this.settings.spectate.forcePos = false;
-
-						// Prevents player from moving while spectating
-						if (pSettings.preventMovement) {
-							this.settings.spectate.preventMovement = pSettings.preventMovement;
-							VYLO.Client.toggleMacroCapture(false);
-						}
 						// Get the center position of the target
 						const centerPositionOfTarget = this.getTrueCenterPos(pSettings.target);
 						// Doesn&apos;t ease to the spectatee
@@ -1305,8 +1216,9 @@ class LensComponent {
 								this.camera.setPos(centerPositionOfTarget.x, centerPositionOfTarget.y, pSettings.target.mapName);							
 							}
 						}
-						if (!this.settings.spectate.player) {
-							this.settings.spectate.player = this.following;
+						// Store the original instance the camera was following, so we can go back to it when spectating is done.
+						if (!this.settings.spectate.priorFollowedPlayer) {
+							this.settings.spectate.priorFollowedPlayer = this.following;
 						}
 						this.following = pSettings.target;
 					} else {
@@ -1323,32 +1235,34 @@ class LensComponent {
 			}
 		} else {
 			this.logger.prefix(&apos;Lens-Module&apos;).error(&apos;No pSettings parameter passed. Spectate failed&apos;);
-			return
+			return;
 		}
 		this.settings.spectating = true;
-		this.currentlySpectating = true;
 	}
 	/**
 	 * Stops spectating. 
 	 * If the setting &apos;forcePos&apos; was set. Then the camera will immedietly jump to the original camera target.
-	 * If the setting `preventMovement` was set. Then movement will be restored. This is only applicable to movement via macros.
 	 */
 	cancelSpectate() {
-		if (this.currentlySpectating) {
+		if (this.settings.spectating) {
 			if (this.settings.spectate.forcePos) {
-				const centerPositionOfFollowing = this.getTrueCenterPos(this.settings.spectate.player);
-				this.camera.setPos(centerPositionOfFollowing.x, centerPositionOfFollowing.y, this.settings.spectate.player.mapName);
+				const centerPositionOfFollowing = this.getTrueCenterPos(this.settings.spectate.priorFollowedPlayer);
+				this.camera.setPos(centerPositionOfFollowing.x, centerPositionOfFollowing.y, this.settings.spectate.priorFollowedPlayer.mapName);
 			}
-			this.following = this.settings.spectate.player;
-			if (this.settings.spectate.preventMovement) {
-				VYLO.Client.toggleMacroCapture(true);
+			// We check if this reference is still good to reattach to. 
+			// As if not we will need to detach the camera.
+			if (this.settings.spectate.priorFollowedPlayer.mapName) {
+				this.following = this.settings.spectate.priorFollowedPlayer;
+			} else {
+				this.detach();
+				this.logger.prefix(&apos;Lens-Module&apos;).error(&apos;Forced Detach! Could not return to previous target.&apos;);
 			}
 			this.reset(&apos;spectate&apos;);
 		}
 	}
 	/**
-	 * Attaches the camera to the passed diob.
-	 * @param {Object} pDiob - The diob to attach the camera to
+	 * Attaches the camera to the passed instance.
+	 * @param {Object} pInstance - The instance to attach the camera to
 	 * @param {Object} pSettings - An object that holds settings for how the canera will behave.
 	 * @param {Object} pSettings.duration - An object that holds settings for how the canera will behave.
 	 * @param {number} pSettings.duration.x - The duration of the ease in the x dimension.
@@ -1358,10 +1272,10 @@ class LensComponent {
 	 * @param {string} pSettings.ease.y - The ease to use in the y dimension.
 	 * @param {Function} pUpdateFunc - A callback that will be called when the camera is updated. pDiffX and pDiffY params are the difference in position between the last tick.
 	 */
-	attach(pDiob, pSettings, pUpdateFunc) {
-		if (typeof(pDiob) === &apos;object&apos;) {
-			if (!pDiob.baseType) {
-				this.logger.prefix(&apos;Lens-Module&apos;).error(&apos;Nothing to attach to. Attachment failed&apos;);
+	attach(pInstance, pSettings, pUpdateFunc) {
+		if (typeof(pInstance) === &apos;object&apos;) {
+			if (!pInstance.baseType) {
+				this.logger.prefix(&apos;Lens-Module&apos;).error(&apos;Nothing to attach to. Attachment failed.&apos;);
 				return;
 			}
 		}
@@ -1369,23 +1283,18 @@ class LensComponent {
 			this.updateWithCamera = pUpdateFunc;
 		}
         // Initialize the mapView object
-		if (!this.mapViewInit) {
+		if (!this.mapViewInitialized) {
             // Prep the client&apos;s mapview object
-            if (VYLO.Client.mapView) {
-                VYLO.Client.mapView.anchor = { &apos;x&apos;: 0.5, &apos;y&apos;: 0.5 };
-            } else {
-                VYLO.Client.mapView = { &apos;anchor&apos;: { &apos;x&apos;: 0.5, &apos;y&apos;: 0.5 } };
-            }
+            VYLO.Client.mapView.anchor = { &apos;x&apos;: 0.5, &apos;y&apos;: 0.5 };
             this.logger.prefix(&apos;Lens-Module&apos;).log(&apos;Client.mapview.anchor may have been changed. This module requires the mapview anchor to be 0.5&apos;);
-            VYLO.Client.setMapView(VYLO.Client.mapView);
-			this.mapViewInit = true;
+			this.mapViewInitialized = true;
 		}
 		// Assign the settings to the camera
 		if (pSettings) {
 			this.setSettings(pSettings);
 		}
 
-		this.following = pDiob;
+		this.following = pInstance;
 		this.oldFollowingPos = { &apos;x&apos;: this.following.x + this.following.xIconOffset, &apos;y&apos;: this.following.y + this.following.yIconOffset };
 		const centerPositionOfFollowing = this.getTrueCenterPos(this.following);
 		this.camera.setPos(centerPositionOfFollowing.x, centerPositionOfFollowing.y, this.following.mapName);
@@ -1459,7 +1368,7 @@ class LensComponent {
 						this.logger.prefix(&apos;Lens-Module&apos;).warn(&apos;Invalid variable type for pDuration.x property. Reverted to default&apos;);
 					}
 				} else {
-					this.logger.prefix(&apos;Lens-Module&apos;).warn(&apos;Lens: No pDuration.x property value passed. Reverted to default&apos;);
+					this.logger.prefix(&apos;Lens-Module&apos;).warn(&apos;No pDuration.x property value passed. Reverted to default&apos;);
 				}
 
 				if (pDuration.y || pDuration.y === 0) {
@@ -1502,7 +1411,7 @@ class LensComponent {
 			this.settings.shake.duration.y = durationValue.y;
 			this.settings.shake.active.y = true;
 		}
-		this.currentlyShaking = true;
+		this.settings.shaking = true;
 	}
 	/**
 	 * @private
@@ -1515,6 +1424,41 @@ class LensComponent {
 			VYLO.Client.setViewEyeOffsets(0, 0);
 		}
 		this.reset(&apos;shake&apos;);
+	}
+	/**
+	 * Check if the camera is currently shaking.
+	 * @returns {boolean} True if shaking, false otherwise.
+	 */
+	isShaking() {
+		return this.settings.shaking;
+	}
+	/**
+	 * Check if the camera is currently spectating.
+	 * @returns {boolean} True if spectating, false otherwise.
+	 */
+	isSpectating() {
+		return this.settings.spectating;
+	}
+	/**
+	 * Check if the camera is currently zooming.
+	 * @returns {boolean} True if zooming, false otherwise.
+	 */
+	isZooming() {
+		return this.settings.zooming;
+	}
+	/**
+	 * Check if the camera is currently panning.
+	 * @returns {boolean} True if panning, false otherwise.
+	 */
+	isPanning() {
+		return this.settings.panning;
+	}
+	/**
+	 * Check if the camera is currently moving.
+	 * @returns {boolean} True if panning, false otherwise.
+	 */
+	isMoving() {
+		return this.settings.moving;
 	}
 }
 

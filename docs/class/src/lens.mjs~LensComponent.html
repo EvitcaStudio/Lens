@@ -37,7 +37,7 @@
 
 <div class="content" data-ice="content"><div class="header-notice">
   <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode"></code></pre></div>
-  <span data-ice="access">public</span>
+  <span data-ice="access">private</span>
   <span data-ice="kind">class</span>
   
   
@@ -66,8 +66,7 @@
 
   
   
-  <div class="description" data-ice="description"><p>A powerful plugin that will allow you to attach a camera to your player and use its rich API for some cool effects.</p>
-</div>
+  
   
 
   
@@ -76,7 +75,9 @@
 
   
 
-  
+  <div data-ice="todo"><h4>TODO:</h4><ul><li><span>Create test project</span></li>
+<li><span>Mention in README that this module expects VYLO to be a global variable.</span></li>
+<li><span>handle delta time</span></li></ul></div>
 </div>
 
 <div data-ice="staticMemberSummary"><h2>Static Member Summary</h2><table class="summary" data-ice="summary">
@@ -97,13 +98,71 @@
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#static-member-MAX_CAMERA_SHAKE_FORCE">MAX_CAMERA_SHAKE_FORCE</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#static-member-AXIS">AXIS</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span></span>
         </p>
       </div>
       <div>
         
         
-        <div data-ice="description"><p>The max force the camera can shake at.</p>
+        <div data-ice="description"><p>An array of axis.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">private</span>
+      <span data-ice="static">static</span>
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#static-member-DEFAULT_TILE_SIZE">DEFAULT_TILE_SIZE</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>The default tile size of the Vylocity Game Engine.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">private</span>
+      <span data-ice="static">static</span>
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#static-member-MAX_DELTA_TIME">MAX_DELTA_TIME</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>The max amount of delta time between ticks.</p>
 </div>
       </div>
     </td>
@@ -132,7 +191,7 @@
       <div>
         
         
-        <div data-ice="description"><p>The max display a diob can be displayed at.</p>
+        <div data-ice="description"><p>The max display an instance can be displayed at.</p>
 </div>
       </div>
     </td>
@@ -175,12 +234,12 @@
 </div>
 
 <div data-ice="constructorSummary"><h2>Constructor Summary</h2><table class="summary" data-ice="summary">
-  <thead><tr><td data-ice="title" colspan="3">Public Constructor</td></tr></thead>
+  <thead><tr><td data-ice="title" colspan="3">Private Constructor</td></tr></thead>
   <tbody>
   
   <tr data-ice="target">
     <td>
-      <span class="access" data-ice="access">public</span>
+      <span class="access" data-ice="access">private</span>
       
       
       
@@ -227,180 +286,6 @@
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-FIVE">FIVE</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
-        </p>
-      </div>
-      <div>
-        
-        
-        <div data-ice="description"><p>Shorthand for zooming to 5 scale</p>
-</div>
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">public</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-FOUR">FOUR</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
-        </p>
-      </div>
-      <div>
-        
-        
-        <div data-ice="description"><p>Shorthand for zooming to 4 scale</p>
-</div>
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">public</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-ONE">ONE</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
-        </p>
-      </div>
-      <div>
-        
-        
-        <div data-ice="description"><p>Shorthand for zooming to 1 scale</p>
-</div>
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">public</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-SIX">SIX</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
-        </p>
-      </div>
-      <div>
-        
-        
-        <div data-ice="description"><p>Shorthand for zooming to 6 scale</p>
-</div>
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">public</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-THREE">THREE</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
-        </p>
-      </div>
-      <div>
-        
-        
-        <div data-ice="description"><p>Shorthand for zooming to 3 scale</p>
-</div>
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">public</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-TWO">TWO</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
-        </p>
-      </div>
-      <div>
-        
-        
-        <div data-ice="description"><p>Shorthand for zooming to 2 scale</p>
-</div>
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">public</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
           <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-camera">camera</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span></span>
         </p>
       </div>
@@ -430,7 +315,7 @@
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-updateWithCamera">updateWithCamera</a></span></span><span class="code" data-ice="signature">(-: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, -: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span>*</span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-updateWithCamera">updateWithCamera</a></span></span><span class="code" data-ice="signature">(-: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, -: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">Function</a></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined">undefined</a></span></span>
         </p>
       </div>
       <div>
@@ -523,151 +408,6 @@
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-currentlyMoving">currentlyMoving</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
-        </p>
-      </div>
-      <div>
-        
-        
-        <div data-ice="description"><p>Whether the camera is current moving or not.</p>
-</div>
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">private</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-currentlyPanning">currentlyPanning</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
-        </p>
-      </div>
-      <div>
-        
-        
-        <div data-ice="description"><p>Whether the camera is currently panning.</p>
-</div>
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">private</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-currentlyShaking">currentlyShaking</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
-        </p>
-      </div>
-      <div>
-        
-        
-        <div data-ice="description"><p>Whether the camera is currently shaking.</p>
-</div>
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">private</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-currentlySpectating">currentlySpectating</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
-        </p>
-      </div>
-      <div>
-        
-        
-        <div data-ice="description"><p>Whether the camera is currently spectating.</p>
-</div>
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">private</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-currentlyZooming">currentlyZooming</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
-        </p>
-      </div>
-      <div>
-        
-        
-        <div data-ice="description"><p>Whether the camera is currently zooming or not.</p>
-</div>
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">private</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
           <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-custom">custom</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
         </p>
       </div>
@@ -703,7 +443,7 @@
       <div>
         
         
-        <div data-ice="description"><p>The current diob instance this camera is following.</p>
+        <div data-ice="description"><p>The current instance this camera is following.</p>
 </div>
       </div>
     </td>
@@ -726,7 +466,7 @@
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-init">init</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-initialized">initialized</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
         </p>
       </div>
       <div>
@@ -813,7 +553,7 @@
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-mapViewInit">mapViewInit</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-member-mapViewInitialized">mapViewInitialized</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
         </p>
       </div>
       <div>
@@ -907,13 +647,13 @@
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-method-attach">attach</a></span></span><span class="code" data-ice="signature">(pDiob: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>, pSettings: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>, pUpdateFunc: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">Function</a></span>)</span>
+          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-method-attach">attach</a></span></span><span class="code" data-ice="signature">(pInstance: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>, pSettings: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>, pUpdateFunc: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">Function</a></span>)</span>
         </p>
       </div>
       <div>
         
         
-        <div data-ice="description"><p>Attaches the camera to the passed diob.</p>
+        <div data-ice="description"><p>Attaches the camera to the passed instance.</p>
 </div>
       </div>
     </td>
@@ -972,6 +712,151 @@
         
         
         <div data-ice="description"><p>Detaches the camera.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-method-isMoving">isMoving</a></span></span><span class="code" data-ice="signature">(): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Check if the camera is currently moving.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-method-isPanning">isPanning</a></span></span><span class="code" data-ice="signature">(): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Check if the camera is currently panning.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-method-isShaking">isShaking</a></span></span><span class="code" data-ice="signature">(): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Check if the camera is currently shaking.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-method-isSpectating">isSpectating</a></span></span><span class="code" data-ice="signature">(): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Check if the camera is currently spectating.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-method-isZooming">isZooming</a></span></span><span class="code" data-ice="signature">(): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Check if the camera is currently zooming.</p>
 </div>
       </div>
     </td>
@@ -1087,7 +972,7 @@
       <div>
         
         
-        <div data-ice="description"><p>Spectates another diob with the camera using the passed settings</p>
+        <div data-ice="description"><p>Spectates another instance with the camera using the passed settings.</p>
 </div>
       </div>
     </td>
@@ -1145,13 +1030,42 @@
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-method-follow">follow</a></span></span><span class="code" data-ice="signature">(pMethod: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, pElapsedMS: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, pDeltaTime: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
+          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-method-follow">follow</a></span></span><span class="code" data-ice="signature">(pMethod: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, pElapsedMS: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
         </p>
       </div>
       <div>
         
         
-        <div data-ice="description"><p>Method to follow the target of the camera</p>
+        <div data-ice="description"><p>Method to follow the target of the camera.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">private</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/lens.mjs~LensComponent.html#instance-method-followLogic">followLogic</a></span></span><span class="code" data-ice="signature">(pAxis: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, pPosition: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>, pMethod: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, pElapsedMS: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, pSettings: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>)</span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>The logic for following instances via the camera.</p>
 </div>
       </div>
     </td>
@@ -1180,7 +1094,7 @@
       <div>
         
         
-        <div data-ice="description"><p>Returns the true center position by using the x and y position and adding half of the icon&apos;s width / height.</p>
+        <div data-ice="description"><p>Returns the true center position by using the x and y position and adding half of the icon&apos;s width / height. If no icon is found, we instead use the half of the default tileSize.</p>
 </div>
       </div>
     </td>
@@ -1238,7 +1152,8 @@
       <div>
         
         
-        
+        <div data-ice="description"><p>Event handler for when the second part of the pan completes.</p>
+</div>
       </div>
     </td>
     <td>
@@ -1266,7 +1181,8 @@
       <div>
         
         
-        
+        <div data-ice="description"><p>Event handler for when the first part of the pan completes.</p>
+</div>
       </div>
     </td>
     <td>
@@ -1455,25 +1371,113 @@
 <div data-ice="staticMemberDetails"><h2 data-ice="title">Static Private Members</h2>
 
 <div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="static-member-MAX_CAMERA_SHAKE_FORCE">
+  <h3 data-ice="anchor" id="static-member-AXIS">
     <span class="access" data-ice="access">private</span>
     <span data-ice="static">static</span>
     
     
     
     
-    <span class="code" data-ice="name">MAX_CAMERA_SHAKE_FORCE</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
+    <span class="code" data-ice="name">AXIS</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber24">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber41">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>The max force the camera can shake at.</p>
+  <div data-ice="description"><p>An array of axis.</p>
+</div>
+
+  
+
+  <div data-ice="properties">
+</div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="static-member-DEFAULT_TILE_SIZE">
+    <span class="access" data-ice="access">private</span>
+    <span data-ice="static">static</span>
+    
+    
+    
+    
+    <span class="code" data-ice="name">DEFAULT_TILE_SIZE</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber35">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>The default tile size of the Vylocity Game Engine.</p>
+</div>
+
+  
+
+  <div data-ice="properties">
+</div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="static-member-MAX_DELTA_TIME">
+    <span class="access" data-ice="access">private</span>
+    <span data-ice="static">static</span>
+    
+    
+    
+    
+    <span class="code" data-ice="name">MAX_DELTA_TIME</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber29">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>The max amount of delta time between ticks. If this limit is passed, it will be clamped to this value.</p>
 </div>
 
   
@@ -1517,7 +1521,7 @@
   
   
   
-  <div data-ice="description"><p>The max display a diob can be displayed at.</p>
+  <div data-ice="description"><p>The max display an instance can be displayed at.</p>
 </div>
 
   
@@ -1554,7 +1558,7 @@
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber64">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber51">source</a></span></span>
     </span>
   </h3>
 
@@ -1588,11 +1592,11 @@
 </div>
 </div>
 
-<div data-ice="constructorDetails"><h2 data-ice="title">Public Constructors</h2>
+<div data-ice="constructorDetails"><h2 data-ice="title">Private Constructors</h2>
 
 <div class="detail" data-ice="detail">
   <h3 data-ice="anchor" id="instance-constructor-constructor">
-    <span class="access" data-ice="access">public</span>
+    <span class="access" data-ice="access">private</span>
     
     
     
@@ -1602,7 +1606,7 @@
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber230">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber202">source</a></span></span>
     </span>
   </h3>
 
@@ -1637,270 +1641,6 @@
 <div data-ice="memberDetails"><h2 data-ice="title">Public Members</h2>
 
 <div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-member-FIVE">
-    <span class="access" data-ice="access">public</span>
-    
-    
-    
-    
-    
-    <span class="code" data-ice="name">FIVE</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
-    <span class="right-info">
-      
-      
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber53">source</a></span></span>
-    </span>
-  </h3>
-
-  
-  
-  
-  <div data-ice="description"><p>Shorthand for zooming to 5 scale</p>
-</div>
-
-  
-
-  <div data-ice="properties">
-</div>
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-  
-</div>
-<div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-member-FOUR">
-    <span class="access" data-ice="access">public</span>
-    
-    
-    
-    
-    
-    <span class="code" data-ice="name">FOUR</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
-    <span class="right-info">
-      
-      
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber48">source</a></span></span>
-    </span>
-  </h3>
-
-  
-  
-  
-  <div data-ice="description"><p>Shorthand for zooming to 4 scale</p>
-</div>
-
-  
-
-  <div data-ice="properties">
-</div>
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-  
-</div>
-<div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-member-ONE">
-    <span class="access" data-ice="access">public</span>
-    
-    
-    
-    
-    
-    <span class="code" data-ice="name">ONE</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
-    <span class="right-info">
-      
-      
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber33">source</a></span></span>
-    </span>
-  </h3>
-
-  
-  
-  
-  <div data-ice="description"><p>Shorthand for zooming to 1 scale</p>
-</div>
-
-  
-
-  <div data-ice="properties">
-</div>
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-  
-</div>
-<div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-member-SIX">
-    <span class="access" data-ice="access">public</span>
-    
-    
-    
-    
-    
-    <span class="code" data-ice="name">SIX</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
-    <span class="right-info">
-      
-      
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber58">source</a></span></span>
-    </span>
-  </h3>
-
-  
-  
-  
-  <div data-ice="description"><p>Shorthand for zooming to 6 scale</p>
-</div>
-
-  
-
-  <div data-ice="properties">
-</div>
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-  
-</div>
-<div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-member-THREE">
-    <span class="access" data-ice="access">public</span>
-    
-    
-    
-    
-    
-    <span class="code" data-ice="name">THREE</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
-    <span class="right-info">
-      
-      
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber43">source</a></span></span>
-    </span>
-  </h3>
-
-  
-  
-  
-  <div data-ice="description"><p>Shorthand for zooming to 3 scale</p>
-</div>
-
-  
-
-  <div data-ice="properties">
-</div>
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-  
-</div>
-<div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-member-TWO">
-    <span class="access" data-ice="access">public</span>
-    
-    
-    
-    
-    
-    <span class="code" data-ice="name">TWO</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
-    <span class="right-info">
-      
-      
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber38">source</a></span></span>
-    </span>
-  </h3>
-
-  
-  
-  
-  <div data-ice="description"><p>Shorthand for zooming to 2 scale</p>
-</div>
-
-  
-
-  <div data-ice="properties">
-</div>
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-  
-</div>
-<div class="detail" data-ice="detail">
   <h3 data-ice="anchor" id="instance-member-camera">
     <span class="access" data-ice="access">public</span>
     
@@ -1912,7 +1652,7 @@
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber74">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber61">source</a></span></span>
     </span>
   </h3>
 
@@ -1952,11 +1692,11 @@
     
     
     
-    <span class="code" data-ice="name">updateWithCamera</span><span class="code" data-ice="signature">(-: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, -: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span>*</span></span>
+    <span class="code" data-ice="name">updateWithCamera</span><span class="code" data-ice="signature">(-: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, -: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">Function</a></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined">undefined</a></span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber228">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber193">source</a></span></span>
     </span>
   </h3>
 
@@ -2000,7 +1740,7 @@
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber28">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber45">source</a></span></span>
     </span>
   </h3>
 
@@ -2046,7 +1786,7 @@
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber86">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber73">source</a></span></span>
     </span>
   </h3>
 
@@ -2054,226 +1794,6 @@
   
   
   <div data-ice="description"><p>Whether the camera is attached to something and will follow it.</p>
-</div>
-
-  
-
-  <div data-ice="properties">
-</div>
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-  
-</div>
-<div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-member-currentlyMoving">
-    <span class="access" data-ice="access">private</span>
-    
-    
-    
-    
-    
-    <span class="code" data-ice="name">currentlyMoving</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
-    <span class="right-info">
-      
-      
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber186">source</a></span></span>
-    </span>
-  </h3>
-
-  
-  
-  
-  <div data-ice="description"><p>Whether the camera is current moving or not.</p>
-</div>
-
-  
-
-  <div data-ice="properties">
-</div>
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-  
-</div>
-<div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-member-currentlyPanning">
-    <span class="access" data-ice="access">private</span>
-    
-    
-    
-    
-    
-    <span class="code" data-ice="name">currentlyPanning</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
-    <span class="right-info">
-      
-      
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber210">source</a></span></span>
-    </span>
-  </h3>
-
-  
-  
-  
-  <div data-ice="description"><p>Whether the camera is currently panning.</p>
-</div>
-
-  
-
-  <div data-ice="properties">
-</div>
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-  
-</div>
-<div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-member-currentlyShaking">
-    <span class="access" data-ice="access">private</span>
-    
-    
-    
-    
-    
-    <span class="code" data-ice="name">currentlyShaking</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
-    <span class="right-info">
-      
-      
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber204">source</a></span></span>
-    </span>
-  </h3>
-
-  
-  
-  
-  <div data-ice="description"><p>Whether the camera is currently shaking.</p>
-</div>
-
-  
-
-  <div data-ice="properties">
-</div>
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-  
-</div>
-<div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-member-currentlySpectating">
-    <span class="access" data-ice="access">private</span>
-    
-    
-    
-    
-    
-    <span class="code" data-ice="name">currentlySpectating</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
-    <span class="right-info">
-      
-      
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber198">source</a></span></span>
-    </span>
-  </h3>
-
-  
-  
-  
-  <div data-ice="description"><p>Whether the camera is currently spectating.</p>
-</div>
-
-  
-
-  <div data-ice="properties">
-</div>
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-  
-</div>
-<div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-member-currentlyZooming">
-    <span class="access" data-ice="access">private</span>
-    
-    
-    
-    
-    
-    <span class="code" data-ice="name">currentlyZooming</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
-    <span class="right-info">
-      
-      
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber192">source</a></span></span>
-    </span>
-  </h3>
-
-  
-  
-  
-  <div data-ice="description"><p>Whether the camera is currently zooming or not.</p>
 </div>
 
   
@@ -2310,7 +1830,7 @@
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber92">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber79">source</a></span></span>
     </span>
   </h3>
 
@@ -2354,14 +1874,14 @@
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber98">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber85">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>The current diob instance this camera is following.</p>
+  <div data-ice="description"><p>The current instance this camera is following.</p>
 </div>
 
   
@@ -2387,18 +1907,18 @@
   
 </div>
 <div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-member-init">
+  <h3 data-ice="anchor" id="instance-member-initialized">
     <span class="access" data-ice="access">private</span>
     
     
     
     
     
-    <span class="code" data-ice="name">init</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+    <span class="code" data-ice="name">initialized</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber80">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber67">source</a></span></span>
     </span>
   </h3>
 
@@ -2442,7 +1962,7 @@
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber216">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber180">source</a></span></span>
     </span>
   </h3>
 
@@ -2486,7 +2006,7 @@
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber235">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber198">source</a></span></span>
     </span>
   </h3>
 
@@ -2519,18 +2039,18 @@
   
 </div>
 <div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-member-mapViewInit">
+  <h3 data-ice="anchor" id="instance-member-mapViewInitialized">
     <span class="access" data-ice="access">private</span>
     
     
     
     
     
-    <span class="code" data-ice="name">mapViewInit</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+    <span class="code" data-ice="name">mapViewInitialized</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber222">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber186">source</a></span></span>
     </span>
   </h3>
 
@@ -2574,7 +2094,7 @@
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber104">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber91">source</a></span></span>
     </span>
   </h3>
 
@@ -2618,7 +2138,7 @@
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber110">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber97">source</a></span></span>
     </span>
   </h3>
 
@@ -2661,18 +2181,18 @@
     
     
     
-    <span class="code" data-ice="name">attach</span><span class="code" data-ice="signature">(pDiob: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>, pSettings: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>, pUpdateFunc: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">Function</a></span>)</span>
+    <span class="code" data-ice="name">attach</span><span class="code" data-ice="signature">(pInstance: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>, pSettings: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>, pUpdateFunc: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">Function</a></span>)</span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1323">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1237">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>Attaches the camera to the passed diob.</p>
+  <div data-ice="description"><p>Attaches the camera to the passed instance.</p>
 </div>
 
   
@@ -2686,10 +2206,10 @@
     <tbody>
     
     <tr data-ice="property" data-depth="0">
-      <td data-ice="name" class="code" data-depth="0">pDiob</td>
+      <td data-ice="name" class="code" data-depth="0">pInstance</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"><p>The diob to attach the camera to</p>
+      <td data-ice="description"><p>The instance to attach the camera to</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
@@ -2782,7 +2302,7 @@
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1298">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1208">source</a></span></span>
     </span>
   </h3>
 
@@ -2790,8 +2310,7 @@
   
   
   <div data-ice="description"><p>Stops spectating. 
-If the setting &apos;forcePos&apos; was set. Then the camera will immedietly jump to the original camera target.
-If the setting <code>preventMovement</code> was set. Then movement will be restored. This is only applicable to movement via macros.</p>
+If the setting &apos;forcePos&apos; was set. Then the camera will immedietly jump to the original camera target.</p>
 </div>
 
   
@@ -2828,7 +2347,7 @@ If the setting <code>preventMovement</code> was set. Then movement will be resto
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1360">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1269">source</a></span></span>
     </span>
   </h3>
 
@@ -2861,6 +2380,291 @@ If the setting <code>preventMovement</code> was set. Then movement will be resto
   
 </div>
 <div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-method-isMoving">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">isMoving</span><span class="code" data-ice="signature">(): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1422">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Check if the camera is currently moving.</p>
+</div>
+
+  
+
+  <div data-ice="properties">
+</div>
+
+  <div class="return-params" data-ice="returnParams">
+    <h4>Return:</h4>
+    <table>
+      <tbody>
+        <tr>
+          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
+          <td class="return-desc" data-ice="returnDescription"><p>True if panning, false otherwise.</p>
+</td>
+        </tr>
+      </tbody>
+    </table>
+    <div data-ice="returnProperties">
+</div>
+  </div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-method-isPanning">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">isPanning</span><span class="code" data-ice="signature">(): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1415">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Check if the camera is currently panning.</p>
+</div>
+
+  
+
+  <div data-ice="properties">
+</div>
+
+  <div class="return-params" data-ice="returnParams">
+    <h4>Return:</h4>
+    <table>
+      <tbody>
+        <tr>
+          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
+          <td class="return-desc" data-ice="returnDescription"><p>True if panning, false otherwise.</p>
+</td>
+        </tr>
+      </tbody>
+    </table>
+    <div data-ice="returnProperties">
+</div>
+  </div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-method-isShaking">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">isShaking</span><span class="code" data-ice="signature">(): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1394">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Check if the camera is currently shaking.</p>
+</div>
+
+  
+
+  <div data-ice="properties">
+</div>
+
+  <div class="return-params" data-ice="returnParams">
+    <h4>Return:</h4>
+    <table>
+      <tbody>
+        <tr>
+          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
+          <td class="return-desc" data-ice="returnDescription"><p>True if shaking, false otherwise.</p>
+</td>
+        </tr>
+      </tbody>
+    </table>
+    <div data-ice="returnProperties">
+</div>
+  </div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-method-isSpectating">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">isSpectating</span><span class="code" data-ice="signature">(): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1401">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Check if the camera is currently spectating.</p>
+</div>
+
+  
+
+  <div data-ice="properties">
+</div>
+
+  <div class="return-params" data-ice="returnParams">
+    <h4>Return:</h4>
+    <table>
+      <tbody>
+        <tr>
+          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
+          <td class="return-desc" data-ice="returnDescription"><p>True if spectating, false otherwise.</p>
+</td>
+        </tr>
+      </tbody>
+    </table>
+    <div data-ice="returnProperties">
+</div>
+  </div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-method-isZooming">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">isZooming</span><span class="code" data-ice="signature">(): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1408">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Check if the camera is currently zooming.</p>
+</div>
+
+  
+
+  <div data-ice="properties">
+</div>
+
+  <div class="return-params" data-ice="returnParams">
+    <h4>Return:</h4>
+    <table>
+      <tbody>
+        <tr>
+          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
+          <td class="return-desc" data-ice="returnDescription"><p>True if zooming, false otherwise.</p>
+</td>
+        </tr>
+      </tbody>
+    </table>
+    <div data-ice="returnProperties">
+</div>
+  </div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
   <h3 data-ice="anchor" id="instance-method-pan">
     <span class="access" data-ice="access">public</span>
     
@@ -2872,7 +2676,7 @@ If the setting <code>preventMovement</code> was set. Then movement will be resto
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber557">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber539">source</a></span></span>
     </span>
   </h3>
 
@@ -3059,7 +2863,7 @@ If the setting <code>preventMovement</code> was set. Then movement will be resto
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1159">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1079">source</a></span></span>
     </span>
   </h3>
 
@@ -3162,7 +2966,7 @@ If the setting <code>preventMovement</code> was set. Then movement will be resto
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1380">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1289">source</a></span></span>
     </span>
   </h3>
 
@@ -3244,14 +3048,14 @@ If the setting <code>preventMovement</code> was set. Then movement will be resto
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1240">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1158">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>Spectates another diob with the camera using the passed settings</p>
+  <div data-ice="description"><p>Spectates another instance with the camera using the passed settings. If the location is over 1000m(pixels) away then the camera will automatically jump to that position no matter if <code>forcePos</code> is toggled or not.</p>
 </div>
 
   
@@ -3275,22 +3079,14 @@ If the setting <code>preventMovement</code> was set. Then movement will be resto
       <td data-ice="name" class="code" data-depth="1">pSettings.target</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"><p>The diob instance to spectate</p>
-</td>
-    </tr>
-<tr data-ice="property" data-depth="1">
-      <td data-ice="name" class="code" data-depth="1">pSettings.preventMovement</td>
-      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
-      <td data-ice="appendix"></td>
-      <td data-ice="description"><p>Prevent the client mob from moving while spectating</p>
+      <td data-ice="description"><p>The instance to spectate</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="1">
       <td data-ice="name" class="code" data-depth="1">pSettings.forcePos</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"><p>If the camera should spectate instantly without easing to the location. 
-If the location is over 1000m(pixels) away then the camera will automatically jump to that position.</p>
+      <td data-ice="description"><p>If the camera should spectate instantly without easing to the location.</p>
 </td>
     </tr>
 </tbody>
@@ -3313,7 +3109,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
   
 
   
-  <div data-ice="todo"><h4>TODO:</h4><ul><li><span>Allow pSettings.target to also be a coordinate position, this will create a diob at that space and spectate that position.</span></li></ul></div>
+  <div data-ice="todo"><h4>TODO:</h4><ul><li><span>Allow pSettings.target to also be a coordinate position, this will send the camera to that space and spectate that position.</span></li></ul></div>
 </div>
 <div class="detail" data-ice="detail">
   <h3 data-ice="anchor" id="instance-method-zoom">
@@ -3327,7 +3123,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1010">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber932">source</a></span></span>
     </span>
   </h3>
 
@@ -3435,18 +3231,18 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     
     
     
-    <span class="code" data-ice="name">follow</span><span class="code" data-ice="signature">(pMethod: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, pElapsedMS: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, pDeltaTime: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
+    <span class="code" data-ice="name">follow</span><span class="code" data-ice="signature">(pMethod: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, pElapsedMS: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber816">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber818">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>Method to follow the target of the camera</p>
+  <div data-ice="description"><p>Method to follow the target of the camera.</p>
 </div>
 
   
@@ -3463,21 +3259,103 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
       <td data-ice="name" class="code" data-depth="0">pMethod</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"><p>The method in which the camera is following</p>
+      <td data-ice="description"><p>The method in which the camera is following.</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">pElapsedMS</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"><p>The amount of ms that has passed since the last tick</p>
+      <td data-ice="description"><p>The amount of ms that has passed since the last tick.</p>
+</td>
+    </tr>
+</tbody>
+  </table>
+</div>
+</div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-method-followLogic">
+    <span class="access" data-ice="access">private</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">followLogic</span><span class="code" data-ice="signature">(pAxis: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, pPosition: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>, pMethod: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, pElapsedMS: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, pSettings: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>)</span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber787">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>The logic for following instances via the camera.</p>
+</div>
+
+  
+
+  <div data-ice="properties"><div data-ice="properties">
+  <h4 data-ice="title">Params:</h4>
+  <table class="params">
+    <thead>
+    <tr><td>Name</td><td>Type</td><td>Attribute</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+    
+    <tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">pAxis</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"><p>&apos;x&apos; | &apos;y&apos;. The axis to handle the logic in.</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
-      <td data-ice="name" class="code" data-depth="0">pDeltaTime</td>
+      <td data-ice="name" class="code" data-depth="0">pPosition</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"><p>The centered position of the target.</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">pMethod</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"><p>The method the camera is using to follow.</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">pElapsedMS</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"><p>The delta time</p>
+      <td data-ice="description"><p>The elapsed time since the last tick.</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">pSettings</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"><p>The method&apos;s settings object.</p>
 </td>
     </tr>
 </tbody>
@@ -3514,14 +3392,14 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber289">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber266">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>Returns the true center position by using the x and y position and adding half of the icon&apos;s width / height.</p>
+  <div data-ice="description"><p>Returns the true center position by using the x and y position and adding half of the icon&apos;s width / height. If no icon is found, we instead use the half of the default tileSize.</p>
 </div>
 
   
@@ -3588,7 +3466,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber261">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber236">source</a></span></span>
     </span>
   </h3>
 
@@ -3632,14 +3510,15 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber794">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber768">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  
+  <div data-ice="description"><p>Event handler for when the second part of the pan completes.</p>
+</div>
 
   
 
@@ -3675,14 +3554,15 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber758">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber737">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  
+  <div data-ice="description"><p>Event handler for when the first part of the pan completes.</p>
+</div>
 
   
 
@@ -3718,7 +3598,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1473">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1382">source</a></span></span>
     </span>
   </h3>
 
@@ -3761,7 +3641,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1140">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber1061">source</a></span></span>
     </span>
   </h3>
 
@@ -3804,7 +3684,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber307">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber284">source</a></span></span>
     </span>
   </h3>
 
@@ -3865,7 +3745,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber484">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber466">source</a></span></span>
     </span>
   </h3>
 
@@ -3889,14 +3769,14 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
       <td data-ice="name" class="code" data-depth="0">pElapsedMS</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"><p>The amount of ms that has passed since the last tick</p>
+      <td data-ice="description"><p>The amount of ms that has passed since the last tick.</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">pDeltaTime</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"><p>The delta time</p>
+      <td data-ice="description"><p>The delta time between ticks.</p>
 </td>
     </tr>
 </tbody>
@@ -3933,7 +3813,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber938">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber876">source</a></span></span>
     </span>
   </h3>
 
@@ -3964,7 +3844,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
       <td data-ice="name" class="code" data-depth="0">pDeltaTime</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"><p>The delta time</p>
+      <td data-ice="description"><p>The delta time between ticks.</p>
 </td>
     </tr>
 </tbody>
@@ -4001,7 +3881,7 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber449">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/lens.mjs.html#lineNumber419">source</a></span></span>
     </span>
   </h3>
 
@@ -4025,14 +3905,14 @@ If the location is over 1000m(pixels) away then the camera will automatically ju
       <td data-ice="name" class="code" data-depth="0">pElapsedMS</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"><p>The amount of ms that has passed since the last tick</p>
+      <td data-ice="description"><p>The amount of ms that has passed since the last tick.</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">pDeltaTime</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"><p>The delta time</p>
+      <td data-ice="description"><p>The delta time between ticks.</p>
 </td>
     </tr>
 </tbody>

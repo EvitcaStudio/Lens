@@ -300,42 +300,6 @@ window.esdocSearchIndex = [
     "file"
   ],
   [
-    "src/lens.mjs~lenscomponent#five",
-    "class/src/lens.mjs~LensComponent.html#instance-member-FIVE",
-    "src/lens.mjs~LensComponent#FIVE",
-    "member"
-  ],
-  [
-    "src/lens.mjs~lenscomponent#four",
-    "class/src/lens.mjs~LensComponent.html#instance-member-FOUR",
-    "src/lens.mjs~LensComponent#FOUR",
-    "member"
-  ],
-  [
-    "src/lens.mjs~lenscomponent#one",
-    "class/src/lens.mjs~LensComponent.html#instance-member-ONE",
-    "src/lens.mjs~LensComponent#ONE",
-    "member"
-  ],
-  [
-    "src/lens.mjs~lenscomponent#six",
-    "class/src/lens.mjs~LensComponent.html#instance-member-SIX",
-    "src/lens.mjs~LensComponent#SIX",
-    "member"
-  ],
-  [
-    "src/lens.mjs~lenscomponent#three",
-    "class/src/lens.mjs~LensComponent.html#instance-member-THREE",
-    "src/lens.mjs~LensComponent#THREE",
-    "member"
-  ],
-  [
-    "src/lens.mjs~lenscomponent#two",
-    "class/src/lens.mjs~LensComponent.html#instance-member-TWO",
-    "src/lens.mjs~LensComponent#TWO",
-    "member"
-  ],
-  [
     "src/lens.mjs~lenscomponent#attach",
     "class/src/lens.mjs~LensComponent.html#instance-method-attach",
     "src/lens.mjs~LensComponent#attach",
@@ -366,36 +330,6 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
-    "src/lens.mjs~lenscomponent#currentlymoving",
-    "class/src/lens.mjs~LensComponent.html#instance-member-currentlyMoving",
-    "src/lens.mjs~LensComponent#currentlyMoving",
-    "member"
-  ],
-  [
-    "src/lens.mjs~lenscomponent#currentlypanning",
-    "class/src/lens.mjs~LensComponent.html#instance-member-currentlyPanning",
-    "src/lens.mjs~LensComponent#currentlyPanning",
-    "member"
-  ],
-  [
-    "src/lens.mjs~lenscomponent#currentlyshaking",
-    "class/src/lens.mjs~LensComponent.html#instance-member-currentlyShaking",
-    "src/lens.mjs~LensComponent#currentlyShaking",
-    "member"
-  ],
-  [
-    "src/lens.mjs~lenscomponent#currentlyspectating",
-    "class/src/lens.mjs~LensComponent.html#instance-member-currentlySpectating",
-    "src/lens.mjs~LensComponent#currentlySpectating",
-    "member"
-  ],
-  [
-    "src/lens.mjs~lenscomponent#currentlyzooming",
-    "class/src/lens.mjs~LensComponent.html#instance-member-currentlyZooming",
-    "src/lens.mjs~LensComponent#currentlyZooming",
-    "member"
-  ],
-  [
     "src/lens.mjs~lenscomponent#custom",
     "class/src/lens.mjs~LensComponent.html#instance-member-custom",
     "src/lens.mjs~LensComponent#custom",
@@ -414,6 +348,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/lens.mjs~lenscomponent#followlogic",
+    "class/src/lens.mjs~LensComponent.html#instance-method-followLogic",
+    "src/lens.mjs~LensComponent#followLogic",
+    "method"
+  ],
+  [
     "src/lens.mjs~lenscomponent#following",
     "class/src/lens.mjs~LensComponent.html#instance-member-following",
     "src/lens.mjs~LensComponent#following",
@@ -426,16 +366,16 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
-    "src/lens.mjs~lenscomponent#init",
-    "class/src/lens.mjs~LensComponent.html#instance-member-init",
-    "src/lens.mjs~LensComponent#init",
-    "member"
-  ],
-  [
     "src/lens.mjs~lenscomponent#initcamera",
     "class/src/lens.mjs~LensComponent.html#instance-method-initCamera",
     "src/lens.mjs~LensComponent#initCamera",
     "method"
+  ],
+  [
+    "src/lens.mjs~lenscomponent#initialized",
+    "class/src/lens.mjs~LensComponent.html#instance-member-initialized",
+    "src/lens.mjs~LensComponent#initialized",
+    "member"
   ],
   [
     "src/lens.mjs~lenscomponent#instanceweakmap",
@@ -444,15 +384,45 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/lens.mjs~lenscomponent#ismoving",
+    "class/src/lens.mjs~LensComponent.html#instance-method-isMoving",
+    "src/lens.mjs~LensComponent#isMoving",
+    "method"
+  ],
+  [
+    "src/lens.mjs~lenscomponent#ispanning",
+    "class/src/lens.mjs~LensComponent.html#instance-method-isPanning",
+    "src/lens.mjs~LensComponent#isPanning",
+    "method"
+  ],
+  [
+    "src/lens.mjs~lenscomponent#isshaking",
+    "class/src/lens.mjs~LensComponent.html#instance-method-isShaking",
+    "src/lens.mjs~LensComponent#isShaking",
+    "method"
+  ],
+  [
+    "src/lens.mjs~lenscomponent#isspectating",
+    "class/src/lens.mjs~LensComponent.html#instance-method-isSpectating",
+    "src/lens.mjs~LensComponent#isSpectating",
+    "method"
+  ],
+  [
+    "src/lens.mjs~lenscomponent#iszooming",
+    "class/src/lens.mjs~LensComponent.html#instance-method-isZooming",
+    "src/lens.mjs~LensComponent#isZooming",
+    "method"
+  ],
+  [
     "src/lens.mjs~lenscomponent#logger",
     "class/src/lens.mjs~LensComponent.html#instance-member-logger",
     "src/lens.mjs~LensComponent#logger",
     "member"
   ],
   [
-    "src/lens.mjs~lenscomponent#mapviewinit",
-    "class/src/lens.mjs~LensComponent.html#instance-member-mapViewInit",
-    "src/lens.mjs~LensComponent#mapViewInit",
+    "src/lens.mjs~lenscomponent#mapviewinitialized",
+    "class/src/lens.mjs~LensComponent.html#instance-member-mapViewInitialized",
+    "src/lens.mjs~LensComponent#mapViewInitialized",
     "member"
   ],
   [
@@ -558,9 +528,21 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
-    "src/lens.mjs~lenscomponent.max_camera_shake_force",
-    "class/src/lens.mjs~LensComponent.html#static-member-MAX_CAMERA_SHAKE_FORCE",
-    "src/lens.mjs~LensComponent.MAX_CAMERA_SHAKE_FORCE",
+    "src/lens.mjs~lenscomponent.axis",
+    "class/src/lens.mjs~LensComponent.html#static-member-AXIS",
+    "src/lens.mjs~LensComponent.AXIS",
+    "member"
+  ],
+  [
+    "src/lens.mjs~lenscomponent.default_tile_size",
+    "class/src/lens.mjs~LensComponent.html#static-member-DEFAULT_TILE_SIZE",
+    "src/lens.mjs~LensComponent.DEFAULT_TILE_SIZE",
+    "member"
+  ],
+  [
+    "src/lens.mjs~lenscomponent.max_delta_time",
+    "class/src/lens.mjs~LensComponent.html#static-member-MAX_DELTA_TIME",
+    "src/lens.mjs~LensComponent.MAX_DELTA_TIME",
     "member"
   ],
   [
