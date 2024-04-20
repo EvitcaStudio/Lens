@@ -194,6 +194,7 @@ class LensComponent {
 	 * A callback to be called when the camera is updated.
 	 * @param {number} - pDiffX - The difference in position between the camera's old x position and it's new position.
 	 * @param {number} - pDiffY - The difference in position between the camera's old y position and it's new position.
+	 * @private
 	 * @type {Function|undefined}
 	 */
 	updateWithCamera;
@@ -259,7 +260,11 @@ class LensComponent {
 			preventScreenRelayer: true,
 			preventInterpolation: true
 		});
-		// Create the camera
+		/**
+		 * The camera that this module controls. This will be used as the view eye for the player.
+		 * @private
+		 * @type {Object}
+		 */
 		this.camera = VYLO.newDiob(cameraType);
 		this.initialized = true;
 	}
