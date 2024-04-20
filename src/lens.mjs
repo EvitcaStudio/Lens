@@ -246,8 +246,8 @@ class LensComponent {
 		VYLO.setType(cameraType, {
 			owner: this,
 			atlasName: '',
-			width: 1,
-			height: 1,
+			width: 0,
+			height: 0,
 			// Remove all touch / mouse events
 			mouseOpacity: 0,
 			touchOpacity: 0,
@@ -270,16 +270,26 @@ class LensComponent {
 	 * @returns {Object} Object containing the true center position of the instance.
 	 */
 	getTrueCenterPos(pInstance) {
-		const instanceIconWidthHalf = pInstance.icon ? pInstance.icon.width / 2 : LensComponent.DEFAULT_TILE_SIZE / 2;
-		const instanceIconHeightHalf = pInstance.icon ? pInstance.icon.height / 2 : LensComponent.DEFAULT_TILE_SIZE / 2;
+		const halfPositionX = pInstance.icon 
+		? pInstance.icon.width / 2 
+		: pInstance.sprite 
+		? pInstance.sprite.width / 2
+		: LensComponent.DEFAULT_TILE_SIZE / 2;
+
+		const halfPositionY = pInstance.icon 
+		? pInstance.icon.height / 2 
+		: pInstance.sprite
+		? pInstance.sprite.height / 2
+		: LensComponent.DEFAULT_TILE_SIZE / 2;
+		
 		let centerObject = this.instanceWeakMap.get(pInstance);
-		// If it can pull any data it means no data was ever set, so we need to set the data and then grab it
+		// If it cant pull any data it means no data was ever set, so we need to set the data.
 		if (!centerObject) {
-			this.instanceWeakMap.set(pInstance, { 'x': 0, 'y': 0 });
-			centerObject = this.instanceWeakMap.get(pInstance);
+			centerObject = { 'x': 0, 'y': 0 };
+			this.instanceWeakMap.set(pInstance, centerObject);
 		}
-		centerObject.x = pInstance.x + instanceIconWidthHalf;
-		centerObject.y = pInstance.y + instanceIconHeightHalf;
+		centerObject.x = pInstance.x + halfPositionX;
+		centerObject.y = pInstance.y + halfPositionY;
 		return centerObject;
 	}
 	/**
