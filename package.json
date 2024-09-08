@@ -1,6 +1,6 @@
 {
   "name": "lens",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A powerful plugin that will allow you to attach a camera to your player and use its rich API for some cool effects.",
   "main": "dist/lens.min.mjs",
   "scripts": {

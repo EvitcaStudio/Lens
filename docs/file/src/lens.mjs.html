@@ -767,13 +767,8 @@ class LensComponent {
 					}
 				}
 
-				if (this.camera.x !== this.settings.pan.target.x) {
-					this.settings.pan.active.x = true;
-				}
-
-				if (this.camera.y !== this.settings.pan.target.y) {
-					this.settings.pan.active.y = true;
-				}
+				if (this.camera.x !== this.settings.pan.target.x) this.settings.pan.active.x = true;
+				if (this.camera.y !== this.settings.pan.target.y) this.settings.pan.active.y = true;
 
 			} else {
 				this.logger.prefix(&apos;Lens-Module&apos;).error(&apos;No target property included inside of the pSettings parameter. Pan failed&apos;);
@@ -789,10 +784,7 @@ class LensComponent {
 	 * @private
 	 */
 	onPanned() {
-		if (this.settings.pan.panToCallback) {
-			this.settings.pan.panToCallback();
-			this.settings.pan.panToCallback = null;
-		}
+		if (this.settings.pan.panToCallback) this.settings.pan.panToCallback();
 		if (this.settings.pan.attach) {
 			// Check if its on the map
 			if (this.settings.pan.target.mapName) {
@@ -826,13 +818,8 @@ class LensComponent {
 	 * @private
 	 */
 	onPanFinish() {
-		if (this.settings.pan.forceDirChange) {
-			this.following.dir = this.settings.pan.storedDir;
-		}
-		if (this.settings.pan.panBackCallback) {
-			this.settings.pan.panBackCallback();
-			this.settings.pan.panBackCallback = null;
-		}
+		if (this.settings.pan.forceDirChange) this.following.dir = this.settings.pan.storedDir;
+		if (this.settings.pan.panBackCallback) this.settings.pan.panBackCallback();
 		this.reset(&apos;pan&apos;);
 	}
 	/**
@@ -885,8 +872,6 @@ class LensComponent {
 		const target = (pMethod === &apos;pan&apos;) ? settings.target : this.following;
 		// Get the center of the target position.
 		const centerPositionOfTarget = this.getTrueCenterPos(target);
-		// swappedMethod
-		let swappedMethod = pMethod;
 
 		if (pMethod === &apos;pan&apos;) {
 			// Now check to see if there is a paused duration you want the camera to stay at the panned object for before moving back
@@ -896,16 +881,17 @@ class LensComponent {
 					if (settings.pauseDuration &gt; 0) return;
 				}
 
+				// We swap methods from pan to the configured camera mode, to finish animating the camera in the axis that is finished panning.
+				const cameraMode = this.custom ? &apos;custom&apos; : &apos;standard&apos;;
+				
 				for (const axis of LensComponent.AXIS) {
 					// xNeedsUpdate | yNeedsUpdate is set when the axis is reset. This is in the event the axis is not finished panning but the other axis is.
 					// The axis is updated with the `standard` or `custom` setting based on what is configured.
 					if (this.settings.pan[`${axis}NeedsUpdate`]) {
-						// We swap methods from pan to the configured camera mode, to finish animating the camera in the axis that is finished panning.
-						swappedMethod = this.custom ? &apos;custom&apos; : &apos;standard&apos;;
-						this.settings[swappedMethod].active[axis] = (this.camera[axis] !== centerPositionOfTarget[axis] ? true : false);
-						this.settings[swappedMethod].time[axis] = 0;
-						this.settings[swappedMethod].initialPos[axis] = this.camera[axis];
-						this.followLogic(axis, centerPositionOfTarget, swappedMethod, pElapsedMS);
+						this.settings[cameraMode].active[axis] = this.camera[axis] !== centerPositionOfTarget[axis];
+						this.settings[cameraMode].time[axis] = 0;
+						this.settings[cameraMode].initialPos[axis] = this.camera[axis];
+						this.followLogic(axis, centerPositionOfTarget, cameraMode, pElapsedMS);
 					} else {
 						if (this.camera[axis] !== centerPositionOfTarget[axis]) {
 							settings.active[axis] = true;
@@ -990,7 +976,6 @@ class LensComponent {
 	 * @param {string} pEase.x - The ease to use for the x scale zooming.
 	 * @param {string} pEase.y - The ease to use for the y scale zooming.
 	 * @param {Function} pCallback - The callback to call after the zoom ends.
-	 * @returns 
 	 */
 	zoom(pDestinationLevel={&apos;x&apos;: 1, &apos;y&apos;: 1}, pDuration={&apos;x&apos;: 1000, &apos;y&apos;: 1000}, pEase={&apos;x&apos;: LensComponent.DEFAULT_EASE, &apos;y&apos;: LensComponent.DEFAULT_EASE}, pCallback) {
 		const zoomSettings = this.settings.zoom;
@@ -1027,7 +1012,6 @@ class LensComponent {
 		}
 
 		if (zoomSettings.destinationLevel.x !== destinationX) {
-			if (zoomSettings.active.x) this.reset(&apos;zoomX&apos;);
 			zoomSettings.active.x = true;
 			zoomSettings.destinationLevel.x = Math.floor(destinationX * 10) / 10;
 			zoomSettings.initialLevel.x = Math.floor(VYLO.Client.mapView.zoom.x * 10) / 10;
@@ -1035,7 +1019,6 @@ class LensComponent {
 		}
 
 		if (zoomSettings.destinationLevel.y !== destinationY) {
-			if (zoomSettings.active.y) this.reset(&apos;zoomY&apos;);
 			zoomSettings.active.y = true;
 			zoomSettings.destinationLevel.y = Math.floor(destinationY * 10) / 10;
 			zoomSettings.initialLevel.y = Math.floor(VYLO.Client.mapView.zoom.y * 10) / 10;

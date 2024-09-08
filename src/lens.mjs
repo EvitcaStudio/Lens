@@ -749,7 +749,7 @@ class LensComponent {
 		if (this.settings.pan.panToCallback) this.settings.pan.panToCallback();
 		if (this.settings.pan.attach) {
 			// Check if its on the map
-			if (this.settings.pan.target?.mapName) {
+			if (this.settings.pan.target.mapName) {
 				this.following = this.settings.pan.target;
 				this.reset('pan');
 				return;
@@ -758,7 +758,7 @@ class LensComponent {
 		}
 
 		// If this is not a valid target to go back to. We have to force detach the camera.
-		if (!this.following?.mapName) {
+		if (!this.following.mapName) {
 			this.logger.prefix('Lens-Module').error('Forced Detach! Could not return to previous target.');
 			this.detach();
 			return;
