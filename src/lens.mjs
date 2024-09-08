@@ -48,6 +48,13 @@ class LensComponent {
 	 */
 	version = "VERSION_REPLACE_ME";
 	/**
+	 * The default ease.
+	 * 
+	 * @private
+	 * @type {string}
+	 */
+	static DEFAULT_EASE = 'easeOutCubic';
+	/**
 	 * An array of valid ease names.
 	 * @private
 	 * @type {Array}
@@ -307,13 +314,13 @@ class LensComponent {
 			case 'zoomX':
 				this.settings.zoom.active.x = false;
 				this.settings.zoom.time.x = 0;
-				this.settings.zoom.ease.x = 'easeOutCirc';
+				this.settings.zoom.ease.x = LensComponent.DEFAULT_EASE;
 				break;
 
 			case 'zoomY':
 				this.settings.zoom.active.y = false;
 				this.settings.zoom.time.y = 0;
-				this.settings.zoom.ease.y = 'easeOutCirc';
+				this.settings.zoom.ease.y = LensComponent.DEFAULT_EASE;
 				break;
 
 			case 'zoom':
@@ -325,6 +332,7 @@ class LensComponent {
 				this.settings.zoom.differenceLevel.x = this.settings.zoom.differenceLevel.y = null;
 				this.settings.zoom.duration.x = this.settings.zoom.duration.y = null;	
 				this.settings.zoom.ease.x = this.settings.zoom.ease.y = null;
+				this.settings.zoom.currentLevel.x = this.settings.zoom.currentLevel.y = null;
 				this.settings.zooming = false;
 				break;
 
@@ -469,17 +477,9 @@ class LensComponent {
 		// Update the mapView with the new zoom
 		VYLO.Client.mapView.setZoom(newZoomX, newZoomY);
 
-		if (this.settings.zoom.time.x === this.settings.zoom.duration.x) {
-			this.reset('zoomX');
-		}
-
-		if (this.settings.zoom.time.y === this.settings.zoom.duration.y) {
-			this.reset('zoomY');
-		}
-
-		if (!this.settings.zoom.active.x && !this.settings.zoom.active.y) {
-			this.onZoomEnd();
-		}
+		if (this.settings.zoom.time.x === this.settings.zoom.duration.x) this.reset('zoomX');
+		if (this.settings.zoom.time.y === this.settings.zoom.duration.y) this.reset('zoomY');
+		if (!this.settings.zoom.active.x && !this.settings.zoom.active.y) this.onZoomEnd();
 	}
 	/**
 	 * The method to update shaking when it is active.
@@ -526,17 +526,9 @@ class LensComponent {
 
 		VYLO.Client.setViewEyeOffsets(xForce, yForce);
 
-		if (this.settings.shake.time.x === this.settings.shake.duration.x) {
-			this.reset('shakeX');
-		}
-
-		if (this.settings.shake.time.y === this.settings.shake.duration.y) {
-			this.reset('shakeY');
-		}
-
-		if (!this.settings.shake.active.x && !this.settings.shake.active.y) {
-			this.onShakeEnd();
-		}
+		if (this.settings.shake.time.x === this.settings.shake.duration.x) this.reset('shakeX');
+		if (this.settings.shake.time.y === this.settings.shake.duration.y) this.reset('shakeY');
+		if (!this.settings.shake.active.x && !this.settings.shake.active.y) this.onShakeEnd();
 	}
 	/**
 	 * Pans the camera from one view to another view. This pan can be customized in both axis. This pan has callbacks and settings that allow further customization.
@@ -737,13 +729,8 @@ class LensComponent {
 					}
 				}
 
-				if (this.camera.x !== this.settings.pan.target.x) {
-					this.settings.pan.active.x = true;
-				}
-
-				if (this.camera.y !== this.settings.pan.target.y) {
-					this.settings.pan.active.y = true;
-				}
+				if (this.camera.x !== this.settings.pan.target.x) this.settings.pan.active.x = true;
+				if (this.camera.y !== this.settings.pan.target.y) this.settings.pan.active.y = true;
 
 			} else {
 				this.logger.prefix('Lens-Module').error('No target property included inside of the pSettings parameter. Pan failed');
@@ -759,13 +746,10 @@ class LensComponent {
 	 * @private
 	 */
 	onPanned() {
-		if (this.settings.pan.panToCallback) {
-			this.settings.pan.panToCallback();
-			this.settings.pan.panToCallback = null;
-		}
+		if (this.settings.pan.panToCallback) this.settings.pan.panToCallback();
 		if (this.settings.pan.attach) {
 			// Check if its on the map
-			if (this.settings.pan.target.mapName) {
+			if (this.settings.pan.target?.mapName) {
 				this.following = this.settings.pan.target;
 				this.reset('pan');
 				return;
@@ -774,7 +758,7 @@ class LensComponent {
 		}
 
 		// If this is not a valid target to go back to. We have to force detach the camera.
-		if (!this.following.mapName) {
+		if (!this.following?.mapName) {
 			this.logger.prefix('Lens-Module').error('Forced Detach! Could not return to previous target.');
 			this.detach();
 			return;
@@ -796,13 +780,8 @@ class LensComponent {
 	 * @private
 	 */
 	onPanFinish() {
-		if (this.settings.pan.forceDirChange) {
-			this.following.dir = this.settings.pan.storedDir;
-		}
-		if (this.settings.pan.panBackCallback) {
-			this.settings.pan.panBackCallback();
-			this.settings.pan.panBackCallback = null;
-		}
+		if (this.settings.pan.forceDirChange) this.following.dir = this.settings.pan.storedDir;
+		if (this.settings.pan.panBackCallback) this.settings.pan.panBackCallback();
 		this.reset('pan');
 	}
 	/**
@@ -855,8 +834,6 @@ class LensComponent {
 		const target = (pMethod === 'pan') ? settings.target : this.following;
 		// Get the center of the target position.
 		const centerPositionOfTarget = this.getTrueCenterPos(target);
-		// swappedMethod
-		let swappedMethod = pMethod;
 
 		if (pMethod === 'pan') {
 			// Now check to see if there is a paused duration you want the camera to stay at the panned object for before moving back
@@ -866,16 +843,17 @@ class LensComponent {
 					if (settings.pauseDuration > 0) return;
 				}
 
+				// We swap methods from pan to the configured camera mode, to finish animating the camera in the axis that is finished panning.
+				const cameraMode = this.custom ? 'custom' : 'standard';
+				
 				for (const axis of LensComponent.AXIS) {
 					// xNeedsUpdate | yNeedsUpdate is set when the axis is reset. This is in the event the axis is not finished panning but the other axis is.
 					// The axis is updated with the `standard` or `custom` setting based on what is configured.
 					if (this.settings.pan[`${axis}NeedsUpdate`]) {
-						// We swap methods from pan to the configured camera mode, to finish animating the camera in the axis that is finished panning.
-						swappedMethod = this.custom ? 'custom' : 'standard';
-						this.settings[swappedMethod].active[axis] = (this.camera[axis] !== centerPositionOfTarget[axis] ? true : false);
-						this.settings[swappedMethod].time[axis] = 0;
-						this.settings[swappedMethod].initialPos[axis] = this.camera[axis];
-						this.followLogic(axis, centerPositionOfTarget, swappedMethod, pElapsedMS);
+						this.settings[cameraMode].active[axis] = this.camera[axis] !== centerPositionOfTarget[axis];
+						this.settings[cameraMode].time[axis] = 0;
+						this.settings[cameraMode].initialPos[axis] = this.camera[axis];
+						this.followLogic(axis, centerPositionOfTarget, cameraMode, pElapsedMS);
 					} else {
 						if (this.camera[axis] !== centerPositionOfTarget[axis]) {
 							settings.active[axis] = true;
@@ -915,15 +893,8 @@ class LensComponent {
 	 * @param {number} pElapsedMS - The amount of ms that has passed since the last tick
 	 */
 	update(pElapsedMS) {
-		// Zoom
-		if (this.settings.zoom.active.x || this.settings.zoom.active.y) {
-			this.zoomUpdate(pElapsedMS);
-		}
-		
-		// Shake
-		if (this.settings.shake.active.x || this.settings.shake.active.y) {
-			this.shakeUpdate(pElapsedMS);
-		}
+		if (this.settings.zoom.active.x || this.settings.zoom.active.y) this.zoomUpdate(pElapsedMS);
+		if (this.settings.shake.active.x || this.settings.shake.active.y) this.shakeUpdate(pElapsedMS);
 
 		if (this.attached) {
 			// Get the camera follow mode.
@@ -967,22 +938,19 @@ class LensComponent {
 	 * @param {string} pEase.x - The ease to use for the x scale zooming.
 	 * @param {string} pEase.y - The ease to use for the y scale zooming.
 	 * @param {Function} pCallback - The callback to call after the zoom ends.
-	 * @returns 
 	 */
-	zoom(pDestinationLevel={'x': 1, 'y': 1}, pDuration={'x': 1000, 'y': 1000}, pEase={'x': 'easeOutCirc', 'y': 'easeOutCirc'}, pCallback) {
-		if (this.settings.zoom.active.x || this.settings.zoom.active.y) {
-			return;
-		}
+	zoom(pDestinationLevel={'x': 1, 'y': 1}, pDuration={'x': 1000, 'y': 1000}, pEase={'x': LensComponent.DEFAULT_EASE, 'y': LensComponent.DEFAULT_EASE}, pCallback) {
+		const zoomSettings = this.settings.zoom;
+		if (zoomSettings.active.x || zoomSettings.active.y) this.reset('zoom');
+
 		// Preset the cameras current zoom level with info from the client if it isn't already set
-		if (!this.settings.zoom.currentLevel.x) {
-			this.settings.zoom.currentLevel.x = VYLO.Client.mapView.zoom.x;
-		}
-		if (!this.settings.zoom.currentLevel.x) {
-			this.settings.zoom.currentLevel.y = VYLO.Client.mapView.zoom.y;
-		}
+		if (!zoomSettings.currentLevel.x) zoomSettings.currentLevel.x = Math.floor(VYLO.Client.mapView.zoom.x * 10) / 10;
+		if (!zoomSettings.currentLevel.y) zoomSettings.currentLevel.y = Math.floor(VYLO.Client.mapView.zoom.y * 10) / 10;
+
 		// Destination level
 		let destinationX;
 		let destinationY;
+
 		if (pDestinationLevel || pDestinationLevel === 0) {
 			if (typeof(pDestinationLevel) !== 'object') {
 				if (typeof(pDestinationLevel) === 'number') {
@@ -1005,48 +973,42 @@ class LensComponent {
 			this.logger.prefix('Lens-Module').warn('No pDestinationLevel parameter passed. Reverted to default');
 		}
 
-		if (this.settings.zoom.destinationLevel.x !== destinationX) {
-			if (this.settings.zoom.active.x) {
-				this.reset('zoomX');
-			}
-			this.settings.zoom.active.x = true;
-			this.settings.zoom.destinationLevel.x = destinationX;
-			this.settings.zoom.initialLevel.x = VYLO.Client.mapView.zoom.x;
-			this.settings.zoom.differenceLevel.x = Math.round((this.settings.zoom.destinationLevel.x - this.settings.zoom.initialLevel.x) * 10) / 10;
+		if (zoomSettings.destinationLevel.x !== destinationX) {
+			zoomSettings.active.x = true;
+			zoomSettings.destinationLevel.x = Math.floor(destinationX * 10) / 10;
+			zoomSettings.initialLevel.x = Math.floor(VYLO.Client.mapView.zoom.x * 10) / 10;
+			zoomSettings.differenceLevel.x = Math.floor((zoomSettings.destinationLevel.x - zoomSettings.initialLevel.x) * 10) / 10;
 		}
 
-		if (this.settings.zoom.destinationLevel.y !== destinationY) {
-			if (this.settings.zoom.active.y) {
-				this.reset('zoomY');
-			}
-			this.settings.zoom.active.y = true;
-			this.settings.zoom.destinationLevel.y = destinationY;
-			this.settings.zoom.initialLevel.y = VYLO.Client.mapView.zoom.y;
-			this.settings.zoom.differenceLevel.y = Math.round((this.settings.zoom.destinationLevel.y - this.settings.zoom.initialLevel.y) * 10) / 10;
+		if (zoomSettings.destinationLevel.y !== destinationY) {
+			zoomSettings.active.y = true;
+			zoomSettings.destinationLevel.y = Math.floor(destinationY * 10) / 10;
+			zoomSettings.initialLevel.y = Math.floor(VYLO.Client.mapView.zoom.y * 10) / 10;
+			zoomSettings.differenceLevel.y = Math.floor((zoomSettings.destinationLevel.y - zoomSettings.initialLevel.y) * 10) / 10;
 		}
 
 		// Duration
 		if (pDuration) {
 			if (typeof(pDuration) !== 'object') {
 				if (typeof(pDuration) === 'number') {
-					this.settings.zoom.duration.x = pDuration;
-					this.settings.zoom.duration.y = pDuration;
+					zoomSettings.duration.x = pDuration;
+					zoomSettings.duration.y = pDuration;
 				} else {
-					this.settings.zoom.duration.x = this.settings.zoom.duration.y = 1000;
+					zoomSettings.duration.x = zoomSettings.duration.y = 1000;
 					this.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pDuration parameter. Reverted to default');
 				}
 			} else {
 				if (typeof(pDuration) === 'object') {
 					if (typeof(pDuration.x) === 'number' && typeof(pDuration.y) === 'number') {
-						this.settings.zoom.duration = pDuration;
+						zoomSettings.duration = pDuration;
 					} else {
-						this.settings.zoom.duration.x = this.settings.zoom.duration.y = 1000;
+						zoomSettings.duration.x = zoomSettings.duration.y = 1000;
 						this.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pDuration.x || pDuration.y parameter. Reverted to default');
 					}
 				}
 			}
 		} else {
-			this.settings.zoom.duration.x = this.settings.zoom.duration.y = 1000;
+			zoomSettings.duration.x = zoomSettings.duration.y = 1000;
 			this.logger.prefix('Lens-Module').warn('No pDuration parameter passed. Reverted to default');
 		}
 
@@ -1055,13 +1017,13 @@ class LensComponent {
 			if (typeof(pEase) !== 'object') {
 				if (typeof(pEase) === 'string') {
 					if (LensComponent.validEase.includes(pEase)) {
-						this.settings.zoom.ease.x = this.settings.zoom.ease.y = pEase;
+						zoomSettings.ease.x = zoomSettings.ease.y = pEase;
 					} else {
-						this.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';
+						zoomSettings.ease.x = zoomSettings.ease.y = LensComponent.DEFAULT_EASE;
 						this.logger.prefix('Lens-Module').warn('Invalid pEase name passed. Reverted to default');
 					}
 				} else {
-					this.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';
+					zoomSettings.ease.x = zoomSettings.ease.y = LensComponent.DEFAULT_EASE;
 					this.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pEase parameter. Reverted to default');
 				}
 
@@ -1069,26 +1031,26 @@ class LensComponent {
 				if (typeof(pEase) === 'object') {
 					if (typeof(pEase.x) === 'string' && typeof(pEase.y) === 'string') {
 						if (LensComponent.validEase.includes(pEase.x) && LensComponent.validEase.includes(pEase.y)) {
-							this.settings.zoom.ease = pEase;
+							zoomSettings.ease = pEase;
 						} else {
-							this.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';
+							zoomSettings.ease.x = zoomSettings.ease.y = LensComponent.DEFAULT_EASE;
 							this.logger.prefix('Lens-Module').warn('Invalid pEase name passed for pEase.x || pEase.y. Reverted to default');
 						}
 						
 					} else {
-						this.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';
+						zoomSettings.ease.x = zoomSettings.ease.y = LensComponent.DEFAULT_EASE;
 						this.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pEase.x || pEase.y parameter. Reverted to default');
 					}
 				}				
 			}
 		} else {
-			this.settings.zoom.ease.x = this.settings.zoom.ease.y = 'easeOutCirc';
+			zoomSettings.ease.x = zoomSettings.ease.y = LensComponent.DEFAULT_EASE;
 			this.logger.prefix('Lens-Module').warn('No pEase parameter passed. Reverted to default');	
 		}
 
 		// Callback
 		if (typeof(pCallback) === 'function') {
-			this.settings.zoom.callback = pCallback;
+			zoomSettings.callback = pCallback;
 		} else if (pCallback) {
 			this.logger.prefix('Lens-Module').warn('Invalid variable type passed for the pCallback property.');
 		}
@@ -1099,11 +1061,11 @@ class LensComponent {
 	 * Event handler for when the zoom is finished
 	 */
 	onZoomEnd() {
-		if (this.settings.zoom.callback) {
-			this.settings.zoom.callback();
-		}
-		VYLO.Client.mapView.zoom.x = Math.round(this.settings.zoom.destinationLevel.x * 10) / 10;
-		VYLO.Client.mapView.zoom.y = Math.round(this.settings.zoom.destinationLevel.y * 10) / 10;
+		const zoomSettings = this.settings.zoom;
+		const zoomX = Math.floor(zoomSettings.destinationLevel.x * 10) / 10;
+		const zoomY = Math.floor(zoomSettings.destinationLevel.y * 10) / 10;
+		VYLO.Client.mapView.setZoom(zoomX, zoomY);
+		if (zoomSettings.callback) zoomSettings.callback();
 		this.reset('zoom');
 	}
 	/**
